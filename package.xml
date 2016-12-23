@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>sros2</name>
+  <version>0.0.0</version>
+  <description>Command line tools for managing SROS2 keys</description>
+  <maintainer email="morgan@osrfoundation.org">Morgan Quigley</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_package</buildtool_depend>
+  <buildtool_export_depend>ament_package</buildtool_export_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
