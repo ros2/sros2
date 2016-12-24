@@ -162,10 +162,30 @@ def create_keystore(args):
         create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path)
     else:
         print("found signed governance file, not creating a new one!")
+    return True
 
-def distribute_keys(args):
-    print("distributing keys")
+def is_valid_keystore(path):
+    ecdsa_param_found = os.path.isfile(os.path.join(path, 'ecdsaparam'))
+    ca_key_found = os.path.isfile(os.path.join(path, 'ca.key.pem'))
+    ca_cert_found = os.path.isfile(os.path.join(path, 'ca.cert.pem'))
+    signed_gov_found = os.path.isfile(os.path.join(path, 'governance.p7s'))
+    return ecdsa_param_found and ca_key_found and \
+        ca_cert_found and signed_gov_found
+
+def create_key(args):
     print(args)
+    root = args.ROOT
+    name = args.NAME
+    if not is_valid_keystore(root):
+        print("root path is not a valid keystore: %s" % root)
+        return False
+    print("creating key for node name: %s" % name)
+    return True
+
+def distribute_key(args):
+    print("distributing key")
+    print(args)
+    return True
 
 def main(sysargs=None):
     sysargs = sys.argv[1:] if sysargs is None else sysargs
@@ -174,13 +194,18 @@ def main(sysargs=None):
     subparsers = parser.add_subparsers()
 
     parser_create_keystore = subparsers.add_parser('create_keystore')
-    parser_create_keystore.add_argument('ROOT', help='root path of keystore')
     parser_create_keystore.set_defaults(which='create_keystore')
+    parser_create_keystore.add_argument('ROOT', help='root path of keystore')
 
-    parser_distribute_keys = subparsers.add_parser('distribute_keys')
+    parser_create_key = subparsers.add_parser('create_key')
+    parser_create_key.set_defaults(which='create_key')
+    parser_create_key.add_argument('ROOT', help='root path of keystore')
+    parser_create_key.add_argument('NAME', help='key name, aka ROS node name')
+
+    parser_distribute_keys = subparsers.add_parser('distribute_key')
+    parser_distribute_keys.set_defaults(which='distribute_key')
     parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
     parser_distribute_keys.add_argument('TARGET', help='target keystore path')
-    parser_distribute_keys.set_defaults(which='distribute_keys')
 
     args = parser.parse_args(sysargs)
 
@@ -193,8 +218,10 @@ def main(sysargs=None):
 
     if args.which == 'create_keystore':
         create_keystore(args)
-    elif args.which == 'distribute_keys':
-        distribute_keys(args)
+    elif args.which == 'create_key':
+        create_key(args)
+    elif args.which == 'distribute_key':
+        distribute_key(args)
     else:
         parser.print_help()
         sys.exit("Error: Unknown verb '{0}' provided.".format(args['which']))
