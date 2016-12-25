@@ -46,20 +46,12 @@ preserve         = no
 policy           = policy_match
 
 [ policy_match ]
-countryName = match
-stateOrPrivinceName = match
-organizationName = match
+countryName            = optional
+stateOrProvinceName    = optional
+organizationName       = optional
 organizationalUnitName = optional
-commonName = supplied
-emailAddress = optional
-
-[ policy_anything ]
-countryName = optional
-stateOrPrivinceName = optional
-organizationName = optional
-organizationalUnitName = optional
-commonName = supplied
-emailAddress = optional
+commonName             = supplied
+emailAddress           = optional
 
 [ req ]
 prompt = no
@@ -71,9 +63,9 @@ commonName = sros2testCA
 
 """)
 
-def run_shell_command(cmd):
-    print("running command: %s" % cmd)
-    subprocess.call(cmd, shell=True)
+def run_shell_command(cmd, in_path=None):
+    print("running command in path [%s]: %s" % (in_path, cmd))
+    subprocess.call(cmd, shell=True, cwd=in_path)
 
 def create_ecdsa_param_file(path):
     run_shell_command("openssl ecparam -name prime256v1 > %s" % path)
@@ -162,15 +154,59 @@ def create_keystore(args):
         create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path)
     else:
         print("found signed governance file, not creating a new one!")
+
+    # create index file
+    index_path = os.path.join(root, 'index.txt')
+    if not os.path.isfile(index_path):
+        open(index_path, 'a').close()
+
+    # create serial file
+    serial_path = os.path.join(root, 'serial')
+    if not os.path.isfile(serial_path):
+        with open(serial_path, 'w') as f:
+            f.write("1000")
     return True
 
 def is_valid_keystore(path):
+    ca_conf_found = os.path.isfile(os.path.join(path, 'ca_conf.txt'))
     ecdsa_param_found = os.path.isfile(os.path.join(path, 'ecdsaparam'))
+    index_found = os.path.isfile(os.path.join(path, 'index.txt'))
     ca_key_found = os.path.isfile(os.path.join(path, 'ca.key.pem'))
     ca_cert_found = os.path.isfile(os.path.join(path, 'ca.cert.pem'))
     signed_gov_found = os.path.isfile(os.path.join(path, 'governance.p7s'))
     return ecdsa_param_found and ca_key_found and \
-        ca_cert_found and signed_gov_found
+        ca_cert_found and signed_gov_found and \
+        index_found and ca_conf_found
+
+def is_key_name_valid(name):
+    # quick check for obvious filesystem problems
+    if ('..' in name) or ('/' in name) or ('\\' in name):
+        return False
+    return True
+
+def create_request_file(path, name):
+    with open(path, 'w') as f:
+        f.write("""\
+prompt = no
+string_mask = utf8only
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+commonName = %s
+""" % name)
+
+def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path):
+    key_relpath = os.path.join(name, 'key.pem')
+    ecdsa_param_relpath = os.path.join(name, 'ecdsaparam')
+    cnf_relpath = os.path.join(name, 'request.cnf')
+    key_relpath = os.path.join(name, 'key.pem')
+    req_relpath = os.path.join(name, 'req.pem')
+    run_shell_command("openssl req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s" % (ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
+
+def create_cert(root_path, name):
+    req_relpath = os.path.join(name, "req.pem")
+    cert_relpath = os.path.join(name, "cert.pem")
+    run_shell_command("openssl ca -batch -create_serial -config ca_conf.txt -days 3650 -in %s -out %s" % (req_relpath, cert_relpath), root_path)
 
 def create_key(args):
     print(args)
@@ -179,7 +215,44 @@ def create_key(args):
     if not is_valid_keystore(root):
         print("root path is not a valid keystore: %s" % root)
         return False
+    if not is_key_name_valid(name):
+        print("bad character in requested key name: %s" % name)
+        return False
     print("creating key for node name: %s" % name)
+
+    key_dir = os.path.join(root, name)
+    if not os.path.exists(key_dir):
+        os.makedirs(key_dir)
+
+    ecdsa_param_path = os.path.join(key_dir, 'ecdsaparam')
+    if not os.path.isfile(ecdsa_param_path):
+        print("creating ECDSA param file: %s" % ecdsa_param_path)
+        create_ecdsa_param_file(ecdsa_param_path)
+    else:
+        print("found ECDSA param file, not writing a new one!")
+
+    cnf_path = os.path.join(key_dir, 'request.cnf')
+    if not os.path.isfile(cnf_path):
+        create_request_file(cnf_path, name)
+    else:
+        print("config file exists, not creating a new one: %s" % cnf_path)
+
+    key_path = os.path.join(key_dir, 'key.pem')
+    req_path = os.path.join(key_dir, 'req.pem')
+    if not os.path.isfile(key_path) or not os.path.isfile(req_path):
+        print("creating key and cert request")
+        create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path)
+    else:
+        print("found key and cert req; not creating new ones!")
+
+    ca_conf_path = os.path.join(root, 'ca_conf.txt')
+    cert_path = os.path.join(key_dir, 'cert.pem')
+    if not os.path.isfile(cert_path):
+        print("creating cert")
+        create_cert(root, name)
+    else:
+        print("found cert; not creating a new one!")
+
     return True
 
 def distribute_key(args):
