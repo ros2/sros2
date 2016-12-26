@@ -42,3 +42,56 @@ source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.
 cd ~/sros2
 src/ament/ament_tools/scripts/ament.py build -s
 ```
+
+# Demos
+
+## Getting terminals ready
+
+For every terminal window used in these demos, you'll need to first source the
+RTI setup script, and then source the setup script from your installed SROS 2
+workspace, like this:
+
+```
+source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash
+cd ~/sros2
+source install/setup.bash
+```
+
+## Secure Talker Listener
+
+In one terminal (after preparing the environment as previously described), we
+will create a keystore in `~/sros2/demo_keys` :
+```
+sros2 create_keystore demo_keys
+sros2 create_key talker
+sros2 create_key listener
+```
+
+Then, in one terminal (after preparing the terminal as previously described),
+we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
+`talker` demo program:
+```
+ROS_SECURE_ROOT=~/sros2/demo_keys talker
+```
+
+In another terminal (after preparing the terminal as previously described), we
+will do the same thing with the `listener` program:
+```
+ROS_SECURE_ROOT=~/sros2/demo_keys listener
+```
+
+At thsi point, your `talker` and `listener` nodes should be communicating
+securely! Hooray!
+
+# Tips and Tricks
+
+## RTI Connext Secure environment variables
+
+It's often handy to create an alias for that super-long shell incantation to
+source the RTI script, for example, by adding something like this to your
+`~/.bashrc` file (altering the paths and alias names as needed/wanted):
+
+```
+alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
+```
+
