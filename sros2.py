@@ -14,6 +14,7 @@
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 
@@ -165,6 +166,9 @@ def create_keystore(args):
     if not os.path.isfile(serial_path):
         with open(serial_path, 'w') as f:
             f.write("1000")
+
+    print("all done! enjoy your keystore in %s" % root)
+    print("cheers!")
     return True
 
 def is_valid_keystore(path):
@@ -208,6 +212,26 @@ def create_cert(root_path, name):
     cert_relpath = os.path.join(name, "cert.pem")
     run_shell_command("openssl ca -batch -create_serial -config ca_conf.txt -days 3650 -in %s -out %s" % (req_relpath, cert_relpath), root_path)
 
+def create_permissions_file(path, name):
+    with open(path, 'w') as f:
+        f.write("""\
+<permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_permissions.xsd">
+  <grant name="allow_everything">
+    <subject_name>CN=%s</subject_name>
+    <validity>
+      <!-- Format is YYYYMMDDHH in GMT -->
+      <not_before>2016122000</not_before>
+      <not_after>2026122000</not_after>
+    </validity>
+    <default>ALLOW</default>
+  </grant>
+</permissions>
+""" % name)
+
+def create_signed_permissions_file(permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
+    run_shell_command("openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" % (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+
 def create_key(args):
     print(args)
     root = args.ROOT
@@ -223,6 +247,16 @@ def create_key(args):
     key_dir = os.path.join(root, name)
     if not os.path.exists(key_dir):
         os.makedirs(key_dir)
+
+    # copy the CA cert in there
+    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
+    dest_ca_cert_path = os.path.join(key_dir, 'ca.cert.pem')
+    shutil.copyfile(keystore_ca_cert_path, dest_ca_cert_path)
+
+    # copy the governance file in there
+    keystore_governance_path = os.path.join(root, 'governance.p7s')
+    dest_governance_path = os.path.join(key_dir, 'governance.p7s')
+    shutil.copyfile(keystore_governance_path, dest_governance_path)
 
     ecdsa_param_path = os.path.join(key_dir, 'ecdsaparam')
     if not os.path.isfile(ecdsa_param_path):
@@ -253,11 +287,35 @@ def create_key(args):
     else:
         print("found cert; not creating a new one!")
 
+    permissions_path = os.path.join(key_dir, 'permissions.txt')
+    if not os.path.isfile(permissions_path):
+        print("creating permissions file")
+        create_permissions_file(permissions_path, name)
+    else:
+        print("found permissions file; not creating a new one!")
+
+    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
+    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
+    if not os.path.isfile(signed_permissions_path):
+        print("creating signed permissions file")
+        create_signed_permissions_file(permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
+    else:
+        print("found signed permissions file; not creating a new one!")
+
+    return True
+
+def list_keys(args):
+    for root, dirs, files in os.walk(args.ROOT):
+        if root == args.ROOT:
+            for d in dirs:
+                print("%s" % d)
     return True
 
 def distribute_key(args):
     print("distributing key")
     print(args)
+    print("just kidding, sorry, this isn't implemented yet.")
     return True
 
 def main(sysargs=None):
@@ -275,6 +333,10 @@ def main(sysargs=None):
     parser_create_key.add_argument('ROOT', help='root path of keystore')
     parser_create_key.add_argument('NAME', help='key name, aka ROS node name')
 
+    parser_list_keys = subparsers.add_parser('list_keys')
+    parser_list_keys.set_defaults(which='list_keys')
+    parser_list_keys.add_argument('ROOT', help='root path of keystore')
+
     parser_distribute_keys = subparsers.add_parser('distribute_key')
     parser_distribute_keys.set_defaults(which='distribute_key')
     parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
@@ -289,17 +351,24 @@ def main(sysargs=None):
         parser.print_help()
         sys.exit("Error: No verb provided.")
 
+    result = False
+
     if args.which == 'create_keystore':
-        create_keystore(args)
+        result = create_keystore(args)
     elif args.which == 'create_key':
-        create_key(args)
+        result = create_key(args)
+    elif args.which == 'list_keys':
+        result = list_keys(args)
     elif args.which == 'distribute_key':
-        distribute_key(args)
+        result = distribute_key(args)
     else:
         parser.print_help()
         sys.exit("Error: Unknown verb '{0}' provided.".format(args['which']))
 
-    sys.exit(0)
+    if (result):
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
