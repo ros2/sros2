@@ -50,9 +50,9 @@ The following instructions will download a version of the ROS 2 source tree
 with a few repositories checked out to the `sros2` branch.
 ```
 mkdir -p ~/sros2/src
-cd ~/sros2/src
+cd ~/sros2
 wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
-vcs import < ../sros2.repos
+vcs import src < ../sros2.repos
 ```
 
 ## Build the SROS 2 demo source tree
