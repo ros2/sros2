@@ -41,7 +41,7 @@ sudo apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys D2486D2DD83D
 Now we'll install a bunch of apt packages:
 ```
 sudo apt-get update
-sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev
+sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev libssl-dev
 ```
 
 ## Download the SROS 2 demo source tree
@@ -106,6 +106,46 @@ ROS_SECURE_ROOT=~/sros2/demo_keys listener
 
 At thsi point, your `talker` and `listener` nodes should be communicating
 securely! Hooray!
+
+## Two different machines
+
+The previous demo was using SROS 2 on the same box over localhost. That's
+great, but it's more exciting when multiple machines are involved, since the
+benefits of authentication and encryption are more obvious.
+
+Let's say that the machine with the keystore created in the previous demo has a
+hostname `feather2`, and that we want to also use another machine with hostname
+`oldschool` for our multi-machine talker/listener demo. First, we need to run
+the installation and compilation steps described previously on the `oldschool`
+machine. Then, we need to copy some keys to `oldschool` to allow SROS 2 to
+authenticate and encrypt the transmissions. Since the keys are just text files,
+we can use `scp` to copy them. First, we'll create an empty keystore on
+`oldschool`, which is just an empty directory:
+
+```
+ssh oldschool.local
+mkdir ~/sros2/demo_keys
+exit
+```
+
+Now, we'll copy the keys/certificates for the "talker" program from `feather2`
+to `oldschool`:
+
+```
+cd ~/sros2/demo_keys
+scp -r talker USERNAME@oldschool.local:~/sros2/demo_keys
+```
+
+That will be very quick, since it's just copying some very small text files.
+Now, we're ready to run a multi-machine talker/listener demo!
+
+First, on the machine running `talker`, we need to source the RTI variables, the SROS 2 installation tree, and then we can run `talker` in secure mode by setting the `ROS_SECURE_ROOT` environment variable to the local keystore:
+
+```
+source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
+source ~/sros2/install/setup.bash
+ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker
+```
 
 # Tips and Tricks
 
