@@ -20,6 +20,30 @@ process; fist you must install the "host" package, and then from its launcher
 you can install the additional "target" packages and the `secure_dds` package.
 Much more (and better) help is provided in the RTI documentation.
 
+## Install some dependencies
+
+These instructions assume Ubuntu 16.04. You can likely make this work on many
+other Linux distros, but you'd have to chase down the equivalent dependency
+packages. This is just an abbreviated version of the dependencies described in
+the main ROS 2 installation page:
+https://github.com/ros2/ros2/wiki/Linux-Development-Setup
+
+First, we'll add the OSRF apt repositories to your system, so that we can pull
+down some of the ROS tools which will be used to build SROS 2:
+
+```
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -cs` main" &gt; /etc/apt/sources.list.d/ros-latest.list'
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+sudo apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 421C365BD9FF1F717815A3895523BAEEB01FA116
+sudo apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys D2486D2DD83DB69272AFE98867170598AF249743
+```
+
+Now we'll install a bunch of apt packages:
+```
+sudo apt-get update
+sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool
+```
+
 ## Download the SROS 2 demo source tree
 
 The following instructions will download a version of the ROS 2 source tree
