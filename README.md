@@ -41,7 +41,7 @@ sudo apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys D2486D2DD83D
 Now we'll install a bunch of apt packages:
 ```
 sudo apt-get update
-sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool
+sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev
 ```
 
 ## Download the SROS 2 demo source tree
