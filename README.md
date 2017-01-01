@@ -87,8 +87,8 @@ In one terminal (after preparing the environment as previously described), we
 will create a keystore in `~/sros2/demo_keys` :
 ```
 sros2 create_keystore demo_keys
-sros2 create_key talker
-sros2 create_key listener
+sros2 create_key demo_keys talker
+sros2 create_key demo_keys listener
 ```
 
 Then, in one terminal (after preparing the terminal as previously described),
