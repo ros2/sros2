@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 
+
 def create_ca_conf_file(path):
     with open(path, 'w') as f:
         f.write("""\
@@ -64,15 +65,21 @@ commonName = sros2testCA
 
 """)
 
+
 def run_shell_command(cmd, in_path=None):
     print("running command in path [%s]: %s" % (in_path, cmd))
     subprocess.call(cmd, shell=True, cwd=in_path)
 
+
 def create_ecdsa_param_file(path):
     run_shell_command("openssl ecparam -name prime256v1 > %s" % path)
 
+
 def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path):
-    run_shell_command("openssl req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s" % (ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+    run_shell_command(
+        "openssl req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s" %
+        (ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+
 
 def create_governance_file(path):
     # for this application we are only looking to authenticate and encrypt;
@@ -105,8 +112,12 @@ def create_governance_file(path):
 </dds>
 """)
 
+
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
-    run_shell_command("openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" % (gov_path, signed_gov_path, ca_cert_path, ca_key_path))
+    run_shell_command(
+        "openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" %
+        (gov_path, signed_gov_path, ca_cert_path, ca_key_path))
+
 
 def create_keystore(args):
     root = args.ROOT
@@ -171,6 +182,7 @@ def create_keystore(args):
     print("cheers!")
     return True
 
+
 def is_valid_keystore(path):
     ca_conf_found = os.path.isfile(os.path.join(path, 'ca_conf.txt'))
     ecdsa_param_found = os.path.isfile(os.path.join(path, 'ecdsaparam'))
@@ -182,11 +194,13 @@ def is_valid_keystore(path):
         ca_cert_found and signed_gov_found and \
         index_found and ca_conf_found
 
+
 def is_key_name_valid(name):
     # quick check for obvious filesystem problems
     if ('..' in name) or ('/' in name) or ('\\' in name):
         return False
     return True
+
 
 def create_request_file(path, name):
     with open(path, 'w') as f:
@@ -199,18 +213,25 @@ distinguished_name = req_distinguished_name
 commonName = %s
 """ % name)
 
+
 def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path):
     key_relpath = os.path.join(name, 'key.pem')
     ecdsa_param_relpath = os.path.join(name, 'ecdsaparam')
     cnf_relpath = os.path.join(name, 'request.cnf')
     key_relpath = os.path.join(name, 'key.pem')
     req_relpath = os.path.join(name, 'req.pem')
-    run_shell_command("openssl req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s" % (ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
+    run_shell_command(
+        "openssl req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s" %
+        (ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
+
 
 def create_cert(root_path, name):
     req_relpath = os.path.join(name, "req.pem")
     cert_relpath = os.path.join(name, "cert.pem")
-    run_shell_command("openssl ca -batch -create_serial -config ca_conf.txt -days 3650 -in %s -out %s" % (req_relpath, cert_relpath), root_path)
+    run_shell_command(
+        "openssl ca -batch -create_serial -config ca_conf.txt -days 3650 -in %s -out %s" %
+        (req_relpath, cert_relpath), root_path)
+
 
 def create_permissions_file(path, name):
     with open(path, 'w') as f:
@@ -229,8 +250,13 @@ def create_permissions_file(path, name):
 </permissions>
 """ % name)
 
-def create_signed_permissions_file(permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
-    run_shell_command("openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" % (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+
+def create_signed_permissions_file(
+        permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
+    run_shell_command(
+        "openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" %
+        (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+
 
 def create_key(args):
     print(args)
@@ -279,7 +305,8 @@ def create_key(args):
     else:
         print("found key and cert req; not creating new ones!")
 
-    ca_conf_path = os.path.join(root, 'ca_conf.txt')
+    # TODO Is this used ?
+    # ca_conf_path = os.path.join(root, 'ca_conf.txt')
     cert_path = os.path.join(key_dir, 'cert.pem')
     if not os.path.isfile(cert_path):
         print("creating cert")
@@ -299,11 +326,13 @@ def create_key(args):
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
     if not os.path.isfile(signed_permissions_path):
         print("creating signed permissions file")
-        create_signed_permissions_file(permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
+        create_signed_permissions_file(
+            permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
     else:
         print("found signed permissions file; not creating a new one!")
 
     return True
+
 
 def list_keys(args):
     for root, dirs, files in os.walk(args.ROOT):
@@ -312,11 +341,13 @@ def list_keys(args):
                 print("%s" % d)
     return True
 
+
 def distribute_key(args):
     print("distributing key")
     print(args)
     print("just kidding, sorry, this isn't implemented yet.")
     return True
+
 
 def main(sysargs=None):
     sysargs = sys.argv[1:] if sysargs is None else sysargs
@@ -347,7 +378,7 @@ def main(sysargs=None):
     if '-h' in sysargs or '--help' in sysargs:
         sys.exit(0)  # we're already done
 
-    if not 'which' in args:
+    if 'which' not in args:
         parser.print_help()
         sys.exit("Error: No verb provided.")
 
