@@ -128,7 +128,7 @@ def create_keystore(args):
     else:
         print("directory already exists: %s" % root)
 
-    ca_conf_path = os.path.join(root, 'ca_conf.txt')
+    ca_conf_path = os.path.join(root, 'ca_conf.cnf')
     if not os.path.isfile(ca_conf_path):
         print("creating CA file: %s" % ca_conf_path)
         create_ca_conf_file(ca_conf_path)
@@ -183,7 +183,7 @@ def create_keystore(args):
 
 
 def is_valid_keystore(path):
-    ca_conf_found = os.path.isfile(os.path.join(path, 'ca_conf.txt'))
+    ca_conf_found = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
     ecdsa_param_found = os.path.isfile(os.path.join(path, 'ecdsaparam'))
     index_found = os.path.isfile(os.path.join(path, 'index.txt'))
     ca_key_found = os.path.isfile(os.path.join(path, 'ca.key.pem'))
@@ -228,7 +228,7 @@ def create_cert(root_path, name):
     req_relpath = os.path.join(name, "req.pem")
     cert_relpath = os.path.join(name, "cert.pem")
     run_shell_command(
-        "openssl ca -batch -create_serial -config ca_conf.txt -days 3650 -in %s -out %s" %
+        "openssl ca -batch -create_serial -config ca_conf.cnf -days 3650 -in %s -out %s" %
         (req_relpath, cert_relpath), root_path)
 
 
