@@ -37,7 +37,6 @@ private_key      = $dir/ca.key.pem
 serial           = $dir/serial
 crlnumber        = $dir/crlnumber
 crl              = $dir/crl.pem
-private_key      = $dir/ca.key.pem
 RANDFILE         = $dir/private/.rand
 name_opt         = ca_default
 cert_opt         = ca_default
@@ -305,8 +304,6 @@ def create_key(args):
     else:
         print("found key and cert req; not creating new ones!")
 
-    # TODO Is this used ?
-    # ca_conf_path = os.path.join(root, 'ca_conf.txt')
     cert_path = os.path.join(key_dir, 'cert.pem')
     if not os.path.isfile(cert_path):
         print("creating cert")
