@@ -237,7 +237,7 @@ def create_permissions_file(path, name, domain_id, permissions_dict):
     permission_str = """\
 <permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_permissions.xsd">
-  <grant name="allow_everything">
+  <grant name="%s_policies">
     <subject_name>CN=%s</subject_name>
     <validity>
       <!-- Format is YYYYMMDDHH in GMT -->
@@ -246,7 +246,7 @@ def create_permissions_file(path, name, domain_id, permissions_dict):
     </validity>
     <allow_rule>
       <domain_id>%s</domain_id>
-""" % (name, domain_id)
+""" % (name, name, domain_id)
     # access control only on topics for now
     topic_dict = permissions_dict['topics']
     if topic_dict is not None and topic_dict != {}:
@@ -264,11 +264,24 @@ def create_permissions_file(path, name, domain_id, permissions_dict):
         <topic>%s</topic>
       </%s>
 """ % (tag, topic_name, tag)
-    # DCPS* is necessary for builtin data readers
-    permission_str += """\
+        # DCPS* is necessary for builtin data readers
+        permission_str += """\
       <subscribe>
         <topic>DCPS*</topic>
       </subscribe>
+"""
+    else:
+        # no policy found: allow everything!
+        permission_str += """\
+      <publish>
+        <topic>*</topic>
+      </publish>
+      <subscribe>
+        <topic>*</topic>
+      </subscribe>
+"""
+
+    permission_str += """\
     </allow_rule>
     <default>DENY</default>
   </grant>
