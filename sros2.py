@@ -233,7 +233,7 @@ def create_cert(root_path, name):
         (req_relpath, cert_relpath), root_path)
 
 
-def create_permissions_file(path, name, domain_id, permissions_dict):
+def create_permission_file(path, name, domain_id, permissions_dict):
     permission_str = """\
 <permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_permissions.xsd">
@@ -291,13 +291,10 @@ def create_permissions_file(path, name, domain_id, permissions_dict):
         f.write(permission_str)
 
 
-def get_permissions(name):
+def get_permissions(name, policy_file_path):
     import yaml
-    ros_secure_root = os.getenv('ROS_SECURE_ROOT', '')
-    if not os.path.isdir(ros_secure_root):
-        print('ROS_SECURE_ROOT need to be set to an existing folder')
-        sys.exit(1)
-    policy_file_path = os.path.join(os.path.dirname(ros_secure_root), 'policies.yaml')
+    if not os.path.isfile(policy_file_path):
+        return {'topics': {}}
     with open(policy_file_path, 'r') as graph_permissions_file:
         try:
             graph = yaml.load(graph_permissions_file)
@@ -312,6 +309,34 @@ def create_signed_permissions_file(
     run_shell_command(
         "openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" %
         (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+
+
+def create_permission(args):
+    print(args)
+    root = args.ROOT
+    name = args.NAME
+    policy_file_path = args.POLICY_FILE_PATH
+    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+
+    key_dir = os.path.join(root, name)
+    print('key_dir %s' % key_dir)
+    permissions_dict = get_permissions(name, policy_file_path)
+    permissions_path = os.path.join(key_dir, 'permissions.xml')
+    if not os.path.isfile(permissions_path):
+        print("creating permissions file")
+        create_permission_file(permissions_path, name, domain_id, permissions_dict)
+    else:
+        print("found permissions file; not creating a new one!")
+
+    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
+    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
+    if not os.path.isfile(signed_permissions_path):
+        print("creating signed permissions file")
+        create_signed_permissions_file(
+            permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
+    else:
+        print("found signed permissions file; not creating a new one!")
 
 
 def create_key(args):
@@ -368,25 +393,6 @@ def create_key(args):
     else:
         print("found cert; not creating a new one!")
 
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
-    permissions_dict = get_permissions(name)
-    permissions_path = os.path.join(key_dir, 'permissions.xml')
-    if not os.path.isfile(permissions_path):
-        print("creating permissions file")
-        create_permissions_file(permissions_path, name, domain_id, permissions_dict)
-    else:
-        print("found permissions file; not creating a new one!")
-
-    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
-    if not os.path.isfile(signed_permissions_path):
-        print("creating signed permissions file")
-        create_signed_permissions_file(
-            permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
-    else:
-        print("found signed permissions file; not creating a new one!")
-
     return True
 
 
@@ -429,6 +435,12 @@ def main(sysargs=None):
     parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
     parser_distribute_keys.add_argument('TARGET', help='target keystore path')
 
+    parser_distribute_keys = subparsers.add_parser('create_permission')
+    parser_distribute_keys.set_defaults(which='create_permission')
+    parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
+    parser_distribute_keys.add_argument('NAME', help='key name, aka ROS node name')
+    parser_distribute_keys.add_argument(
+        'POLICY_FILE_PATH', help='path of the permission yaml file')
     args = parser.parse_args(sysargs)
 
     if '-h' in sysargs or '--help' in sysargs:
@@ -444,6 +456,8 @@ def main(sysargs=None):
         result = create_keystore(args)
     elif args.which == 'create_key':
         result = create_key(args)
+    elif args.which == 'create_permission':
+        result = create_permission(args)
     elif args.which == 'list_keys':
         result = list_keys(args)
     elif args.which == 'distribute_key':
