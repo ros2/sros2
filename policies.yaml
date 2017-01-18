@@ -1,0 +1,19 @@
+nodes:
+  secure_subscriber:
+    topics:
+      #'*':
+      #  allow: s # allow secure_subscriber to subscribe to all topics
+      chatter: # for the topic chatter
+        allow: s # can subscribe
+      chatter2: # for the topic chatter2
+        allow: s # can subscribe
+  secure_publisher:
+    topics:
+      #'*':
+      #  allow: p # allow secure_publisher to publish on all topics
+      chatter:
+        allow: p # allow secure_publisher to publish onto chatter
+      chatter2:
+        allow: p # allow secure_publisher to publish onto chatter2
+      chatter3:
+        allow: p # allow secure_publisher to publish onto chatter3
