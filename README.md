@@ -85,12 +85,23 @@ source install/setup.bash
 
 In one terminal (after preparing the environment as previously described), we
 will create a keystore in `~/sros2/demo_keys` :
-```
+```bash
 sros2 create_keystore demo_keys
+```
+Then we will generate certificates and keys for our talker and listener nodes:
+```bash
 sros2 create_key demo_keys talker
 sros2 create_key demo_keys listener
 ```
-
+Then we define the policies of our nodes:
+```bash
+cp ~/sros2/src/ros2/sros2/policies.yaml ./demo_keys/
+```
+Finally we will create permission files
+```bash
+sros2 create_permission demo_keys talker demo_keys/policies.yaml
+sros2 create_permission demo_keys listener demo_keys/policies.yaml
+```
 Then, in one terminal (after preparing the terminal as previously described),
 we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
 `talker` demo program:
