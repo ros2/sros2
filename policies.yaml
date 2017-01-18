@@ -17,3 +17,15 @@ nodes:
         allow: p # allow secure_publisher to publish onto chatter2
       chatter3:
         allow: p # allow secure_publisher to publish onto chatter3
+  listener:
+    topics:
+      chatter: # for the topic chatter
+        allow: s # can subscribe
+      parameter_events:
+        allow: p # can publish
+  talker:
+    topics:
+      chatter:
+        allow: p # allow secure_publisher to publish onto chatter
+      parameter_events:
+        allow: p # can publish
