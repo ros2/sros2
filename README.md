@@ -88,12 +88,12 @@ will create a keystore in `~/sros2/demo_keys` :
 ```bash
 sros2 create_keystore demo_keys
 ```
-Then we will generate certificates and keys for our talker and listener nodes:
+Generate certificates and keys for our `talker` and `listener` nodes:
 ```bash
 sros2 create_key demo_keys talker
 sros2 create_key demo_keys listener
 ```
-Then we define the policies of our nodes:
+Define the policies of our nodes:
 ```bash
 cp ~/sros2/src/ros2/sros2/policies.yaml ./demo_keys/
 ```
@@ -115,7 +115,7 @@ will do the same thing with the `listener` program:
 ROS_SECURE_ROOT=~/sros2/demo_keys listener
 ```
 
-At thsi point, your `talker` and `listener` nodes should be communicating
+At this point, your `talker` and `listener` nodes should be communicating
 securely! Hooray!
 
 ## Two different machines
