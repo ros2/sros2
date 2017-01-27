@@ -135,7 +135,7 @@ we can use `scp` to copy them. First, we'll create an empty keystore on
 
 ```
 ssh oldschool.local
-mkdir ~/sros2/demo_keys
+mkdir -p ~/sros2/demo_keys
 exit
 ```
 
