@@ -93,15 +93,7 @@ Generate certificates and keys for our `talker` and `listener` nodes:
 sros2 create_key demo_keys talker
 sros2 create_key demo_keys listener
 ```
-Define the policies of our nodes:
-```bash
-cp ~/sros2/src/ros2/sros2/policies.yaml ./demo_keys/
-```
-Finally we will create permission files
-```bash
-sros2 create_permission demo_keys talker demo_keys/policies.yaml
-sros2 create_permission demo_keys listener demo_keys/policies.yaml
-```
+
 Then, in one terminal (after preparing the terminal as previously described),
 we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
 `talker` demo program:
@@ -116,7 +108,42 @@ ROS_SECURE_ROOT=~/sros2/demo_keys listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
-securely! Hooray!
+securely, using authentication and encryption! Hooray!
+
+## Access Control
+The previous demo used authentication and encryption, but not access control,
+which means that any authenticated node would be able to publish and subscribe
+to any data stream (aka topic). To increase the level of security in the
+system, you can define strict limits, known as access control, which restrict
+what each node is able to do. For example, one node would be able to publish to
+a particular topic, and another node might be able to subscribe to that topic.
+To do this, we will use the sample policy file provided in
+`examples/sample_policy.yaml`
+
+First, we will copy this sample policy file into our keystore:
+```bash
+cp ~/sros2/src/ros2/sros2/examples/sample_policy.yaml ./demo_keys/
+```
+And now we will use it to generate the XML permission files expected by the
+middleware:
+```bash
+sros2 create_permission demo_keys talker demo_keys/policies.yaml
+sros2 create_permission demo_keys listener demo_keys/policies.yaml
+```
+Then, in one terminal (after preparing the terminal as previously described),
+we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
+`talker` demo program:
+```
+ROS_SECURE_ROOT=~/sros2/demo_keys talker
+```
+In another terminal (after preparing the terminal as previously described), we
+will do the same thing with the `listener` program:
+```
+ROS_SECURE_ROOT=~/sros2/demo_keys listener
+```
+
+At this point, your `talker` and `listener` nodes should be communicating
+securely, using explicit access control lists! Hooray!
 
 ## Two different machines
 
