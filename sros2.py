@@ -428,12 +428,13 @@ def main(sysargs=None):
     parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
     parser_distribute_keys.add_argument('TARGET', help='target keystore path')
 
-    parser_distribute_keys = subparsers.add_parser('create_permission')
-    parser_distribute_keys.set_defaults(which='create_permission')
-    parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
-    parser_distribute_keys.add_argument('NAME', help='key name, aka ROS node name')
-    parser_distribute_keys.add_argument(
+    parser_create_perm = subparsers.add_parser('create_permission')
+    parser_create_perm.set_defaults(which='create_permission')
+    parser_create_perm.add_argument('ROOT', help='root path of keystore')
+    parser_create_perm.add_argument('NAME', help='key name, aka ROS node name')
+    parser_create_perm.add_argument(
         'POLICY_FILE_PATH', help='path of the permission yaml file')
+
     args = parser.parse_args(sysargs)
 
     if '-h' in sysargs or '--help' in sysargs:
