@@ -80,7 +80,7 @@ def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path
         (ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
 
 
-def create_governance_file(path):
+def create_governance_file(path, domain_id):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     with open(path, 'w') as f:
@@ -90,7 +90,7 @@ def create_governance_file(path):
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_governance.xsd">
     <domain_access_rules>
         <domain_rule>
-            <domain_id>*</domain_id>
+            <domain_id>%s</domain_id>
             <allow_unauthenticated_join>FALSE</allow_unauthenticated_join>
             <enable_join_access_control>TRUE</enable_join_access_control>
             <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
@@ -100,8 +100,8 @@ def create_governance_file(path):
                 <topic_rule>
                     <topic_expression>*</topic_expression>
                     <enable_discovery_protection>TRUE</enable_discovery_protection>
-                    <enable_read_access_control>FALSE</enable_read_access_control>
-                    <enable_write_access_control>FALSE</enable_write_access_control>
+                    <enable_read_access_control>TRUE</enable_read_access_control>
+                    <enable_write_access_control>TRUE</enable_write_access_control>
                     <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
                     <data_protection_kind>ENCRYPT</data_protection_kind>
                 </topic_rule>
@@ -109,7 +109,7 @@ def create_governance_file(path):
         </domain_rule>
     </domain_access_rules>
 </dds>
-""")
+""" % domain_id)
 
 
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
@@ -152,9 +152,10 @@ def create_keystore(args):
 
     # create governance file
     gov_path = os.path.join(root, 'governance.xml')
+    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
     if not os.path.isfile(gov_path):
         print("creating governance file: %s" % gov_path)
-        create_governance_file(gov_path)
+        create_governance_file(gov_path, domain_id)
     else:
         print("found governance file, not creating a new one!")
 
@@ -232,22 +233,75 @@ def create_cert(root_path, name):
         (req_relpath, cert_relpath), root_path)
 
 
-def create_permissions_file(path, name):
-    with open(path, 'w') as f:
-        f.write("""\
+def create_permission_file(path, name, domain_id, permissions_dict):
+    permission_str = """\
 <permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_permissions.xsd">
-  <grant name="allow_everything">
+  <grant name="%s_policies">
     <subject_name>CN=%s</subject_name>
     <validity>
       <!-- Format is YYYYMMDDHH in GMT -->
       <not_before>2016122000</not_before>
       <not_after>2026122000</not_after>
     </validity>
-    <default>ALLOW</default>
+    <allow_rule>
+      <domain_id>%s</domain_id>
+""" % (name, name, domain_id)
+    # access control only on topics for now
+    topic_dict = permissions_dict['topics']
+    if topic_dict is not None and topic_dict != {}:
+        # we have some policies to add !
+        for topic_name, policy in topic_dict.items():
+            if policy['allow'] == 's':
+                tag = 'subscribe'
+            elif policy['allow'] == 'p':
+                tag = 'publish'
+            else:
+                print("unknown permission policy '%s', skipping" % policy['allow'])
+                continue
+            permission_str += """\
+      <%s>
+        <topic>%s</topic>
+      </%s>
+""" % (tag, topic_name, tag)
+        # DCPS* is necessary for builtin data readers
+        permission_str += """\
+      <subscribe>
+        <topic>DCPS*</topic>
+      </subscribe>
+"""
+    else:
+        # no policy found: allow everything!
+        permission_str += """\
+      <publish>
+        <topic>*</topic>
+      </publish>
+      <subscribe>
+        <topic>*</topic>
+      </subscribe>
+"""
+
+    permission_str += """\
+    </allow_rule>
+    <default>DENY</default>
   </grant>
 </permissions>
-""" % name)
+"""
+    with open(path, 'w') as f:
+        f.write(permission_str)
+
+
+def get_permissions(name, policy_file_path):
+    import yaml
+    if not os.path.isfile(policy_file_path):
+        return {'topics': {}}
+    with open(policy_file_path, 'r') as graph_permissions_file:
+        try:
+            graph = yaml.load(graph_permissions_file)
+        except yaml.YAMLError as e:
+            print(e)
+            sys.exit(1)
+        return graph['nodes'][name]
 
 
 def create_signed_permissions_file(
@@ -255,6 +309,27 @@ def create_signed_permissions_file(
     run_shell_command(
         "openssl smime -sign -in %s -text -out %s -signer %s -inkey %s" %
         (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+
+
+def create_permission(args):
+    print(args)
+    root = args.ROOT
+    name = args.NAME
+    policy_file_path = args.POLICY_FILE_PATH
+    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+
+    key_dir = os.path.join(root, name)
+    print('key_dir %s' % key_dir)
+    permissions_dict = get_permissions(name, policy_file_path)
+    permissions_path = os.path.join(key_dir, 'permissions.xml')
+    create_permission_file(permissions_path, name, domain_id, permissions_dict)
+
+    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
+    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
+    create_signed_permissions_file(
+            permissions_path, signed_permissions_path,
+            keystore_ca_cert_path, keystore_ca_key_path)
 
 
 def create_key(args):
@@ -311,23 +386,6 @@ def create_key(args):
     else:
         print("found cert; not creating a new one!")
 
-    permissions_path = os.path.join(key_dir, 'permissions.txt')
-    if not os.path.isfile(permissions_path):
-        print("creating permissions file")
-        create_permissions_file(permissions_path, name)
-    else:
-        print("found permissions file; not creating a new one!")
-
-    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
-    if not os.path.isfile(signed_permissions_path):
-        print("creating signed permissions file")
-        create_signed_permissions_file(
-            permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
-    else:
-        print("found signed permissions file; not creating a new one!")
-
     return True
 
 
@@ -370,6 +428,13 @@ def main(sysargs=None):
     parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
     parser_distribute_keys.add_argument('TARGET', help='target keystore path')
 
+    parser_create_perm = subparsers.add_parser('create_permission')
+    parser_create_perm.set_defaults(which='create_permission')
+    parser_create_perm.add_argument('ROOT', help='root path of keystore')
+    parser_create_perm.add_argument('NAME', help='key name, aka ROS node name')
+    parser_create_perm.add_argument(
+        'POLICY_FILE_PATH', help='path of the permission yaml file')
+
     args = parser.parse_args(sysargs)
 
     if '-h' in sysargs or '--help' in sysargs:
@@ -385,6 +450,8 @@ def main(sysargs=None):
         result = create_keystore(args)
     elif args.which == 'create_key':
         result = create_key(args)
+    elif args.which == 'create_permission':
+        result = create_permission(args)
     elif args.which == 'list_keys':
         result = list_keys(args)
     elif args.which == 'distribute_key':
