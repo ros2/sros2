@@ -322,21 +322,14 @@ def create_permission(args):
     print('key_dir %s' % key_dir)
     permissions_dict = get_permissions(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    if not os.path.isfile(permissions_path):
-        print("creating permissions file")
-        create_permission_file(permissions_path, name, domain_id, permissions_dict)
-    else:
-        print("found permissions file; not creating a new one!")
+    create_permission_file(permissions_path, name, domain_id, permissions_dict)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
-    if not os.path.isfile(signed_permissions_path):
-        print("creating signed permissions file")
-        create_signed_permissions_file(
-            permissions_path, signed_permissions_path, keystore_ca_cert_path, keystore_ca_key_path)
-    else:
-        print("found signed permissions file; not creating a new one!")
+    create_signed_permissions_file(
+            permissions_path, signed_permissions_path,
+            keystore_ca_cert_path, keystore_ca_key_path)
 
 
 def create_key(args):
