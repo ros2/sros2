@@ -386,6 +386,18 @@ def create_key(args):
     else:
         print("found cert; not creating a new one!")
 
+    # create a wildcard permissions file for this node which can be overridden
+    # later using a policy if desired
+    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    permissions_path = os.path.join(key_dir, 'permissions.xml')
+    create_permission_file(permissions_path, name, domain_id, {"topics":None})
+
+    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
+    keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
+    create_signed_permissions_file(
+            permissions_path, signed_permissions_path,
+            keystore_ca_cert_path, keystore_ca_key_path)
+
     return True
 
 
