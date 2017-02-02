@@ -86,7 +86,7 @@ repositories:
   ros2/rclcpp:
     type: git
     url: https://github.com/ros2/rclcpp.git
-    version: master
+    version: 4d8b60feb599504ec0ad5a38322b66cf47b4dce9
   ros2/rclpy:
     type: git
     url: https://github.com/ros2/rclpy.git
