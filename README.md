@@ -6,9 +6,53 @@ a while.
 # Installing the SROS2 prototype
 
 Although we are designing SROS2 to work with any secure middleware, at the
-moment we are only testing with RTI Connext Secure. As such, to operate this
-demonstration right now (December 2016), you will need a license for RTI
+moment we are only testing with RTI Connext Secure and eProsima's Fast-RTPS. This package provides a docker container for fastrtps testing. If you want to perform the demonstration using RTI Connext you will need a license for RTI
 Connext Secure in order to try out this demo.
+
+## Installing the environment in Docker
+
+To setup the environment:
+First clone this repository:
+```
+mkdir ~/sros2_demo && cd ~/sros2_demo
+git clone https://github.com/ros2/sros2.git -b sros2_demo
+```
+Build the docker container:
+```
+cd ~/sros2_demo/ros2/sros2_docker/docker
+sudmo chmod +x build_sros2.sh run_sros2_container.sh
+./build_sros2.sh
+```
+This may take a few minutes.
+
+Finally enter your container:
+```
+./run_sros2_container.sh
+```
+Hooray we are now ready to start the demo.
+
+We will start by creating a set of keys for our DDS participant:
+```
+cd /root/sros2_ws
+sros2 create_keystore demo_keys
+sros2 create_key demo_keys talker
+sros2 create_key demo_keys listener
+```
+And now start testing!
+In the terminal inside docker run:
+```
+talker_py
+```
+This will start a python executable that publishes messages periodically
+
+Now let's open another terminal in this container:
+Open a new terminal
+```
+docker exec -ti <CONTAINER_NAME>
+listener
+```
+
+Hooray our nodes our talking using AES ancryption
 
 ## Install RTI Connext Secure
 
