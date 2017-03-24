@@ -49,7 +49,6 @@ RUN apt-get -qq update && \
 RUN pip3 install flake8 \
       flake8-import-order
 
-RUN echo "hmmm maybe that would work"
 # setup ros2 workspace
 ENV ROS2_WS=/root/sros2_ws
 RUN rm -rf $ROS2_WS
@@ -57,7 +56,6 @@ RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
 
 RUN wget https://raw.githubusercontent.com/ros2/sros2/sros2_demo/sros2.repos
-RUN echo "hooray lets move forward"
 
 RUN vcs import src < sros2.repos
 
@@ -66,11 +64,6 @@ RUN rm -rf Fast-RTPS && git clone --recursive https://github.com/eProsima/Fast-R
 
 WORKDIR $ROS2_WS
 RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
-
-# RUN /bin/bash -c "source $ROS2_WS/install_isolated/local_setup.bash" && \
-#     sros2 create_keystore demo_keys && \
-#     sros2 create_key demo_keys talker && \
-#     sros2 create_key demo_keys listener
 
 RUN echo "export ROS2_WS=/root/sros2_ws" >> /root/.bashrc && \
     echo "export ROS_SECURE_ROOT=/root/sros2_ws/demo_keys" >> /root/.bashrc && \
