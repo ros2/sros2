@@ -27,7 +27,7 @@ RUN apt-get -qq update && \
       libpoco-dev \
       libpocofoundation9v5 \
       libpocofoundation9v5-dbg \
-      python-empy \ 
+      python3-empy \
       python3-dev \
       python3-empy \
       python3-nose \
@@ -42,8 +42,9 @@ RUN apt-get -qq update && \
       python3-pep8 \
       uncrustify \
       openssl \
-      libssl-dev
-      
+      libssl-dev \
+      libtinyxml-dev \
+      libeigen3-dev
 
 RUN pip3 install flake8 \
       flake8-import-order
