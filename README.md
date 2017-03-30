@@ -19,7 +19,7 @@ git clone https://github.com/ros2/sros2.git -b sros2_demo
 ```
 Build the docker container:
 ```
-cd ~/sros2_demo/ros2/sros2_docker/docker
+cd ~/sros2_demo/sros2/sros2_docker/docker
 sudmo chmod +x build_sros2.sh run_sros2_container.sh
 ./build_sros2.sh
 ```
