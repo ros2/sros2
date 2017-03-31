@@ -57,6 +57,8 @@ WORKDIR $ROS2_WS
 
 RUN wget https://raw.githubusercontent.com/ros2/sros2/sros2_demo/sros2.repos
 
+RUN sed -i -e '/Fast-RTPS:/,+3 s/^/#/' -e '/rmw_connext:/,+3 s/^/#/' sros2.repos
+
 RUN vcs import src < sros2.repos
 
 WORKDIR $ROS2_WS/src/eProsima
