@@ -44,7 +44,8 @@ RUN apt-get -qq update && \
       openssl \
       libssl-dev \
       libtinyxml-dev \
-      libeigen3-dev
+      libeigen3-dev \
+      vim
 
 RUN pip3 install flake8 \
       flake8-import-order
