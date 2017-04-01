@@ -168,7 +168,7 @@ will do the same thing with the `listener` program:
 
 FastRTPS:
 ```
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
 ```
 RTI Connext:
 ```
