@@ -46,7 +46,8 @@ sros2 create_key demo_keys talker
 sros2 create_key demo_keys listener
 ```
 And now start testing!
-In the terminal inside docker run:
+
+In the terminal inside docker, run:
 ```
 talker_py
 ```
@@ -292,7 +293,9 @@ vcs import src < sros2.repos
 
 ## Building the code
 
+```
 python src\ament\ament_tools\scripts\ament.py build --cmake-args -DSECURITY=ON --
+```
 
 ## Creating keys and certificates
 
