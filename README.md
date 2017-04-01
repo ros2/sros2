@@ -53,7 +53,8 @@ talker_py
 This will start a python executable that publishes messages periodically
 
 Now let's open another terminal in this container:
-Open a new terminal
+
+Open a new terminal, then run
 ```
 docker exec -ti <CONTAINER_NAME>
 listener
@@ -163,6 +164,7 @@ RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
 
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
+
 FastRTPS:
 ```
 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
