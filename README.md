@@ -17,7 +17,7 @@ This package provides a docker container for FastRTPS testing.
 If you want to perform the demonstration using RTI Connext you will need a license
  for RTI Connext Secure in order to try out this demo.
 
-## Testing in a docker containerDocker (Fast-RTPS only)
+## Testing in a docker container (Fast-RTPS only)
 
 To setup the environment:
 First clone this repository:
