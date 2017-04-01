@@ -7,7 +7,7 @@ a while.
 
 This package provides the tools and instructions to use ROS2 on top of DDS-Security.
 The security feature is tested across platforms (Linux and Windows) and 
-across client libraries(C++ and Python)
+across client libraries (C++ and Python)
 
 # Installing the SROS2 prototype
 
