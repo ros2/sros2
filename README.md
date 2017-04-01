@@ -151,20 +151,33 @@ sros2 create_key demo_keys listener
 Then, in one terminal (after preparing the terminal as previously described),
 we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
 `talker` demo program:
+
+FastRTPS:
 ```
-ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+```
+RTI Connext:
+```
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
+FastRTPS:
 ```
-ROS_SECURE_ROOT=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+```
+RTI Connext:
+```
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
 securely, using authentication and encryption! Hooray!
 
-## Access Control
+You can also run the python version of these nodes: `talker_py` and `listener_py`
+
+## Access Control (RTI Connext only)
 The previous demo used authentication and encryption, but not access control,
 which means that any authenticated node would be able to publish and subscribe
 to any data stream (aka topic). To increase the level of security in the
@@ -188,12 +201,12 @@ Then, in one terminal (after preparing the terminal as previously described),
 we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
 `talker` demo program:
 ```
-ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
 ```
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
 ```
-ROS_SECURE_ROOT=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
@@ -236,7 +249,7 @@ First, on the machine running `talker`, we need to source the RTI variables, the
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 source ~/sros2/install/setup.bash
-ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker
 ```
 
 # Tips and Tricks
@@ -251,7 +264,7 @@ source the RTI script, for example, by adding something like this to your
 alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 ```
 
-# Testing on Windows 10 (Tested on Fast-RTPS only)
+# Testing on Windows 10 (Tested with Fast-RTPS only)
 
 ## Install dependencies
 
@@ -293,12 +306,12 @@ Open a new terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-talker_py
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker_py
 ```
 
 Open another terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys listener
 ```
