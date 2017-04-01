@@ -3,13 +3,21 @@
 WARNING: all of this is under construction! Things will be highly volatile for
 a while.
 
+# Context
+
+This package provides the tools and instructions to use ROS2 on top of DDS-Security.
+The security feature is tested across platforms (Linux and Windows) and 
+across client libraries(C++ and Python)
+
 # Installing the SROS2 prototype
 
 Although we are designing SROS2 to work with any secure middleware, at the
-moment we are only testing with RTI Connext Secure and eProsima's Fast-RTPS. This package provides a docker container for fastrtps testing. If you want to perform the demonstration using RTI Connext you will need a license for RTI
-Connext Secure in order to try out this demo.
+moment we are only testing with RTI Connext Secure and eProsima's Fast-RTPS.
+This package provides a docker container for FastRTPS testing.
+If you want to perform the demonstration using RTI Connext you will need a license
+ for RTI Connext Secure in order to try out this demo.
 
-## Installing the environment in Docker
+## Testing in a docker containerDocker (Fast-RTPS only)
 
 To setup the environment:
 First clone this repository:
@@ -53,17 +61,9 @@ listener
 
 Hooray our nodes our talking using AES ancryption
 
-## Install RTI Connext Secure
+## Testing on Linux
 
-The RTI Connext installer allows you to choose where it lands in the
-filesystem. These instructions assume that you have prefixed the RTI paths with
-`$HOME/rti` so that the latest version (5.2.4 at time of writing) will land in
-`$HOME/rti/rti_connext_dds-5.2.4`  Note that the installer is a multi-part
-process; fist you must install the "host" package, and then from its launcher
-you can install the additional "target" packages and the `secure_dds` package.
-Much more (and better) help is provided in the RTI documentation.
-
-## Install some dependencies
+### Install some dependencies
 
 These instructions assume Ubuntu 16.04. You can likely make this work on many
 other Linux distros, but you'd have to chase down the equivalent dependency
@@ -84,8 +84,19 @@ sudo apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys D2486D2DD83D
 Now we'll install a bunch of apt packages:
 ```
 sudo apt-get update
-sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev libssl-dev
+sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev libssl-dev openssl
 ```
+
+## Install RTI Connext Secure
+
+The RTI Connext installer allows you to choose where it lands in the
+filesystem. These instructions assume that you have prefixed the RTI paths with
+`$HOME/rti` so that the latest version (5.2.4 at time of writing) will land in
+`$HOME/rti/rti_connext_dds-5.2.4`  Note that the installer is a multi-part
+process; fist you must install the "host" package, and then from its launcher
+you can install the additional "target" packages and the `secure_dds` package.
+Much more (and better) help is provided in the RTI documentation.
+
 
 ## Download the SROS 2 demo source tree
 
@@ -107,7 +118,7 @@ to your RTI installation path. Then, you can start the SROS 2 build:
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash
 cd ~/sros2
-src/ament/ament_tools/scripts/ament.py build -s
+src/ament/ament_tools/scripts/ament.py build -s --cmake-args -DSECURITY=ON --
 ```
 
 # Demos
@@ -240,3 +251,54 @@ source the RTI script, for example, by adding something like this to your
 alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 ```
 
+# Testing on Windows 10 (Tested on Fast-RTPS only)
+
+## Install dependencies
+
+These instructions assume Windows 10 64 bits. Please follow the instrucions on https://github.com/ros2/ros2/wiki/Windows-Development-Setup and stop at the "Getting the source code" section
+
+### Install OpenSSL
+
+Download openssl from https://slproweb.com/download/Win64OpenSSL-1_0_2k.exe
+
+Define environment variables:
+- OPENSSL_CONF C:\OpenSSL-Win64\bin\openssl.cfg
+- ROS_SECURE_ROOT C:\dev\sros2\demo_keys 
+
+## Getting the source code
+
+```
+md C:\dev\sros2\src
+cd C:\dev\sros2
+
+curl -sk https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
+vcs import src < sros2.repos
+```
+
+## Building the code
+
+python src\ament\ament_tools\scripts\ament.py build --cmake-args -DSECURITY=ON --
+
+## Creating keys and certificates
+
+```
+sros2 create_keystore demo_keys
+sros2 create_key demo_keys talker
+sros2 create_key demo_keys listener
+```
+
+## Testing
+
+Open a new terminal
+```
+cd C:\dev\sros2
+call install\setup.bat
+talker_py
+```
+
+Open another terminal
+```
+cd C:\dev\sros2
+call install\setup.bat
+listener
+```
