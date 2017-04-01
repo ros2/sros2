@@ -23,7 +23,7 @@ To setup the environment:
 First clone this repository:
 ```
 mkdir ~/sros2_demo && cd ~/sros2_demo
-git clone https://github.com/ros2/sros2.git -b sros2_demo
+git clone https://github.com/ros2/sros2.git
 ```
 Build the docker container:
 ```
