@@ -42,7 +42,7 @@ repositories:
   eProsima/Fast-RTPS:
     type: git
     url: https://github.com/eProsima/Fast-RTPS.git
-    version: master
+    version: release/1.4.0
   ros/class_loader:
     type: git
     url: https://github.com/ros/class_loader.git
@@ -51,6 +51,14 @@ repositories:
     type: git
     url: https://github.com/ros/geometry2.git
     version: ros2
+  ros/poco_vendor:
+    type: git
+    url: https://github.com/ros2/poco_vendor.git
+    version: master
+  ros2/c_utilities:
+    type: git
+    url: https://github.com/ros2/c_utilities.git
+    version: file_permissions_utilities
   ros2/common_interfaces:
     type: git
     url: https://github.com/ros2/common_interfaces.git
@@ -62,14 +70,10 @@ repositories:
   ros2/examples:
     type: git
     url: https://github.com/ros2/examples.git
-    version: sros2
+    version: master
   ros2/launch:
     type: git
     url: https://github.com/ros2/launch.git
-    version: master
-  ros/poco_vendor:
-    type: git
-    url: https://github.com/ros2/poco_vendor.git
     version: master
   ros2/rcl:
     type: git
@@ -79,21 +83,13 @@ repositories:
     type: git
     url: https://github.com/ros2/rcl_interfaces.git
     version: master
-#  ros2/rclc:
-#    type: git
-#    url: https://github.com/ros2/rclc.git
-#    version: master
   ros2/rclcpp:
     type: git
     url: https://github.com/ros2/rclcpp.git
-    version: 4d8b60feb599504ec0ad5a38322b66cf47b4dce9
+    version: master
   ros2/rclpy:
     type: git
     url: https://github.com/ros2/rclpy.git
-    version: master
-  ros2/realtime_support:
-    type: git
-    url: https://github.com/ros2/realtime_support.git
     version: master
   ros2/rmw:
     type: git
@@ -103,22 +99,14 @@ repositories:
     type: git
     url: https://github.com/ros2/rmw_connext.git
     version: sros2
-# ros2/rmw_fastrtps:
-#   type: git
-#   url: https://github.com/ros2/rmw_fastrtps.git
-#   version: master
+  ros2/rmw_fastrtps:
+    type: git
+    url: https://github.com/ros2/rmw_fastrtps.git
+    version: sros2
   ros2/rmw_implementation:
     type: git
     url: https://github.com/ros2/rmw_implementation.git
     version: sros2
-# ros2/rmw_opensplice:
-#   type: git
-#   url: https://github.com/ros2/rmw_opensplice.git
-#   version: master
-  ros2/ros1_bridge:
-    type: git
-    url: https://github.com/ros2/ros1_bridge.git
-    version: master
   ros2/rosidl:
     type: git
     url: https://github.com/ros2/rosidl.git
@@ -135,19 +123,11 @@ repositories:
     type: git
     url: https://github.com/ros2/system_tests.git
     version: master
-  ros2/tlsf:
-    type: git
-    url: https://github.com/ros2/tlsf.git
-    version: master
-#  ros2/tutorials:
-#    type: git
-#    url: https://github.com/ros2/tutorials.git
-#    version: master
-  vendor/console_bridge:
-    type: git
-    url: https://github.com/ros/console_bridge.git
-    version: master
   ros2/sros2:
     type: git
     url: https://github.com/ros2/sros2.git
+    version: master
+  vendor/console_bridge:
+    type: git
+    url: https://github.com/ros/console_bridge.git
     version: master
