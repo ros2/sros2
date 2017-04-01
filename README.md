@@ -109,6 +109,15 @@ mkdir -p ~/sros2/src
 cd ~/sros2
 wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
 vcs import src < sros2.repos
+
+At time of writing, the security features in Fast-RTPS require that git
+submodules are used to build some dependencies. Therefore, for now, we
+will remove the clone created by `vcs` and re-clone the Fast-RTPS repo
+with its submodules:
+```
+cd ~/sros2/src/eProsima
+rm -rf Fast-RTPS
+git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b release/1.4.0
 ```
 
 ## Build the SROS 2 demo source tree
