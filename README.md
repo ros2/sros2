@@ -61,7 +61,7 @@ docker exec -ti <CONTAINER_NAME>
 listener
 ```
 
-Hooray our nodes our talking using AES ancryption
+Hooray our nodes are authenticated and talking encrypted-talk!
 
 ## Testing on Linux
 
