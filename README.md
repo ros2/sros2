@@ -89,7 +89,7 @@ sudo apt-get update
 sudo apt-get install git wget build-essential cmake cppcheck libopencv-dev libpoco-dev libpocofoundation9v5 libpocofoundation9v5-dbg python-empy python3-dev python3-empy python3-nose python3-pip python3-setuptools python3-vcstool libboost-chrono-dev libboost-date-time-dev libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-thread-dev libssl-dev openssl
 ```
 
-## Install RTI Connext Secure
+## Optional: install RTI Connext Secure
 
 The RTI Connext installer allows you to choose where it lands in the
 filesystem. These instructions assume that you have prefixed the RTI paths with
@@ -109,7 +109,7 @@ mkdir -p ~/sros2/src
 cd ~/sros2
 wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
 vcs import src < sros2.repos
-
+```
 At time of writing, the security features in Fast-RTPS require that git
 submodules are used to build some dependencies. Therefore, for now, we
 will remove the clone created by `vcs` and re-clone the Fast-RTPS repo
