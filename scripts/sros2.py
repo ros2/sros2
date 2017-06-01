@@ -1,4 +1,4 @@
-# Copyright 2016 Open Source Robotics Foundation, Inc.
+# Copyright 2016-2017 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -328,8 +328,8 @@ def create_permission(args):
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
     create_signed_permissions_file(
-            permissions_path, signed_permissions_path,
-            keystore_ca_cert_path, keystore_ca_key_path)
+        permissions_path, signed_permissions_path,
+        keystore_ca_cert_path, keystore_ca_key_path)
 
 
 def create_key(args):
@@ -390,13 +390,13 @@ def create_key(args):
     # later using a policy if desired
     domain_id = os.getenv('ROS_DOMAIN_ID', 0)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, {"topics":None})
+    create_permission_file(permissions_path, name, domain_id, {"topics": None})
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
     create_signed_permissions_file(
-            permissions_path, signed_permissions_path,
-            keystore_ca_cert_path, keystore_ca_key_path)
+        permissions_path, signed_permissions_path,
+        keystore_ca_cert_path, keystore_ca_key_path)
 
     return True
 
@@ -476,6 +476,7 @@ def main(sysargs=None):
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
