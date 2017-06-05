@@ -42,22 +42,18 @@ repositories:
   eProsima/Fast-RTPS:
     type: git
     url: https://github.com/eProsima/Fast-RTPS.git
-    version: release/1.4.0
+    version: master
   ros/class_loader:
     type: git
     url: https://github.com/ros/class_loader.git
     version: ros2
-  ros/geometry2:
+  ros2/ament_cmake_ros:
     type: git
-    url: https://github.com/ros/geometry2.git
-    version: ros2
-  ros/poco_vendor:
-    type: git
-    url: https://github.com/ros2/poco_vendor.git
+    url: https://github.com/ros2/ament_cmake_ros.git
     version: master
-  ros2/c_utilities:
+  ros2/cli_tools:
     type: git
-    url: https://github.com/ros2/c_utilities.git
+    url: https://github.com/ros2/cli_tools.git
     version: master
   ros2/common_interfaces:
     type: git
@@ -71,9 +67,25 @@ repositories:
     type: git
     url: https://github.com/ros2/examples.git
     version: master
+  ros2/example_interfaces:
+    type: git
+    url: https://github.com/ros2/example_interfaces.git
+    version: master
+  ros2/geometry2:
+    type: git
+    url: https://github.com/ros2/geometry2.git
+    version: ros2
   ros2/launch:
     type: git
     url: https://github.com/ros2/launch.git
+    version: master
+  ros2/orocos_kinematics_dynamics:
+    type: git
+    url: https://github.com/ros2/orocos_kinematics_dynamics.git
+    version: ros2
+  ros2/poco_vendor:
+    type: git
+    url: https://github.com/ros2/poco_vendor.git
     version: master
   ros2/rcl:
     type: git
@@ -91,13 +103,13 @@ repositories:
     type: git
     url: https://github.com/ros2/rclpy.git
     version: master
+  ros2/rcutils:
+    type: git
+    url: https://github.com/ros2/rcutils.git
+    version: master
   ros2/rmw:
     type: git
     url: https://github.com/ros2/rmw.git
-    version: sros2
-  ros2/rmw_connext:
-    type: git
-    url: https://github.com/ros2/rmw_connext.git
     version: sros2
   ros2/rmw_fastrtps:
     type: git
@@ -127,6 +139,22 @@ repositories:
     type: git
     url: https://github.com/ros2/sros2.git
     version: master
+  ros2/tinyxml_vendor:
+    type: git
+    url: https://github.com/ros2/tinyxml_vendor.git
+    version: master
+  ros2/urdfdom:
+    type: git
+    url: https://github.com/ros2/urdfdom.git
+    version: ros2
+  ros2/urdfdom_headers:
+    type: git
+    url: https://github.com/ros2/urdfdom_headers.git
+    version: ros2
+  ros2/vision_opencv:
+    type: git
+    url: https://github.com/ros2/vision_opencv.git
+    version: ros2
   vendor/console_bridge:
     type: git
     url: https://github.com/ros/console_bridge.git

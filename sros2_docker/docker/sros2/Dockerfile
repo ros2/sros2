@@ -1,5 +1,8 @@
 FROM ubuntu:xenial
 
+RUN apt-get -qq update && \
+    apt-get -qq install locales -y
+
 RUN locale-gen en_US en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
@@ -23,6 +26,7 @@ RUN apt-get -qq update && \
       build-essential \
       cppcheck \
       cmake \
+      libasio-dev \
       libopencv-dev \
       libpoco-dev \
       libpocofoundation9v5 \
@@ -44,6 +48,7 @@ RUN apt-get -qq update && \
       openssl \
       libssl-dev \
       libtinyxml-dev \
+      libtinyxml2-dev \
       libeigen3-dev \
       vim
 
@@ -58,16 +63,10 @@ WORKDIR $ROS2_WS
 
 RUN wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
 
-
-RUN sed -i -e '/Fast-RTPS:/,+3 s/^/#/' -e '/rmw_connext:/,+3 s/^/#/' sros2.repos
-
 RUN vcs import src < sros2.repos
 
-WORKDIR $ROS2_WS/src/eProsima
-RUN rm -rf Fast-RTPS && git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b release/1.4.0
-
 WORKDIR $ROS2_WS
-RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
+RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --cmake-args -DSECURITY=ON -- --parallel
 
 RUN echo "export ROS2_WS=/root/sros2_ws" >> /root/.bashrc && \
     echo "export ROS_SECURE_ROOT=/root/sros2_ws/demo_keys" >> /root/.bashrc && \
