@@ -4,7 +4,7 @@ setup(
     name='sros2',
     version='0.0.0',
     packages=[],
-    py_modules=['sros2'],
+    py_modules=['scripts.sros2'],
     install_requires=['setuptools'],
     author='Morgan Quigley',
     author_email='morgan@osrfoundation.org',
@@ -26,7 +26,7 @@ enhance the security of ROS 2 deployments.""",
     license='Apache License, Version 2.0',
     entry_points={
         'console_scripts': [
-            'sros2 = sros2:main',
+            'sros2 = scripts.sros2:main',
         ],
     }
 )
