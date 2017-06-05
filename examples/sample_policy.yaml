@@ -8,9 +8,9 @@ nodes:
   talker:
     topics:
       chatter:
-        allow: p # allow secure_publisher to publish onto chatter
+        allow: p # can publish on chatter
       parameter_events:
-        allow: p # can publish
+        allow: p # can publish on parameter_events
   listener_py:
     topics:
       #'*':
