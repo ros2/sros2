@@ -66,7 +66,7 @@ RUN wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
 RUN vcs import src < sros2.repos
 
 WORKDIR $ROS2_WS
-RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --cmake-args -DSECURITY=ON -- --parallel
+RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
 
 RUN echo "export ROS2_WS=/root/sros2_ws" >> /root/.bashrc && \
     echo "export ROS_SECURE_ROOT=/root/sros2_ws/demo_keys" >> /root/.bashrc && \
