@@ -6,7 +6,7 @@ a while.
 # Context
 
 This package provides the tools and instructions to use ROS2 on top of DDS-Security.
-The security feature is tested across platforms (Linux and Windows) and 
+The security feature is tested across platforms (Linux and Windows) and
 across client libraries (C++ and Python)
 
 # Installing the SROS2 prototype
@@ -160,16 +160,16 @@ sros2 create_key demo_keys listener
 ```
 
 Then, in one terminal (after preparing the terminal as previously described),
-we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
+we can set the `ROS_SECURITY_ROOT_DIRECTORY` to our keystore path, and then run the
 `talker` demo program:
 
 FastRTPS:
 ```
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
 ```
 RTI Connext:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we
@@ -177,11 +177,11 @@ will do the same thing with the `listener` program:
 
 FastRTPS:
 ```
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
 ```
 RTI Connext:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
@@ -210,15 +210,15 @@ sros2 create_permission demo_keys talker demo_keys/policies.yaml
 sros2 create_permission demo_keys listener demo_keys/policies.yaml
 ```
 Then, in one terminal (after preparing the terminal as previously described),
-we can set the `ROS_SECURE_ROOT` to our keystore path, and then run the
+we can set the `ROS_SECURITY_ROOT_DIRECTORY` to our keystore path, and then run the
 `talker` demo program:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
 ```
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
@@ -256,12 +256,12 @@ scp -r talker USERNAME@oldschool.local:~/sros2/demo_keys
 That will be very quick, since it's just copying some very small text files.
 Now, we're ready to run a multi-machine talker/listener demo!
 
-First, on the machine running `talker`, we need to source the RTI variables, the SROS 2 installation tree, and then we can run `talker` in secure mode by setting the `ROS_SECURE_ROOT` environment variable to the local keystore:
+First, on the machine running `talker`, we need to source the RTI variables, the SROS 2 installation tree, and then we can run `talker` in secure mode by setting the `ROS_SECURITY_ROOT_DIRECTORY` environment variable to the local keystore:
 
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 source ~/sros2/install/setup.bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys talker
 ```
 
 # Tips and Tricks
@@ -288,7 +288,7 @@ Download openssl from https://slproweb.com/download/Win64OpenSSL-1_0_2k.exe
 
 Define environment variables:
 - OPENSSL_CONF C:\OpenSSL-Win64\bin\openssl.cfg
-- ROS_SECURE_ROOT C:\dev\sros2\demo_keys 
+- ROS_SECURITY_ROOT_DIRECTORY C:\dev\sros2\demo_keys
 
 ## Getting the source code
 
@@ -320,12 +320,12 @@ Open a new terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys talker_py
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys talker_py
 ```
 
 Open another terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURE_ROOT=$HOME/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys listener
 ```
