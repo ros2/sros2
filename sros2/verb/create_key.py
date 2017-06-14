@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from argcomplete.completers import DirectoriesCompleter
+try:
+    from argcomplete.completers import DirectoriesCompleter
+except ImportError:
+    DirectoriesCompleter = None
 
 from ros2pkg.verb import VerbExtension
 from sros2.api import create_key
