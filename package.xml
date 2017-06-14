@@ -7,8 +7,7 @@
   <maintainer email="morgan@osrfoundation.org">Morgan Quigley</maintainer>
   <license>Apache License 2.0</license>
 
-  <buildtool_depend>ament_package</buildtool_depend>
-  <buildtool_export_depend>ament_package</buildtool_export_depend>
+  <depend>ros2cli</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

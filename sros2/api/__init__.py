@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
 import shutil
 import subprocess
@@ -414,69 +413,3 @@ def distribute_key(args):
     print(args)
     print("just kidding, sorry, this isn't implemented yet.")
     return True
-
-
-def main(sysargs=None):
-    sysargs = sys.argv[1:] if sysargs is None else sysargs
-
-    parser = argparse.ArgumentParser(prog='sros2')
-    subparsers = parser.add_subparsers()
-
-    parser_create_keystore = subparsers.add_parser('create_keystore')
-    parser_create_keystore.set_defaults(which='create_keystore')
-    parser_create_keystore.add_argument('ROOT', help='root path of keystore')
-
-    parser_create_key = subparsers.add_parser('create_key')
-    parser_create_key.set_defaults(which='create_key')
-    parser_create_key.add_argument('ROOT', help='root path of keystore')
-    parser_create_key.add_argument('NAME', help='key name, aka ROS node name')
-
-    parser_list_keys = subparsers.add_parser('list_keys')
-    parser_list_keys.set_defaults(which='list_keys')
-    parser_list_keys.add_argument('ROOT', help='root path of keystore')
-
-    parser_distribute_keys = subparsers.add_parser('distribute_key')
-    parser_distribute_keys.set_defaults(which='distribute_key')
-    parser_distribute_keys.add_argument('ROOT', help='root path of keystore')
-    parser_distribute_keys.add_argument('TARGET', help='target keystore path')
-
-    parser_create_perm = subparsers.add_parser('create_permission')
-    parser_create_perm.set_defaults(which='create_permission')
-    parser_create_perm.add_argument('ROOT', help='root path of keystore')
-    parser_create_perm.add_argument('NAME', help='key name, aka ROS node name')
-    parser_create_perm.add_argument(
-        'POLICY_FILE_PATH', help='path of the permission yaml file')
-
-    args = parser.parse_args(sysargs)
-
-    if '-h' in sysargs or '--help' in sysargs:
-        sys.exit(0)  # we're already done
-
-    if 'which' not in args:
-        parser.print_help()
-        sys.exit("Error: No verb provided.")
-
-    result = False
-
-    if args.which == 'create_keystore':
-        result = create_keystore(args)
-    elif args.which == 'create_key':
-        result = create_key(args)
-    elif args.which == 'create_permission':
-        result = create_permission(args)
-    elif args.which == 'list_keys':
-        result = list_keys(args)
-    elif args.which == 'distribute_key':
-        result = distribute_key(args)
-    else:
-        parser.print_help()
-        sys.exit("Error: Unknown verb '{0}' provided.".format(args['which']))
-
-    if (result):
-        sys.exit(0)
-    else:
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
