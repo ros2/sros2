@@ -14,9 +14,11 @@
 
 try:
     from argcomplete.completers import DirectoriesCompleter
-    from argcomplete.completers import FilesCompleter
 except ImportError:
     DirectoriesCompleter = lambda: None
+try:
+    from argcomplete.completers import FilesCompleter
+except ImportError:
     FilesCompleter = lambda: None
 
 from ros2pkg.verb import VerbExtension
