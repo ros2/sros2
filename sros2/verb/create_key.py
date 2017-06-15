@@ -15,7 +15,8 @@
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
-    DirectoriesCompleter = lambda: None
+    def DirectoriesCompleter():
+        return None
 
 from ros2pkg.verb import VerbExtension
 from sros2.api import create_key

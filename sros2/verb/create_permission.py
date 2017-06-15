@@ -15,11 +15,13 @@
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
-    DirectoriesCompleter = lambda: None
+    def DirectoriesCompleter():
+        return None
 try:
     from argcomplete.completers import FilesCompleter
 except ImportError:
-    FilesCompleter = lambda: None
+    def FilesCompleter():
+        return None
 
 from ros2pkg.verb import VerbExtension
 from sros2.api import create_permission
