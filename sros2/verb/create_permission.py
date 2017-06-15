@@ -17,7 +17,7 @@ try:
     from argcomplete.completers import FilesCompleter
 except ImportError:
     DirectoriesCompleter = None
-    FilesCompleter - None
+    FilesCompleter = None
 
 from ros2pkg.verb import VerbExtension
 from sros2.api import create_permission
