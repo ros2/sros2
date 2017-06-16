@@ -53,7 +53,8 @@ RUN apt-get -qq update && \
       vim
 
 RUN pip3 install flake8 \
-      flake8-import-order
+      flake8-import-order \
+      argcomplete
 
 # setup ros2 workspace
 ENV ROS2_WS=/root/sros2_ws
@@ -61,14 +62,26 @@ RUN rm -rf $ROS2_WS
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
 
-RUN wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
+RUN wget https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
 
-RUN vcs import src < sros2.repos
+RUN vcs import src < ros2.repos
+
+# TODO(mikaelarguedas) Remove this once https://github.com/ros2/sros2/pull/3 lands
+WORKDIR $ROS2_WS/src
+RUN git clone https://github.com/ros2/sros2.git
+WORKDIR $ROS2_WS/src/ros2/sros2
+RUN git checkout -t origin/sros2
+
+# TODO(mikaelarguedas) Remove this once https://github.com/ros2/ros2cli/pull/3 lands
+WORKDIR $ROS2_WS/src/ros2/ros2cli
+RUN git checkout -t origin/more_commands
 
 WORKDIR $ROS2_WS
-RUN src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
+RUN src/ament/ament_tools/scripts/ament.py build --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
 
 RUN echo "export ROS2_WS=/root/sros2_ws" >> /root/.bashrc && \
-    echo "export ROS_SECURE_ROOT=/root/sros2_ws/demo_keys" >> /root/.bashrc && \
+    echo "export ROS_SECURITY_ROOT_DIRECTORY=/root/sros2_ws/demo_keys" >> /root/.bashrc && \
+    echo "export ROS_SECURITY_ENABLE=true" >> /root/.bashrc && \
+    echo "export ROS_SECURITY_STRATEGY=Enforce" >> /root/.bashrc && \
     echo "export RMW_IMPLEMENTATION=rmw_fastrtps_cpp" >> /root/.bashrc && \
     echo "source $ROS2_WS/install_isolated/local_setup.bash" >> /root/.bashrc
