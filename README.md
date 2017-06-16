@@ -1,8 +1,3 @@
-# CONSTRUCTION ZONE
-
-WARNING: all of this is under construction! Things will be highly volatile for
-a while.
-
 # Context
 
 This package provides the tools and instructions to use ROS2 on top of DDS-Security.
@@ -41,9 +36,9 @@ Hooray we are now ready to start the demo.
 We will start by creating a set of keys for our DDS participant:
 ```
 cd /root/sros2_ws
-sros2 create_keystore demo_keys
-sros2 create_key demo_keys talker
-sros2 create_key demo_keys listener
+ros2 security create_keystore demo_keys
+ros2 security create_key demo_keys talker
+ros2 security create_key demo_keys listener
 ```
 And now start testing!
 
@@ -110,24 +105,19 @@ cd ~/sros2
 wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
 vcs import src < sros2.repos
 ```
-At time of writing, the security features in Fast-RTPS require that git
-submodules are used to build some dependencies. Therefore, for now, we
-will remove the clone created by `vcs` and re-clone the Fast-RTPS repo
-with its submodules:
-```
-cd ~/sros2/src/eProsima
-rm -rf Fast-RTPS
-git clone --recursive https://github.com/eProsima/Fast-RTPS.git -b release/1.4.0
-```
 
-## Build the SROS 2 demo source tree
 
+## Prepare your environment (RTI Connext only)
 Before building the SROS 2 source tree, you need to source the RTI Connext
 configuration file, which sets some required environment variables that point
 to your RTI installation path. Then, you can start the SROS 2 build:
 
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash
+```
+Note: you will have to repeat this for every terminal you open
+
+## Build the SROS 2 demo source tree
 cd ~/sros2
 src/ament/ament_tools/scripts/ament.py build -s --cmake-args -DSECURITY=ON --
 ```
@@ -136,58 +126,65 @@ src/ament/ament_tools/scripts/ament.py build -s --cmake-args -DSECURITY=ON --
 
 ## Getting terminals ready
 
-For every terminal window used in these demos, you'll need to first source the
-RTI setup script, and then source the setup script from your installed SROS 2
-workspace, like this:
+For every terminal window used in these demos, you'll need to source the setup script from your installed SROS 2 workspace, like this:
 
-```
-source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash
+```bash
 cd ~/sros2
 source install/setup.bash
 ```
 
+
 ## Secure Talker Listener
+
+### Create security files (keys and certificate) and define environment variables for ROS2 security
 
 In one terminal (after preparing the environment as previously described), we
 will create a keystore in `~/sros2/demo_keys` :
 ```bash
-sros2 create_keystore demo_keys
+ros2 security create_keystore demo_keys
 ```
 Generate certificates and keys for our `talker` and `listener` nodes:
 ```bash
-sros2 create_key demo_keys talker
-sros2 create_key demo_keys listener
+ros2 security create_key demo_keys talker
+ros2 security create_key demo_keys listener
 ```
 
 Then, in one terminal (after preparing the terminal as previously described),
-we can set the `ROS_SECURITY_ROOT_DIRECTORY` to our keystore path, and then run the
-`talker` demo program:
+we can set the environment variables used for ROS2 Security:
+```bash
+export ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys
+export ROS_SECURITY_ENABLE=true
+export ROS_SECURITY_STRATEGY=Enforce
+```
+Note: for convenience yuo can add these lines to your ~/.bashrc
+
+Run the `talker` demo program:
 
 FastRTPS:
-```
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
+```bash
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp talker
 ```
 RTI Connext:
-```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
+```bash
+RMW_IMPLEMENTATION=rmw_connext_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
 
 FastRTPS:
-```
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
+```bash
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp listener
 ```
 RTI Connext:
-```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
+```bash
+RMW_IMPLEMENTATION=rmw_connext_cpp listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
 securely, using authentication and encryption! Hooray!
 
-You can also run the python version of these nodes: `talker_py` and `listener_py`
+You can also run the Python version of these nodes: `talker_py` and `listener_py`
 
 ## Access Control (RTI Connext only)
 The previous demo used authentication and encryption, but not access control,
@@ -206,19 +203,19 @@ cp ~/sros2/src/ros2/sros2/examples/sample_policy.yaml ./demo_keys/
 And now we will use it to generate the XML permission files expected by the
 middleware:
 ```bash
-sros2 create_permission demo_keys talker demo_keys/policies.yaml
-sros2 create_permission demo_keys listener demo_keys/policies.yaml
+ros2 security create_permission demo_keys talker demo_keys/policies.yaml
+ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 ```
 Then, in one terminal (after preparing the terminal as previously described),
-we can set the `ROS_SECURITY_ROOT_DIRECTORY` to our keystore path, and then run the
+Run the
 `talker` demo program:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp talker
 ```
 In another terminal (after preparing the terminal as previously described), we
 will do the same thing with the `listener` program:
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=~/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating
@@ -261,7 +258,7 @@ First, on the machine running `talker`, we need to source the RTI variables, the
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 source ~/sros2/install/setup.bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys talker
+RMW_IMPLEMENTATION=rmw_connext_cpp talker
 ```
 
 # Tips and Tricks
@@ -288,7 +285,6 @@ Download openssl from https://slproweb.com/download/Win64OpenSSL-1_0_2k.exe
 
 Define environment variables:
 - OPENSSL_CONF C:\OpenSSL-Win64\bin\openssl.cfg
-- ROS_SECURITY_ROOT_DIRECTORY C:\dev\sros2\demo_keys
 
 ## Getting the source code
 
@@ -309,23 +305,28 @@ python src\ament\ament_tools\scripts\ament.py build --cmake-args -DSECURITY=ON -
 ## Creating keys and certificates
 
 ```
-sros2 create_keystore demo_keys
-sros2 create_key demo_keys talker
-sros2 create_key demo_keys listener
+ros2 security create_keystore demo_keys
+ros2 security create_key demo_keys talker
+ros2 security create_key demo_keys listener
 ```
 
 ## Testing
+
+Prepare your environment byt setting the following environment variables:
+- ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys
+- ROS_SECURITY_ENABLE=true
+- ROS_SECURITY_STRATEGY=Enforce
 
 Open a new terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys talker_py
+RMW_IMPLEMENTATION=rmw_connext_cpp talker_py
 ```
 
 Open another terminal
 ```
 cd C:\dev\sros2
 call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys listener
+RMW_IMPLEMENTATION=rmw_connext_cpp listener
 ```
