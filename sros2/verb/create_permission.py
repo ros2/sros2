@@ -20,7 +20,7 @@ except ImportError:
 try:
     from argcomplete.completers import FilesCompleter
 except ImportError:
-    def FilesCompleter():
+    def FilesCompleter(*, allowednames, directories):
         return None
 
 from ros2pkg.verb import VerbExtension
