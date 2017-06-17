@@ -66,16 +66,6 @@ RUN wget https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
 
 RUN vcs import src < ros2.repos
 
-# TODO(mikaelarguedas) Remove this once https://github.com/ros2/sros2/pull/3 lands
-WORKDIR $ROS2_WS/src
-RUN git clone https://github.com/ros2/sros2.git
-WORKDIR $ROS2_WS/src/ros2/sros2
-RUN git checkout -t origin/sros2
-
-# TODO(mikaelarguedas) Remove this once https://github.com/ros2/ros2cli/pull/3 lands
-WORKDIR $ROS2_WS/src/ros2/ros2cli
-RUN git checkout -t origin/more_commands
-
 WORKDIR $ROS2_WS
 RUN src/ament/ament_tools/scripts/ament.py build --symlink-install --isolated --cmake-args -DSECURITY=ON -- --parallel
 
