@@ -20,8 +20,8 @@ setup(
     ],
     description='SROS2 provides tools to help manage security keys.',
     long_description="""\
-SROS2 provides command-line tools to help generate and distribute keys and
-certificates which are then used by supported middleware implementations to
+SROS2 provides command-line tools to help generate and distribute keys and \
+certificates which are then used by supported middleware implementations to \
 enhance the security of ROS 2 deployments.""",
     license='Apache License, Version 2.0',
     test_suite='test',
