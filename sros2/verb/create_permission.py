@@ -23,8 +23,8 @@ except ImportError:
     def FilesCompleter():
         return None
 
-from ros2pkg.verb import VerbExtension
 from sros2.api import create_permission
+from sros2.verb import VerbExtension
 
 
 class CreatePermissionVerb(VerbExtension):

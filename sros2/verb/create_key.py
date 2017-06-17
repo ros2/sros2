@@ -18,8 +18,8 @@ except ImportError:
     def DirectoriesCompleter():
         return None
 
-from ros2pkg.verb import VerbExtension
 from sros2.api import create_key
+from sros2.verb import VerbExtension
 
 
 class CreateKeyVerb(VerbExtension):
