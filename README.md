@@ -57,7 +57,7 @@ This will start a python executable that publishes messages periodically.
 Now let's open another terminal into the container by opening a new terminal, then running:
 
 ```
-docker exec -ti <CONTAINER_NAME>
+docker exec -ti <CONTAINER_NAME> /bin/bash
 listener
 ```
 
@@ -105,8 +105,8 @@ The following instructions will download a version of the ROS 2 source tree with
 ```
 mkdir -p ~/sros2/src
 cd ~/sros2
-wget https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
-vcs import src < sros2.repos
+wget https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
+vcs import src < ros2.repos
 ```
 
 ## Prepare your environment (RTI Connext only)
@@ -295,8 +295,8 @@ The define environment variables:
 md C:\dev\sros2\src
 cd C:\dev\sros2
 
-curl -sk https://raw.githubusercontent.com/ros2/sros2/master/sros2.repos
-vcs import src < sros2.repos
+curl -sk https://raw.githubusercontent.com/ros2/sros2/master/ros2.repos
+vcs import src < ros2.repos
 ```
 
 ## Building the code
