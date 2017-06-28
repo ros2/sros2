@@ -283,27 +283,12 @@ Please follow the instrucions on https://github.com/ros2/ros2/wiki/Windows-Devel
 
 ### Install OpenSSL
 
-Download openssl from https://slproweb.com/download/Win64OpenSSL-1_0_2k.exe
+Download an OpenSLL installer from . Scroll to the bottom of [this page](https://slproweb.com/products/Win32OpenSSL.html) and download *Win64 OpenSSL v1.0.2*. Don't download the Win32 or Light versions.
 
-The define environment variables:
+Run the installer with default parameters. Then, define environment variables (the following commands assume you used the default installation directory):
 
-- `OPENSSL_CONF=C:\OpenSSL-Win64\bin\openssl.cfg`
-
-## Getting the source code
-
-```
-md C:\dev\sros2\src
-cd C:\dev\sros2
-
-curl -sk https://raw.githubusercontent.com/ros2/sros2/master/ros2.repos
-vcs import src < ros2.repos
-```
-
-## Building the code
-
-```
-python src\ament\ament_tools\scripts\ament.py build --cmake-args -DSECURITY=ON --
-```
+- `set OPENSSL_CONF=C:\OpenSSL-Win64\bin\openssl.cfg`
+- Append `C:\OpenSSL-Win64\bin\` to your PATH
 
 ## Creating keys and certificates
 
@@ -315,24 +300,24 @@ ros2 security create_key demo_keys listener
 
 ## Testing
 
-Prepare your environment by setting the following environment variables:
+Prepare your environment by setting three following environment variables as follows
 
-- `ROS_SECURITY_ROOT_DIRECTORY=$HOME/sros2/demo_keys`
-- `ROS_SECURITY_ENABLE=true`
-- `ROS_SECURITY_STRATEGY=Enforce`
+- `set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
+- `set ROS_SECURITY_ENABLE=true`
+- `set ROS_SECURITY_STRATEGY=Enforce`
 
 Open a new terminal:
 
 ```
 cd C:\dev\sros2
-call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp talker_py
+call setup.bat
+ros2 run demo_nodes_py talker
 ```
 
 Open another terminal:
 
 ```
 cd C:\dev\sros2
-call install\setup.bat
-RMW_IMPLEMENTATION=rmw_connext_cpp listener
+call setup.bat
+ros2 run demo_nodes_py listener
 ```
