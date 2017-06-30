@@ -21,17 +21,17 @@ import sys
 
 
 def find_openssl_executable():
-    openssl_executable = 'openssl'
-    if platform.system() == 'Darwin':
-        brew_openssl_prefix_result = subprocess.run(
-            ['brew', '--prefix', 'openssl'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        if brew_openssl_prefix_result.stderr:
-            print('unable to find openssl from brew', file=sys.stderr)
-            sys.exit(-1)
-        openssl_executable = os.path.join(brew_openssl_prefix_result.stdout.decode().strip('\n'), 'bin', 'openssl')
-    return openssl_executable
+    if platform.system() != 'Darwin':
+        return 'openssl'
+
+    brew_openssl_prefix_result = subprocess.run(
+        ['brew', '--prefix', 'openssl'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    if brew_openssl_prefix_result.stderr:
+        raise RuntimeError('unable to find openssl from brew')
+    basepath = brew_openssl_prefix_result.stdout.decode().strip('\n')
+    return os.path.join(basepath, 'bin', 'openssl')
 
 
 def check_openssl_version(openssl_executable):
@@ -43,24 +43,24 @@ def check_openssl_version(openssl_executable):
     print('2.2')
     if openssl_version_string_result.stderr:
         print('unable to invoke command: "%s"' % openssl_executable, file=sys.stderr)
-    print('version found:\n%s' % openssl_version_string_result.stdout.decode().strip('\n'))
-    openssl_version_string_list = openssl_version_string_result.stdout.decode().strip('\n').split(' ')
+    version = openssl_version_string_result.stdout.decode().strip('\n')
+    print('version found:\n%s' % version)
+    openssl_version_string_list = version.split(' ')
     print('2.3')
     if openssl_version_string_list[0].lower() != 'openssl':
-        print('expected version of the format OpenSSL <MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>')
-        sys.exit(-1)
+        # TODO the message seems to not match the checked condition
+        raise RuntimeError(
+            'expected version of the format OpenSSL '
+            '<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>')
     (major, minor, patch) = openssl_version_string_list[1].split('.')
     major = int(major)
     minor = int(minor)
     if major < 1:
-        print('need openssl 1.0.2 minimum')
-        sys.exit(-1)
+        raise RuntimeError('need openssl 1.0.2 minimum')
     if major == 1 and minor < 0:
-        print('need openssl 1.0.2 minimum')
-        sys.exit(-1)
+        raise RuntimeError('need openssl 1.0.2 minimum')
     if major == 1 and minor == 0 and int("".join(itertools.takewhile(str.isdigit, patch))) < 2:
-        print('need openssl 1.0.2 minimum')
-        sys.exit(-1)
+        raise RuntimeError('need openssl 1.0.2 minimum')
 
 
 def create_ca_conf_file(path):
@@ -354,8 +354,7 @@ def get_permissions(name, policy_file_path):
         try:
             graph = yaml.load(graph_permissions_file)
         except yaml.YAMLError as e:
-            print(e)
-            sys.exit(1)
+            raise RuntimeError(str(e))
         return graph['nodes'][name]
 
 
