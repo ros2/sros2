@@ -28,25 +28,21 @@ def find_openssl_executable():
         ['brew', '--prefix', 'openssl'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    if brew_openssl_prefix_result.stderr:
+    if brew_openssl_prefix_result.returncode:
         raise RuntimeError('unable to find openssl from brew')
     basepath = brew_openssl_prefix_result.stdout.decode().strip('\n')
     return os.path.join(basepath, 'bin', 'openssl')
 
 
 def check_openssl_version(openssl_executable):
-    print('2.1')
     openssl_version_string_result = subprocess.run(
         [openssl_executable, 'version'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    print('2.2')
-    if openssl_version_string_result.stderr:
-        print('unable to invoke command: "%s"' % openssl_executable, file=sys.stderr)
+    if openssl_version_string_result.returncode:
+        raise RuntimeError('unable to invoke command: "%s"' % openssl_executable)
     version = openssl_version_string_result.stdout.decode().strip('\n')
-    print('version found:\n%s' % version)
     openssl_version_string_list = version.split(' ')
-    print('2.3')
     if openssl_version_string_list[0].lower() != 'openssl':
         # TODO the message seems to not match the checked condition
         raise RuntimeError(
@@ -114,11 +110,8 @@ def run_shell_command(cmd, in_path=None):
 
 
 def create_ecdsa_param_file(path):
-    print('1')
     openssl_executable = find_openssl_executable()
-    print('2')
     check_openssl_version(openssl_executable)
-    print('3')
     run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
 
 
