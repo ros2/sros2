@@ -29,7 +29,7 @@ def find_openssl_executable():
     )
     if brew_openssl_prefix_result.returncode:
         raise RuntimeError('unable to find openssl from brew')
-    basepath = brew_openssl_prefix_result.stdout.decode().strip('\n')
+    basepath = brew_openssl_prefix_result.stdout.decode().rstrip()
     return os.path.join(basepath, 'bin', 'openssl')
 
 
@@ -40,7 +40,7 @@ def check_openssl_version(openssl_executable):
     )
     if openssl_version_string_result.returncode:
         raise RuntimeError('unable to invoke command: "%s"' % openssl_executable)
-    version = openssl_version_string_result.stdout.decode().strip('\n')
+    version = openssl_version_string_result.stdout.decode().rstrip()
     openssl_version_string_list = version.split(' ')
     if openssl_version_string_list[0].lower() != 'openssl':
         raise RuntimeError(
