@@ -44,10 +44,9 @@ def check_openssl_version(openssl_executable):
     version = openssl_version_string_result.stdout.decode().strip('\n')
     openssl_version_string_list = version.split(' ')
     if openssl_version_string_list[0].lower() != 'openssl':
-        # TODO the message seems to not match the checked condition
         raise RuntimeError(
-            'expected version of the format OpenSSL '
-            '<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>')
+            "expected version of the format 'OpenSSL "
+            "<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>'")
     (major, minor, patch) = openssl_version_string_list[1].split('.')
     major = int(major)
     minor = int(minor)
