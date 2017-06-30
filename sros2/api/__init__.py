@@ -12,10 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import itertools
 import os
+import platform
 import shutil
 import subprocess
-import sys
+
+
+def find_openssl_executable():
+    if platform.system() != 'Darwin':
+        return 'openssl'
+
+    brew_openssl_prefix_result = subprocess.run(
+        ['brew', '--prefix', 'openssl'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    if brew_openssl_prefix_result.returncode:
+        raise RuntimeError('unable to find openssl from brew')
+    basepath = brew_openssl_prefix_result.stdout.decode().rstrip()
+    return os.path.join(basepath, 'bin', 'openssl')
+
+
+def check_openssl_version(openssl_executable):
+    openssl_version_string_result = subprocess.run(
+        [openssl_executable, 'version'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    if openssl_version_string_result.returncode:
+        raise RuntimeError('unable to invoke command: "%s"' % openssl_executable)
+    version = openssl_version_string_result.stdout.decode().rstrip()
+    openssl_version_string_list = version.split(' ')
+    if openssl_version_string_list[0].lower() != 'openssl':
+        raise RuntimeError(
+            "expected version of the format 'OpenSSL "
+            "<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>'")
+    (major, minor, patch) = openssl_version_string_list[1].split('.')
+    major = int(major)
+    minor = int(minor)
+    if major < 1:
+        raise RuntimeError('need openssl 1.0.2 minimum')
+    if major == 1 and minor < 0:
+        raise RuntimeError('need openssl 1.0.2 minimum')
+    if major == 1 and minor == 0 and int("".join(itertools.takewhile(str.isdigit, patch))) < 2:
+        raise RuntimeError('need openssl 1.0.2 minimum')
 
 
 def create_ca_conf_file(path):
@@ -69,13 +108,17 @@ def run_shell_command(cmd, in_path=None):
 
 
 def create_ecdsa_param_file(path):
-    run_shell_command('openssl ecparam -name prime256v1 > %s' % path)
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
+    run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
 
 
 def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path):
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
     run_shell_command(
-        'openssl req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s' %
-        (ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+        '%s req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s' %
+        (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
 
 
 def create_governance_file(path, domain_id):
@@ -111,9 +154,11 @@ def create_governance_file(path, domain_id):
 
 
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
     run_shell_command(
-        'openssl smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (gov_path, signed_gov_path, ca_cert_path, ca_key_path))
+        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
+        (openssl_executable, gov_path, signed_gov_path, ca_cert_path, ca_key_path))
 
 
 def create_keystore(args):
@@ -217,17 +262,21 @@ def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, re
     cnf_relpath = os.path.join(name, 'request.cnf')
     key_relpath = os.path.join(name, 'key.pem')
     req_relpath = os.path.join(name, 'req.pem')
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
     run_shell_command(
-        'openssl req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s' %
-        (ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
+        '%s req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s' %
+        (openssl_executable, ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
 
 
 def create_cert(root_path, name):
     req_relpath = os.path.join(name, "req.pem")
     cert_relpath = os.path.join(name, "cert.pem")
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
     run_shell_command(
-        'openssl ca -batch -create_serial -config ca_conf.cnf -days 3650 -in %s -out %s' %
-        (req_relpath, cert_relpath), root_path)
+        '%s ca -batch -create_serial -config ca_conf.cnf -days 3650 -in %s -out %s' %
+        (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
 def create_permission_file(path, name, domain_id, permissions_dict):
@@ -296,16 +345,18 @@ def get_permissions(name, policy_file_path):
         try:
             graph = yaml.load(graph_permissions_file)
         except yaml.YAMLError as e:
-            print(e)
-            sys.exit(1)
+            raise RuntimeError(str(e))
         return graph['nodes'][name]
 
 
 def create_signed_permissions_file(
         permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
+
+    openssl_executable = find_openssl_executable()
+    check_openssl_version(openssl_executable)
     run_shell_command(
-        'openssl smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
+        (openssl_executable, permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
 
 
 def create_permission(args):
