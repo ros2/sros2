@@ -1,6 +1,8 @@
 ## Testing in a docker container (Fast-RTPS only)
 
-DISCLAIMER: there instructions are outdated as of Beta2
+### DISCLAIMER: there instructions are outdated as of Beta2
+
+
 TODO(mikaelarguedas) update these instructions to use either debian packages or master from source
 
 To setup the environment, first clone this repository:
