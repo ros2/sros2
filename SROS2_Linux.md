@@ -198,5 +198,3 @@ RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
 Hooray!
-
-# Try SROS2 in Docker (Fast-RTPS only)
