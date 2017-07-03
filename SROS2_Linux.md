@@ -1,8 +1,8 @@
 # Try SROS2 in Linux
 
-TODO(mikaelarguedas) update these instructions for MacOS (mostly install openssl from brew and define env variable to find_package() it)
+## Installation
 
-## Install from debian packages
+### Install from debian packages
 
 First install ROS2 from binaries following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Install-Debians)
 
@@ -11,7 +11,7 @@ Setup your environment following [these instructions](https://github.com/ros2/ro
 In the rest of these instruction we assume that every terminal setup the environment as instructed above.
 
 
-## Install from source
+### Install from source
 
 You will need to have openssl installed on your machine:
 
@@ -26,7 +26,7 @@ Note: Fast-RTPS requires an additional CMake flag to build the security plugins 
 src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --cmake-args -DSECURITY=ON --
 ```
 
-## Additional configuration for RTI Connext
+### Additional configuration for RTI Connext
 
 Prerequisite: to use DDS-Scurity with connext you will need to procure an RTI Licence and install the security plugin.
 
@@ -46,7 +46,9 @@ It's often handy to create an alias for that super-long shell incantation to sou
 alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 ```
 
-## Create a folder for the files required by this demo
+## Rune the demo
+
+### Create a folder for the files required by this demo
 
 We will know create a folder to store all the files necessary for this demo:
 
@@ -54,23 +56,23 @@ We will know create a folder to store all the files necessary for this demo:
 mkdir ~/sros2_demo
 ```
 
-## Generating a keystore, keys and certificates
+### Generating a keystore, keys and certificates
 
-### Generate a keystore
+#### Generate a keystore
 
 ```bash
 cd ~/sros2_demo
 ros2 security create_keystore demo_keys
 ```
 
-### Generate keys and certificates for the talker and listener nodes
+#### Generate keys and certificates for the talker and listener nodes
 
 ```bash
 ros2 security create_key demo_keys talker
 ros2 security create_key demo_keys listener
 ```
 
-## Define the SROS2 environment variables
+### Define the SROS2 environment variables
 
 ```bash
 export ROS_SECURITY_ROOT_DIRECTORY=$(pwd)/demo_keys
@@ -80,7 +82,7 @@ export ROS_SECURITY_STRATEGY=Enforce
 
 These variables need to be defined in each terminal used for the demo. For convenience you can add it to your `~/.bashrc`.
 
-## Run the demo
+### Run the demo
 
 Run the `talker` demo program for either Fast-RTPS:
 
@@ -110,7 +112,7 @@ RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
 Note: You can switch between the C++ and Python packages arbitrarily.
 
 
-## Run the demo on different machines
+### Run the demo on different machines
 
 The previous demo was using SROS 2 on the same box over localhost.
 That's great, but it's more exciting when multiple machines are involved, since the benefits of authentication and encryption are more obvious.
@@ -163,7 +165,7 @@ RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
 ```
 
 
-## Access Control (RTI Connext only, from source only)
+### Access Control (RTI Connext only, from source only)
 
 TODO(mikaelarguedas) Needs to be updated
 The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
