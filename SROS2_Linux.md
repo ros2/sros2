@@ -46,11 +46,11 @@ It's often handy to create an alias for that super-long shell incantation to sou
 alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 ```
 
-## Rune the demo
+## Run the demo
 
 ### Create a folder for the files required by this demo
 
-We will know create a folder to store all the files necessary for this demo:
+We will now create a folder to store all the files necessary for this demo:
 
 ```bash
 mkdir ~/sros2_demo
