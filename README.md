@@ -49,7 +49,7 @@ And now start testing!
 In the terminal inside docker, run:
 
 ```
-talker_py
+ros2 run demo_nodes_py talker
 ```
 
 This will start a python executable that publishes messages periodically.
@@ -58,7 +58,7 @@ Now let's open another terminal into the container by opening a new terminal, th
 
 ```
 docker exec -ti <CONTAINER_NAME> /bin/bash
-listener
+ros2 run demo_nodes_cpp listener
 ```
 
 Hooray our nodes are authenticated and talking encrypted-talk!
@@ -167,32 +167,32 @@ Note: for convenience you may add these lines to your `~/.bashrc`.
 Run the `talker` demo program for either Fast-RTPS:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp talker
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_cpp talker
 ```
 
 Of RTI Connext:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program.
 Again, for either Fast-RTPS:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp listener
+RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_py listener
 ```
 
 Or RTI Connext:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using authentication and encryption!
 Hooray!
 
-Note: You could also run the Python version of these nodes: `talker_py` and `listener_py`
+Note: You can switch between the C++ and Python packages arbitrarily.
 
 ## Access Control (RTI Connext only)
 
@@ -217,13 +217,13 @@ ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program:
 
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp listener
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
@@ -261,7 +261,7 @@ First, on the machine running `talker`, we need to source the RTI variables, the
 ```
 source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
 source ~/sros2/install/setup.bash
-RMW_IMPLEMENTATION=rmw_connext_cpp talker
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
 ```
 
 # Tips and Tricks
