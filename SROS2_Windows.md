@@ -36,7 +36,7 @@ python src\ament\ament_tools\scripts\ament.py build --build-tests --cmake-args -
 We will now create a folder to store all the files necessary for this demo:
 
 ```bash
-md %cd%/sros2_demo
+md C:\dev\ros2\sros2_demo
 ```
 
 ### Generating a keystore, keys and certificates
@@ -72,7 +72,7 @@ Open a new terminal:
 
 ```
 cd C:\dev\ros2
-call setup.bat
+call install\setup.bat
 ros2 run demo_nodes_py talker
 ```
 
@@ -80,6 +80,6 @@ Open another terminal:
 
 ```
 cd C:\dev\ros2
-call setup.bat
+call install\setup.bat
 ros2 run demo_nodes_py listener
 ```
