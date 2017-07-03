@@ -46,6 +46,8 @@ source ~/ros2_ws/install/setup.bash
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
 
+# Preparing you environment for the demo
+
 ## Create a folder for the files required by this demo
 
 We will know create a folder to store all the files necessary for this demo:
@@ -70,7 +72,7 @@ ros2 security create_key demo_keys talker
 ros2 security create_key demo_keys listener
 ```
 
-### Define the SROS2 environment variables
+## Define the SROS2 environment variables
 
 ```bash
 export ROS_SECURITY_ROOT_DIRECTORY=$(pwd)/demo_keys
@@ -80,7 +82,7 @@ export ROS_SECURITY_STRATEGY=Enforce
 
 These variables need to be defined in each terminal used for the demo. For convenience you can add it to your bash_profile.
 
-### Run the demo
+# Run the demo
 
 Run the `talker` demo program:
 
