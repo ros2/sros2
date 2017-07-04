@@ -46,7 +46,7 @@ source ~/ros2_ws/install/setup.bash
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
 
-## Preparing you environment for the demo
+## Preparing the environment for the demo
 
 ### Create a folder for the files required by this demo
 
