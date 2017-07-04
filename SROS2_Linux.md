@@ -75,7 +75,7 @@ ros2 security create_key demo_keys listener
 ### Define the SROS2 environment variables
 
 ```bash
-export ROS_SECURITY_ROOT_DIRECTORY=$(pwd)/demo_keys
+export ROS_SECURITY_ROOT_DIRECTORY=~/sros2_demo/demo_keys
 export ROS_SECURITY_ENABLE=true
 export ROS_SECURITY_STRATEGY=Enforce
 ```
