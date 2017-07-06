@@ -28,7 +28,7 @@ In the rest of these instructions we assume that every terminal setup the enviro
 
 For OpenSSL to be found when building code you'll need to define this environment variable:
 ```bash
-export OPENSSL_ROOT_DIR=`brew prefix openssl`
+export OPENSSL_ROOT_DIR=`brew --prefix openssl`
 ```
 For convenience you can add this export to your bash_profile.
 
