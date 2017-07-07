@@ -1,9 +1,6 @@
-## Testing in a docker container (Fast-RTPS only)
+# Testing in a docker container (Fast-RTPS only)
 
-### DISCLAIMER: these instructions are outdated as of Beta2
-
-
-TODO(mikaelarguedas) update these instructions to use either debian packages or master from source
+## Building the docker image
 
 To setup the environment, first clone this repository:
 
@@ -29,10 +26,12 @@ Finally enter the container:
 
 Hooray we are now ready to start the demo.
 
+## Run the demo
+
 We will start by creating a set of keys for our DDS participant:
 
 ```
-cd /root/sros2_ws
+cd /root/sros2_demo
 ros2 security create_keystore demo_keys
 ros2 security create_key demo_keys talker
 ros2 security create_key demo_keys listener
