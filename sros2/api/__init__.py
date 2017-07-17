@@ -134,8 +134,12 @@ def create_governance_file(path, domain_id):
             <domains>
               <id>%s</id>
             </domains>
-            <!-- <allow_unauthenticated_join>false</allow_unauthenticated_join> SPECIFIED IN DDS SECURITY XSD -->
-            <allow_unauthenticated_participants>false</allow_unauthenticated_participants> <!-- SPECIFIED IN DDS SECURITY BUT NOT IN THE OFFICIAL XSD, IMPLEMENTED BY RTI DDSSEC-130 and RTI XSD http://community.rti.com/schema/5.3.0/dds_security_governance.xsd -->
+            <!-- SPECIFIED IN DDS SECURITY XSD -->
+            <!-- <allow_unauthenticated_join>false</allow_unauthenticated_join> -->
+            <!-- SPECIFIED IN DDS SECURITY BUT NOT IN THE OFFICIAL XSD,
+            IMPLEMENTED BY RTI DDSSEC-130 and RTI XSD:
+            http://community.rti.com/schema/5.3.0/dds_security_governance.xsd -->
+            <allow_unauthenticated_participants>false</allow_unauthenticated_participants> 
             <enable_join_access_control>true</enable_join_access_control>
             <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
             <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
