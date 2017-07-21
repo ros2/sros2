@@ -31,19 +31,19 @@ src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --c
 Prerequisite: to use DDS-Scurity with connext you will need to procure an RTI Licence and install the security plugin.
 
 The RTI Connext installer allows you to choose where it lands in the filesystem.
-These instructions assume that you have prefixed the RTI paths with `$HOME/rti` so that the latest version (5.2.4 at time of writing) will land in `$HOME/rti/rti_connext_dds-5.2.4`.
+These instructions assume that you have prefixed the RTI paths with `$HOME/rti` so that the latest version (5.3.0 at time of writing) will land in `$HOME/rti/rti_connext_dds-5.3.0`.
 Note that the installer is a multi-partprocess.
 Fist you must install the "host" package, and then from its launcher you can install the additional "target" packages and the `secure_dds` package.
 Additional (and better) help is provided in the RTI documentation.
 
 ```bash
-source ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
+source ~/rti/rti_connext_dds-5.3.0/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
 ```
 
 It's often handy to create an alias for that super-long shell incantation to source the RTI script, for example, by adding something like this to your `~/.bashrc` file (altering the paths and alias names as needed/wanted):
 
 ```
-alias rti='. ~/rti/rti_connext_dds-5.2.4/resource/scripts/rtisetenv_x64Linux3gcc4.8.2.bash'
+alias rti='. ~/rti/rti_connext_dds-5.3.0/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
 ```
 
 ## Run the demo
