@@ -25,9 +25,7 @@ RUN apt-get -qq update && \
       ros-r2b2-sros2 \
       vim
 
-RUN pip3 install flake8 \
-      flake8-import-order \
-      argcomplete
+RUN pip3 install argcomplete
 
 # setup ros2 workspace
 ENV ROS2_WS=/root/sros2_demo
