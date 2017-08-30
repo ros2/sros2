@@ -53,7 +53,7 @@ def check_openssl_version(openssl_executable):
         raise RuntimeError('need openssl 1.0.2 minimum')
     if major == 1 and minor < 0:
         raise RuntimeError('need openssl 1.0.2 minimum')
-    if major == 1 and minor == 0 and int("".join(itertools.takewhile(str.isdigit, patch))) < 2:
+    if major == 1 and minor == 0 and int(''.join(itertools.takewhile(str.isdigit, patch))) < 2:
         raise RuntimeError('need openssl 1.0.2 minimum')
 
 
@@ -270,8 +270,8 @@ def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, re
 
 
 def create_cert(root_path, name):
-    req_relpath = os.path.join(name, "req.pem")
-    cert_relpath = os.path.join(name, "cert.pem")
+    req_relpath = os.path.join(name, 'req.pem')
+    cert_relpath = os.path.join(name, 'cert.pem')
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
