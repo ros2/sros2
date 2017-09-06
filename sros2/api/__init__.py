@@ -308,8 +308,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             permission_str += """\
       <%s>
         <topic>%s</topic>
+        <partition>%s</partition>
       </%s>
-""" % (tag, topic_name, tag)
+""" % (tag, 'rt', topic_name, tag)
         # DCPS* is necessary for builtin data readers
         permission_str += """\
       <subscribe>
@@ -321,9 +322,11 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         permission_str += """\
       <publish>
         <topic>*</topic>
+        <partition>*</partition>
       </publish>
       <subscribe>
         <topic>*</topic>
+        <partition>*</partition>
       </subscribe>
 """
 
