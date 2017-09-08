@@ -132,17 +132,17 @@ def create_governance_file(path, domain_id):
     <domain_access_rules>
         <domain_rule>
             <domain_id>%s</domain_id>
-            <allow_unauthenticated_join>FALSE</allow_unauthenticated_join>
-            <enable_join_access_control>TRUE</enable_join_access_control>
+            <allow_unauthenticated_join>false</allow_unauthenticated_join>
+            <enable_join_access_control>true</enable_join_access_control>
             <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
             <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
             <rtps_protection_kind>SIGN</rtps_protection_kind>
             <topic_access_rules>
                 <topic_rule>
                     <topic_expression>*</topic_expression>
-                    <enable_discovery_protection>TRUE</enable_discovery_protection>
-                    <enable_read_access_control>TRUE</enable_read_access_control>
-                    <enable_write_access_control>TRUE</enable_write_access_control>
+                    <enable_discovery_protection>true</enable_discovery_protection>
+                    <enable_read_access_control>true</enable_read_access_control>
+                    <enable_write_access_control>true</enable_write_access_control>
                     <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
                     <data_protection_kind>ENCRYPT</data_protection_kind>
                 </topic_rule>
@@ -308,8 +308,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             permission_str += """\
       <%s>
         <topic>%s</topic>
+        <partition>%s</partition>
       </%s>
-""" % (tag, topic_name, tag)
+""" % (tag, 'rt', topic_name, tag)
         # DCPS* is necessary for builtin data readers
         permission_str += """\
       <subscribe>
@@ -321,9 +322,11 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         permission_str += """\
       <publish>
         <topic>*</topic>
+        <partition>*</partition>
       </publish>
       <subscribe>
         <topic>*</topic>
+        <partition>*</partition>
       </subscribe>
 """
 
