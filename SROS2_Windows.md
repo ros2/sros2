@@ -2,17 +2,6 @@
 
 ## Installation
 
-### Install OpenSSL
-
-Download an OpenSLL installer from . Scroll to the bottom of [this page](https://slproweb.com/products/Win32OpenSSL.html) and download *Win64 OpenSSL v1.0.2*. Don't download the Win32 or Light versions.
-
-Run the installer with default parameters. Then, define environment variables (the following commands assume you used the default installation directory):
-
-- `set OPENSSL_CONF=C:\OpenSSL-Win64\bin\openssl.cfg`
-- Append `C:\OpenSSL-Win64\bin\` to your PATH
-
-Note: you will need this in all terminals so setting these environment variables globally will be more convenient.
-
 ### Install ROS2
 
 #### Install ROS2 from binaries
@@ -28,6 +17,9 @@ To build the ROS2 code with security extensions, call:
 python src\ament\ament_tools\scripts\ament.py build --build-tests --cmake-args -DSECURITY=ON --
 ```
 
+### Install OpenSSL
+
+If you don't have OpenSSL installed, please see follow [these instructions](https://github.com/ros2/ros2/wiki/Windows-Install-Binary#install-openssl)
 
 ## Preparing the environment for the demo
 
