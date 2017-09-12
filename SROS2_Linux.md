@@ -175,7 +175,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-cp ~/ros2_ws/src/ros2/sros2/examples/sample_policy.yaml ./demo_keys/
+cp ~/ros2_ws/src/ros2/sros2/examples/sample_policy.yaml ./demo_keys/policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
