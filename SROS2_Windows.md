@@ -64,7 +64,7 @@ Open a new terminal:
 
 ```
 cd C:\dev\ros2
-call install\setup.bat
+call local_setup.bat
 ros2 run demo_nodes_py talker
 ```
 
@@ -72,6 +72,6 @@ Open another terminal:
 
 ```
 cd C:\dev\ros2
-call install\setup.bat
+call local_setup.bat
 ros2 run demo_nodes_py listener
 ```
