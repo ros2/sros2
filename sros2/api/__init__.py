@@ -354,7 +354,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     # DCPS* is necessary for builtin data readers
     permission_str += """\
       <subscribe>
-        <topic>DCPS*</topic>
+        <topics>
+          <topic>DCPS*</topic>
+        </topics>
       </subscribe>
       </allow_rule>
       <default>DENY</default>
