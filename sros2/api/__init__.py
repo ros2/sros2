@@ -128,11 +128,18 @@ def create_governance_file(path, domain_id):
         f.write("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_governance.xsd">
+    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20160303/omg_shared_ca_governance.xsd">
     <domain_access_rules>
         <domain_rule>
-            <domain_id>%s</domain_id>
-            <allow_unauthenticated_join>false</allow_unauthenticated_join>
+            <domains>
+              <id>%s</id>
+            </domains>
+            <!-- SPECIFIED IN DDS SECURITY XSD -->
+            <!-- <allow_unauthenticated_join>false</allow_unauthenticated_join> -->
+            <!-- SPECIFIED IN DDS SECURITY BUT NOT IN THE OFFICIAL XSD,
+            IMPLEMENTED BY RTI DDSSEC-130 and RTI XSD:
+            http://community.rti.com/schema/5.3.0/dds_security_governance.xsd -->
+            <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
             <enable_join_access_control>true</enable_join_access_control>
             <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
             <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
@@ -281,17 +288,25 @@ def create_cert(root_path, name):
 
 def create_permission_file(path, name, domain_id, permissions_dict):
     permission_str = """\
-<permissions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20140301/dds_security_permissions.xsd">
-  <grant name="%s_policies">
-    <subject_name>CN=%s</subject_name>
-    <validity>
-      <!-- Format is YYYYMMDDHH in GMT -->
-      <not_before>2016122000</not_before>
-      <not_after>2026122000</not_after>
-    </validity>
-    <allow_rule>
-      <domain_id>%s</domain_id>
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20160303/omg_shared_ca_permissions.xsd">
+  <permissions>
+    <grant name="%s_policies">
+      <subject_name>CN=%s</subject_name>
+      <validity>
+      <!--
+       Format is CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
+                           The time zone may be specified as Z (UTC) or (+|-)hh:mm.
+                           Time zones that aren't specified are considered UTC.
+      -->
+        <not_before>2013-10-26T00:00:00</not_before>
+        <not_after>2023-10-26T22:45:30</not_after>
+      </validity>
+      <allow_rule>
+        <domains>
+          <id>%s</id>
+        </domains>
 """ % (name, name, domain_id)
     # access control only on topics for now
     topic_dict = permissions_dict['topics']
@@ -306,33 +321,48 @@ def create_permission_file(path, name, domain_id, permissions_dict):
                 print("unknown permission policy '%s', skipping" % policy['allow'])
                 continue
             permission_str += """\
-      <%s>
-        <topic>%s</topic>
-        <partition>%s</partition>
-      </%s>
-""" % (tag, topic_name, 'rt', tag)
+        <%s>
+          <partitions>
+            <partition>%s</partition>
+          </partitions>
+          <topics>
+            <topic>%s</topic>
+          </topics>
+        </%s>
+""" % (tag, 'rt', topic_name, tag)
     else:
         # no policy found: allow everything!
         permission_str += """\
-      <publish>
-        <topic>*</topic>
-        <partition>*</partition>
-      </publish>
-      <subscribe>
-        <topic>*</topic>
-        <partition>*</partition>
-      </subscribe>
+        <publish>
+          <partitions>
+            <partition>*</partition>
+          </partitions>
+          <topics>
+            <topic>*</topic>
+          </topics>
+        </publish>
+        <subscribe>
+          <partitions>
+            <partition>*</partition>
+          </partitions>
+          <topics>
+            <topic>*</topic>
+          </topics>
+        </subscribe>
 """
 
     # DCPS* is necessary for builtin data readers
     permission_str += """\
       <subscribe>
-        <topic>DCPS*</topic>
+        <topics>
+          <topic>DCPS*</topic>
+        </topics>
       </subscribe>
-    </allow_rule>
-    <default>DENY</default>
-  </grant>
-</permissions>
+      </allow_rule>
+      <default>DENY</default>
+    </grant>
+  </permissions>
+</dds>
 """
     with open(path, 'w') as f:
         f.write(permission_str)
