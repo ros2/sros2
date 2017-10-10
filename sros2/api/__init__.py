@@ -138,7 +138,7 @@ def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path
         (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
 
 
-def create_governance_file(path, domain_id):
+def create_governance_file(path):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     with open(path, 'w') as f:
@@ -149,7 +149,9 @@ def create_governance_file(path, domain_id):
     <domain_access_rules>
         <domain_rule>
             <domains>
-              <id>%s</id>
+              <id_range>
+                <min>0</min>
+              </id_range>
             </domains>
             <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
             <enable_join_access_control>true</enable_join_access_control>
@@ -170,7 +172,7 @@ def create_governance_file(path, domain_id):
         </domain_rule>
     </domain_access_rules>
 </dds>
-""" % domain_id)
+""")
 
 
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
@@ -217,8 +219,7 @@ def create_keystore(args):
     gov_path = os.path.join(root, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
-        domain_id = os.getenv('ROS_DOMAIN_ID', 0)
-        create_governance_file(gov_path, domain_id)
+        create_governance_file(gov_path)
     else:
         print('found governance file, not creating a new one!')
 
@@ -299,7 +300,8 @@ def create_cert(root_path, name):
         (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
-def create_permission_file(path, name, domain_id, permissions_dict):
+def create_permission_file(path, name, domain_id, permissions_dict={}):
+    wildcard = permissions_dict == {}
     permission_str = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -317,12 +319,23 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         <not_after>2023-10-26T22:45:30</not_after>
       </validity>
       <allow_rule>
+""" % (name, name)  # , domain_id)
+    if wildcard:
+        permission_str += """\
+        <domains>
+          <id_range>
+            <min>0</min>
+          </id_range>
+        </domains>
+"""
+    else:
+        permission_str += """\
         <domains>
           <id>%s</id>
         </domains>
-""" % (name, name, domain_id)
+""" % domain_id
     # access control only on topics for now
-    topic_dict = permissions_dict['topics']
+    topic_dict = permissions_dict['topics'] if 'topics' in permissions_dict.keys() else None
     if topic_dict:
         # add rules for automatically created ros2 topics
         # TODO(mikaelarguedas) remove this hardcoded handling for default topics
@@ -525,7 +538,7 @@ def create_key(args):
     # later using a policy if desired
     domain_id = os.getenv('ROS_DOMAIN_ID', 0)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, {'topics': None})
+    create_permission_file(permissions_path, name, domain_id)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
