@@ -24,7 +24,7 @@ SROS2 provides command-line tools to help generate and distribute keys and \
 certificates which are then used by supported middleware implementations to \
 enhance the security of ROS 2 deployments.""",
     license='Apache License, Version 2.0',
-    test_suite='test',
+    tests_require=['pytest'],
     entry_points={
         'ros2cli.command': [
             'security = sros2.command.security:SecurityCommand',
