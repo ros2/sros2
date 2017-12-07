@@ -54,8 +54,6 @@ Prepare your environment by setting three following environment variables as fol
 - `set ROS_SECURITY_ENABLE=true`
 - `set ROS_SECURITY_STRATEGY=Enforce`
 
-Note: this will be needed for every terminal you use for testing, defining these environment variables globally will be more convenient.
-
 
 ## Run the demo
 
@@ -64,6 +62,9 @@ Open a new terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
+set ROS_SECURITY_ENABLE=true`
+set ROS_SECURITY_STRATEGY=Enforce`
 ros2 run demo_nodes_py talker
 ```
 
@@ -71,5 +72,17 @@ Open another terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
+set ROS_SECURITY_ENABLE=true`
+set ROS_SECURITY_STRATEGY=Enforce`
 ros2 run demo_nodes_py listener
 ```
+
+For comparison if you open another terminal and only run:
+
+```
+call <path_to_ros2_install>/setup.bat
+ros2 run demo_nodes_py listener
+```
+
+You will see that it cannot connect and receive the messages.
