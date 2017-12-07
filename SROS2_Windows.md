@@ -64,6 +64,9 @@ Open a new terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
+set ROS_SECURITY_ENABLE=true`
+set ROS_SECURITY_STRATEGY=Enforce`
 ros2 run demo_nodes_py talker
 ```
 
@@ -71,5 +74,8 @@ Open another terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
+set ROS_SECURITY_ENABLE=true`
+set ROS_SECURITY_STRATEGY=Enforce`
 ros2 run demo_nodes_py listener
 ```
