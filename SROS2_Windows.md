@@ -78,7 +78,7 @@ set ROS_SECURITY_STRATEGY=Enforce`
 ros2 run demo_nodes_py listener
 ```
 
-For comparision if you open another terminal and only run:
+For comparison if you open another terminal and only run:
 
 ```
 call <path_to_ros2_install>/setup.bat
