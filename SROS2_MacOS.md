@@ -10,7 +10,7 @@ brew install openssl
 
 You will need to have OpenSSL on your library path to run DDS-Security demos, you can do this by running:
 ```
-export DYLD_LIBRARY_PATH=`brew --prefix openssl`/lib
+export DYLD_LIBRARY_PATH=`brew --prefix openssl`/lib:$DYLD_LIBRARY_PATH
 ```
 For convenience you can add this export to your bash_profile.
 
