@@ -28,7 +28,7 @@ src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --c
 
 ### Additional configuration for RTI Connext
 
-Prerequisite: to use DDS-Scurity with connext you will need to procure an RTI Licence and install the security plugin.
+Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
 
 Warning: this tutorial is for Connext 5.3.0. If you use Connext 5.2.4 please refer to the [tutorial from ROS 2 Beta 3](https://github.com/ros2/sros2/blob/release-beta3/SROS2_Linux.md)
 
@@ -86,32 +86,29 @@ These variables need to be defined in each terminal used for the demo. For conve
 
 ### Run the demo
 
-Run the `talker` demo program for either Fast-RTPS:
-
+ROS2 allows you to [change DDS implementation at runtime](https://github.com/ros2/ros2/wiki/Working-with-multiple-RMW-implementations).
+This demo can be run with fastrtps by setting:
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_cpp talker
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
+And with Connext by setting:
+```bash
+export RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
-Of RTI Connext:
+Run the `talker` demo program:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
+ros2 run demo_nodes_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program.
-Again, for either Fast-RTPS:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_py listener
+ros2 run demo_nodes_py listener
 ```
 
-Or RTI Connext:
-
-```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
-```
-
-Note: You can switch between the C++ and Python packages arbitrarily.
+Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py) packages arbitrarily.
 
 
 ### Run the demo on different machines
@@ -141,29 +138,17 @@ scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keys
 That will be very quick, since it's just copying some very small text files.
 Now, we're ready to run a multi-machine talker/listener demo!
 
-Once the envrionment setup we can run on oldschool, for either Fast-RTPS:
+Once the environment is setup we can run on oldschool:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_cpp talker
+ros2 run demo_nodes_cpp talker
 ```
 
-Of RTI Connext:
-
-```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
-```
 
 and on feather2
-Again, for either Fast-RTPS:
 
 ```bash
-RMW_IMPLEMENTATION=rmw_fastrtps_cpp ros2 run demo_nodes_py listener
-```
-
-Or RTI Connext:
-
-```bash
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
+ros2 run demo_nodes_py listener
 ```
 
 
@@ -177,7 +162,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-cp ~/ros2_ws/src/ros2/sros2/examples/sample_policy.yaml ./demo_keys/policies.yaml
+wget https://raw.githubusercontent.com/ros2/sros2/release-latest/examples/sample_policy.yaml -o ./demo_keys/policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
