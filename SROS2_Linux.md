@@ -138,7 +138,7 @@ scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keys
 That will be very quick, since it's just copying some very small text files.
 Now, we're ready to run a multi-machine talker/listener demo!
 
-Once the envrionment setup we can run on oldschool:
+Once the environment is setup we can run on oldschool:
 
 ```bash
 ros2 run demo_nodes_cpp talker
