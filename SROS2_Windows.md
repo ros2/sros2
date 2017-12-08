@@ -57,8 +57,19 @@ Prepare your environment by setting three following environment variables as fol
 
 ## Run the demo
 
-Open a new terminal:
+ROS2 allows you to [change DDS implementation at runtime](https://github.com/ros2/ros2/wiki/Working-with-multiple-RMW-implementations).
+This demo can be run with fastrtps by setting:
+```bash
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
+And with Connext by setting:
+```bash
+export RMW_IMPLEMENTATION=rmw_connext_cpp
+```
 
+### Authentication and Encryption
+
+Open a new terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
@@ -86,3 +97,38 @@ ros2 run demo_nodes_py listener
 ```
 
 You will see that it cannot connect and receive the messages.
+
+### Access Control (RTI Connext only, from source only)
+
+The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
+To increase the level of security in the system, you can define strict limits, known as access control, which restrict what each node is able to do.
+For example, one node would be able to publish to a particular topic, and another node might be able to subscribe to that topic.
+To do this, we will use the sample policy file provided in `examples/sample_policy.yaml`.
+
+First, we will copy this sample policy file into our keystore:
+
+```bash
+curl -sk https://raw.githubusercontent.com/ros2/sros2/release-latest/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
+```
+
+And now we will use it to generate the XML permission files expected by the middleware:
+
+```bash
+ros2 security create_permission demo_keys talker demo_keys/policies.yaml
+ros2 security create_permission demo_keys listener demo_keys/policies.yaml
+```
+
+Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
+
+```
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
+```
+
+In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program:
+
+```
+RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
+```
+
+At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
+Hooray!
