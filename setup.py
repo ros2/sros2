@@ -8,8 +8,8 @@ setup(
     install_requires=['setuptools'],
     author='Morgan Quigley',
     author_email='morgan@osrfoundation.org',
-    maintainer='Morgan Quigley',
-    maintainer_email='morgan@osrfoundation.org',
+    maintainer='Mikael Arguedas',
+    maintainer_email='mikael@osrfoundation.org',
     url='https://github.com/ros2/sros2',
     keywords=['ROS'],
     classifiers=[
