@@ -310,6 +310,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
 """ % (name, name, domain_id)
     # access control only on topics for now
     topic_dict = permissions_dict['topics']
+    # add rules for automatically created ros2 topics
+    topic_dict['parameter_events'] = {'allow': 'p'}
+    topic_dict['clock'] = {'allow': 's'}
     if topic_dict:
         # we have some policies to add !
         for topic_name, policy in topic_dict.items():
