@@ -314,18 +314,22 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         # add rules for automatically created ros2 topics
         # TODO(mikaelarguedas) allow ps rules and update dictionary based on existing rule
         # if it already exists (rather than overriding the rule)
-        topic_dict['parameter_events'] = {'allow': 'p'}
+        topic_dict['parameter_events'] = {'allow': 'ps'}
         topic_dict['clock'] = {'allow': 's'}
         # we have some policies to add !
         for topic_name, policy in topic_dict.items():
-            if policy['allow'] == 's':
-                tag = 'subscribe'
+            tags = []
+            if policy['allow'] == 'ps':
+                tags = ['publish', 'subscribe']
+            elif policy['allow'] == 's':
+                tags = ['subscribe']
             elif policy['allow'] == 'p':
-                tag = 'publish'
+                tags = ['publish']
             else:
                 print("unknown permission policy '%s', skipping" % policy['allow'])
                 continue
-            permission_str += """\
+            for tag in tags:
+                permission_str += """\
         <%s>
           <partitions>
             <partition>%s</partition>
