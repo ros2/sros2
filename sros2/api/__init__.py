@@ -312,7 +312,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     topic_dict = permissions_dict['topics']
     if topic_dict:
         # add rules for automatically created ros2 topics
-        # TODO(mikaelarguedas) allow ps rules and update dictionary based on existing rule
+        # TODO(mikaelarguedas) update dictionary based on existing rule
         # if it already exists (rather than overriding the rule)
         topic_dict['parameter_events'] = {'allow': 'ps'}
         topic_dict['clock'] = {'allow': 's'}
@@ -380,12 +380,14 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         tag = 'partition'
         partition_string = \
             '<%s>' % tag + \
-            ('</%s><%s>' % (tag, tag)).join([partition for partition in service_partitions_prefix[key]]) + \
+            ('</%s><%s>' % (tag, tag)).join(
+                [partition for partition in service_partitions_prefix[key]]) + \
             '</%s>' % tag
         tag = 'topic'
         topics_string = \
             '<%s>' % tag + \
-            ('</%s><%s>' % (tag, tag)).join([(topic + key) for topic in default_parameter_topics]) + \
+            ('</%s><%s>' % (tag, tag)).join(
+                [(topic + key) for topic in default_parameter_topics]) + \
             '</%s>' % tag
         permission_str += """\
         <%s>
