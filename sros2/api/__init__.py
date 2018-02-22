@@ -409,6 +409,7 @@ def create_permission(args):
     create_signed_permissions_file(
         permissions_path, signed_permissions_path,
         keystore_ca_cert_path, keystore_ca_key_path)
+    return True
 
 
 def create_key(args):
@@ -487,7 +488,4 @@ def list_keys(args):
 
 
 def distribute_key(args):
-    print('distributing key')
-    print(args)
-    print("just kidding, sorry, this isn't implemented yet.")
-    return True
+    raise NotImplementedError()
