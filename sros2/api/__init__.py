@@ -361,6 +361,8 @@ def create_permission_file(path, name, domain_id, permissions_dict):
 """
 
     # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
+    # TODO(mikaelarguedar) remove the need for empty partition (required for Connext at startup,
+    # see https://github.com/ros2/sros2/issues/32#issuecomment-367388140
     service_partitions_prefix = {
         'Request': ['', 'rq/%s' % name],
         'Reply': ['', 'rr/%s' % name],
