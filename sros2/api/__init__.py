@@ -312,6 +312,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     topic_dict = permissions_dict['topics']
     if topic_dict:
         # add rules for automatically created ros2 topics
+        # TODO(mikaelarguedas) remove this hardcoded handling for default topics
         # TODO(mikaelarguedas) update dictionary based on existing rule
         # if it already exists (rather than overriding the rule)
         topic_dict['parameter_events'] = {'allow': 'ps'}
