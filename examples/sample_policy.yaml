@@ -3,14 +3,10 @@ nodes:
     topics:
       chatter:
         allow: s # can subscribe to chatter
-      parameter_events:
-        allow: p # can publish on parameter_events
   talker:
     topics:
       chatter:
         allow: p # can publish on chatter
-      parameter_events:
-        allow: p # can publish on parameter_events
   listener_py:
     topics:
       #'*':
