@@ -108,7 +108,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/release-latest/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
+curl -sk https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
