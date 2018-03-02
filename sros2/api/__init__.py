@@ -311,16 +311,26 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     # access control only on topics for now
     topic_dict = permissions_dict['topics']
     if topic_dict:
+        # add rules for automatically created ros2 topics
+        # TODO(mikaelarguedas) remove this hardcoded handling for default topics
+        # TODO(mikaelarguedas) update dictionary based on existing rule
+        # if it already exists (rather than overriding the rule)
+        topic_dict['parameter_events'] = {'allow': 'ps'}
+        topic_dict['clock'] = {'allow': 's'}
         # we have some policies to add !
         for topic_name, policy in topic_dict.items():
-            if policy['allow'] == 's':
-                tag = 'subscribe'
+            tags = []
+            if policy['allow'] == 'ps':
+                tags = ['publish', 'subscribe']
+            elif policy['allow'] == 's':
+                tags = ['subscribe']
             elif policy['allow'] == 'p':
-                tag = 'publish'
+                tags = ['publish']
             else:
                 print("unknown permission policy '%s', skipping" % policy['allow'])
                 continue
-            permission_str += """\
+            for tag in tags:
+                permission_str += """\
         <%s>
           <partitions>
             <partition>%s</partition>
@@ -351,13 +361,55 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         </subscribe>
 """
 
+    # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
+    # TODO(mikaelarguedas) remove the need for empty partition (required for Connext at startup),
+    # see https://github.com/ros2/sros2/issues/32#issuecomment-367388140
+    service_partitions_prefix = {
+        'Request': ['', 'rq/%s' % name],
+        'Reply': ['', 'rr/%s' % name],
+    }
+    default_parameter_topics = [
+        'get_parameters',
+        'get_parameter_types',
+        'set_parameters',
+        'list_parameters',
+        'describe_parameters',
+    ]
+    for key in service_partitions_prefix.keys():
+        if key == 'Request':
+            pubsubtag = 'publish'
+        else:
+            pubsubtag = 'subscribe'
+        tag = 'partition'
+        partition_string = \
+            '<%s>' % tag + \
+            ('</%s><%s>' % (tag, tag)).join(
+                [partition for partition in service_partitions_prefix[key]]) + \
+            '</%s>' % tag
+        tag = 'topic'
+        topics_string = \
+            '<%s>' % tag + \
+            ('</%s><%s>' % (tag, tag)).join(
+                [(topic + key) for topic in default_parameter_topics]) + \
+            '</%s>' % tag
+        permission_str += """\
+        <%s>
+          <partitions>
+            %s
+          </partitions>
+          <topics>
+            %s
+          </topics>
+        </%s>
+""" % (pubsubtag, partition_string, topics_string, pubsubtag)
+
     # DCPS* is necessary for builtin data readers
     permission_str += """\
-      <subscribe>
-        <topics>
-          <topic>DCPS*</topic>
-        </topics>
-      </subscribe>
+        <subscribe>
+          <topics>
+            <topic>DCPS*</topic>
+          </topics>
+        </subscribe>
       </allow_rule>
       <default>DENY</default>
     </grant>
