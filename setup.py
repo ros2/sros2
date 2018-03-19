@@ -6,6 +6,7 @@ setup(
     version='0.4.0',
     packages=find_packages(exclude=['test']),
     install_requires=['setuptools'],
+    zip_safe=True,
     author='Morgan Quigley',
     author_email='morgan@osrfoundation.org',
     maintainer='Mikael Arguedas',
