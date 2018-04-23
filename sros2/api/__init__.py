@@ -148,6 +148,7 @@ def create_governance_file(path, domain_id):
                 <topic_rule>
                     <topic_expression>*</topic_expression>
                     <enable_discovery_protection>true</enable_discovery_protection>
+                    <enable_liveliness_protection>true</enable_liveliness_protection>
                     <enable_read_access_control>true</enable_read_access_control>
                     <enable_write_access_control>true</enable_write_access_control>
                     <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
