@@ -77,12 +77,18 @@ crlnumber = $dir/crlnumber
 crl = $dir/crl.pem
 RANDFILE = $dir/private/.rand
 name_opt = ca_default
-cert_opt       = ca_default
+cert_opt = ca_default
 default_days = 1825
 default_crl_days = 30
 default_md = sha256
 preserve = no
 policy = policy_match
+x509_extensions = local_ca_extensions
+#
+#
+# Copy extensions specified in the certificate request
+#
+copy_extensions = copy
 
 [ policy_match ]
 countryName = optional
@@ -92,13 +98,24 @@ organizationalUnitName = optional
 commonName = supplied
 emailAddress = optional
 
+#
+#
+# x509 extensions to use when generating server certificates.
+#
+[ local_ca_extensions ]
+basicConstraints = CA:false
+
 [ req ]
 prompt = no
 distinguished_name = req_distinguished_name
 string_mask = utf8only
+x509_extensions = root_ca_extensions
 
 [ req_distinguished_name ]
 commonName = sros2testCA
+
+[ root_ca_extensions ]
+basicConstraints = CA:true
 """)
 
 
