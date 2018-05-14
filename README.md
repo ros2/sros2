@@ -12,5 +12,3 @@ If you want to run the demo using RTI Connext Secure you will need a license for
 [Try SROS2 on MacOS](https://github.com/ros2/sros2/blob/master/SROS2_MacOS.md)
 
 [Try SROS2 on Windows](https://github.com/ros2/sros2/blob/master/SROS2_Windows.md)
-
-[Try SROS2 in Docker](https://github.com/ros2/sros2/blob/master/SROS2_Docker.md)
