@@ -361,20 +361,20 @@ def create_permission_file(path, name, domain_id, permissions_dict):
                 pubsubtag = 'publish'
             else:
                 pubsubtag = 'subscribe'
-            tag = 'topic'
             service_topics = [
                 (topic_prefix + topic + service_direction) for topic in default_parameter_topics]
-            topics_string = \
-                '<%s>' % tag + \
-                ('</%s><%s>' % (tag, tag)).join(service_topics) + \
-                '</%s>' % tag
-            permission_str += """\
+            topics_string = ''
+            for service_topic in service_topics:
+                topics_string += """
+            <topic>
+             %s
+            </topic>""" % (service_topic)
+            permission_str += """
         <%s>
           <partitions>
             <partition></partition>
           </partitions>
-          <topics>
-            %s
+          <topics>%s
           </topics>
         </%s>
 """ % (pubsubtag, topics_string, pubsubtag)
