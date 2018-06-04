@@ -353,13 +353,13 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             'list_parameters',
             'describe_parameters',
         ]
-        for service_direction, topic_prefix in service_topic_prefixes.items():
-            if service_direction == 'Request':
+        for topic_suffix, topic_prefix in service_topic_prefixes.items():
+            if topic_suffix == 'Request':
                 pubsubtag = 'publish'
             else:
                 pubsubtag = 'subscribe'
             service_topics = [
-                (topic_prefix + topic + service_direction) for topic in default_parameter_topics]
+                (topic_prefix + topic + topic_suffix) for topic in default_parameter_topics]
             topics_string = ''
             for service_topic in service_topics:
                 topics_string += """
