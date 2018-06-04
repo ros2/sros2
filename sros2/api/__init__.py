@@ -366,9 +366,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             topics_string = ''
             for service_topic in service_topics:
                 topics_string += """
-            <topic>
-              %s
-            </topic>""" % (service_topic)
+            <topic>%s</topic>""" % (service_topic)
             permission_str += """
         <%s>
           <partitions>
