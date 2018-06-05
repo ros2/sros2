@@ -115,10 +115,7 @@ ros2 run demo_nodes_py listener
 Note: You can switch between the C++ and Python packages arbitrarily.
 
 
-At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
-Hooray!
-
-### Access Control (RTI Connext only, from source only)
+### Access Control
 
 The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
 To increase the level of security in the system, you can define strict limits, known as access control, which restrict what each node is able to do.
@@ -141,12 +138,14 @@ ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_cpp talker
+ros2 run demo_nodes_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program:
 
 ```
-RMW_IMPLEMENTATION=rmw_connext_cpp ros2 run demo_nodes_py listener
+ros2 run demo_nodes_py listener
 ```
 
+At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
+Hooray!
