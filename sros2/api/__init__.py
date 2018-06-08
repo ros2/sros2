@@ -351,20 +351,17 @@ def create_permission_file(path, name, domain_id, permissions_dict):
                 permission_str += """\
         <%s>
           <partitions>
-            <partition>%s</partition>
+            <partition></partition>
           </partitions>
           <topics>
             <topic>%s</topic>
           </topics>
         </%s>
-""" % (tag, 'rt', topic_name, tag)
+""" % (tag, 'rt/' + topic_name, tag)
         # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        # TODO(mikaelarguedas) remove the need for empty partition
-        # (required for Connext at startup),
-        # see https://github.com/ros2/sros2/issues/32#issuecomment-367388140
-        service_partitions_prefix = {
-            'Request': ['', 'rq/%s' % name],
-            'Reply': ['', 'rr/%s' % name],
+        service_topic_prefixes = {
+            'Request': 'rq/%s/' % name,
+            'Reply': 'rr/%s/' % name,
         }
         default_parameter_topics = [
             'get_parameters',
@@ -373,33 +370,26 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             'list_parameters',
             'describe_parameters',
         ]
-        for key in service_partitions_prefix.keys():
-            if key == 'Request':
+        for topic_suffix, topic_prefix in service_topic_prefixes.items():
+            if topic_suffix == 'Request':
                 pubsubtag = 'publish'
             else:
                 pubsubtag = 'subscribe'
-            tag = 'partition'
-            partition_string = \
-                '<%s>' % tag + \
-                ('</%s><%s>' % (tag, tag)).join(
-                    [partition for partition in service_partitions_prefix[key]]) + \
-                '</%s>' % tag
-            tag = 'topic'
-            topics_string = \
-                '<%s>' % tag + \
-                ('</%s><%s>' % (tag, tag)).join(
-                    [(topic + key) for topic in default_parameter_topics]) + \
-                '</%s>' % tag
-            permission_str += """\
+            service_topics = [
+                (topic_prefix + topic + topic_suffix) for topic in default_parameter_topics]
+            topics_string = ''
+            for service_topic in service_topics:
+                topics_string += """
+            <topic>%s</topic>""" % (service_topic)
+            permission_str += """
         <%s>
           <partitions>
-            %s
+            <partition></partition>
           </partitions>
-          <topics>
-            %s
+          <topics>%s
           </topics>
         </%s>
-""" % (pubsubtag, partition_string, topics_string, pubsubtag)
+""" % (pubsubtag, topics_string, pubsubtag)
 
     else:
         # no policy found: allow everything!
