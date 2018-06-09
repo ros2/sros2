@@ -364,17 +364,14 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             'Reply': 'rr/%s/' % name,
         }
         default_parameter_topics = [
+            'describe_parameters',
             'get_parameters',
             'get_parameter_types',
-            'set_parameters',
             'list_parameters',
-            'describe_parameters',
+            'set_parameters',
+            'set_parameters_atomically',
         ]
         for topic_suffix, topic_prefix in service_topic_prefixes.items():
-            if topic_suffix == 'Request':
-                pubsubtag = 'publish'
-            else:
-                pubsubtag = 'subscribe'
             service_topics = [
                 (topic_prefix + topic + topic_suffix) for topic in default_parameter_topics]
             topics_string = ''
@@ -382,14 +379,21 @@ def create_permission_file(path, name, domain_id, permissions_dict):
                 topics_string += """
             <topic>%s</topic>""" % (service_topic)
             permission_str += """
-        <%s>
+        <publish>
           <partitions>
             <partition></partition>
           </partitions>
           <topics>%s
           </topics>
-        </%s>
-""" % (pubsubtag, topics_string, pubsubtag)
+        </publish>
+        <subscribe>
+          <partitions>
+            <partition></partition>
+          </partitions>
+          <topics>%s
+          </topics>
+        </subscribe>
+""" % (topics_string, topics_string)
 
     else:
         # no policy found: allow everything!
