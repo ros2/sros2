@@ -27,7 +27,7 @@ If you don't have OpenSSL installed, please see follow [these instructions](http
 
 We will now create a folder to store all the files necessary for this demo:
 
-```bash
+```bat
 md C:\dev\ros2\sros2_demo
 ```
 
@@ -35,63 +35,72 @@ md C:\dev\ros2\sros2_demo
 
 #### Generate a keystore
 
-```bash
+```bat
 cd sros2_demo
 ros2 security create_keystore demo_keys
 ```
 
 #### Generate keys and certificates for the talker and listener nodes
 
-```bash
+```bat
 ros2 security create_key demo_keys talker
 ros2 security create_key demo_keys listener
 ```
 
+If `unable to write 'random state'` appears then set the environment variable `RANDFILE`.
+```bat
+set RANDFILE=C:\dev\sros2_demo\.rnd
+```
+
+Then re-run the commands above.
+
 ### Define the SROS2 environment variables
 Prepare your environment by setting three following environment variables as follows
 
-- `set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-- `set ROS_SECURITY_ENABLE=true`
-- `set ROS_SECURITY_STRATEGY=Enforce`
+```bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
+```
 
 
 ## Run the demo
 
 ROS2 allows you to [change DDS implementation at runtime](https://github.com/ros2/ros2/wiki/Working-with-multiple-RMW-implementations).
 This demo can be run with fastrtps by setting:
-```bash
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```bat
+set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
 And with Connext by setting:
-```bash
-export RMW_IMPLEMENTATION=rmw_connext_cpp
+```bat
+set RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
 ### Authentication and Encryption
 
 Open a new terminal:
 
-```
+```bat
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-set ROS_SECURITY_ENABLE=true`
-set ROS_SECURITY_STRATEGY=Enforce`
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py talker
 ```
 
 Open another terminal:
 
-```
+```bat
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-set ROS_SECURITY_ENABLE=true`
-set ROS_SECURITY_STRATEGY=Enforce`
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py listener
 ```
 
 For comparison if you open another terminal and only run:
 
-```
+```bat
 call <path_to_ros2_install>/setup.bat
 ros2 run demo_nodes_py listener
 ```
@@ -107,13 +116,13 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 
 First, we will copy this sample policy file into our keystore:
 
-```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
+```bat
+curl -k https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
 
-```bash
+```bat
 ros2 security create_permission demo_keys talker demo_keys/policies.yaml
 ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 ```
