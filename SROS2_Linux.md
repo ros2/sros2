@@ -21,31 +21,32 @@ sudo apt update && sudo apt install libssl-dev
 
 First install ROS2 from source following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Development-Setup)
 
-Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the ament invocation needs to be modified to pass:
+Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
-src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --cmake-args -DSECURITY=ON --
+colcon build --symlink-install --cmake-args -DSECURITY=ON
 ```
 
 ### Additional configuration for RTI Connext
 
 Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
 
-Warning: this tutorial is for Connext 5.3.0. If you use Connext 5.2.4 please refer to the [tutorial from ROS 2 Beta 3](https://github.com/ros2/sros2/blob/release-beta3/SROS2_Linux.md)
+Warning: this tutorial is for Connext 5.3.1.
+If you use Connext 5.2.4 please refer to the [tutorial from ROS 2 Beta 3](https://github.com/ros2/sros2/blob/release-beta3/SROS2_Linux.md)
 
 The RTI Connext installer allows you to choose where it lands in the filesystem.
-These instructions assume that you have prefixed the RTI paths with `$HOME/rti` so that the latest version (5.3.0 at time of writing) will land in `$HOME/rti/rti_connext_dds-5.3.0`.
+These instructions assume that you have prefixed the RTI paths with `$HOME/rti` so that the latest version will land in `$HOME/rti/rti_connext_dds-5.3.1`.
 Note that the installer is a multi-partprocess.
 Fist you must install the "host" package, and then from its launcher you can install the additional "target" packages and the `secure_dds` package.
 Additional (and better) help is provided in the RTI documentation.
 
 ```bash
-source ~/rti/rti_connext_dds-5.3.0/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
+source ~/rti/rti_connext_dds-5.3.1/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
 ```
 
 It's often handy to create an alias for that super-long shell incantation to source the RTI script, for example, by adding something like this to your `~/.bashrc` file (altering the paths and alias names as needed/wanted):
 
 ```
-alias rti='. ~/rti/rti_connext_dds-5.3.0/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
+alias rti='. ~/rti/rti_connext_dds-5.3.1/resource/scripts/rtisetenv_x64Linux3gcc5.4.0.bash'
 ```
 
 ## Run the demo
@@ -96,6 +97,8 @@ And with Connext by setting:
 export RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
+Note that secure communication between vendors is not supported.
+
 Run the `talker` demo program:
 
 ```bash
@@ -108,7 +111,18 @@ In another terminal (after preparing the terminal as previously described), we w
 ros2 run demo_nodes_py listener
 ```
 
+These nodes will be communicating using authentication and encryption!
+If you look at the packet contents on e.g. Wireshark, the messages will be encrypted.
+
 Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py) packages arbitrarily.
+
+These nodes are able to communicate because we have created the appropriate keys and certificates for them.
+However, other nodes will not be able to communicate, e.g. the following invocation will fail to start a node with a name that is not associated with valid keys/certificates:
+
+```bash
+# This will fail because the node name does not have valid keys/certificates
+ros2 run demo_nodes_cpp talker __node:=not_talker
+```
 
 
 ### Run the demo on different machines
@@ -172,7 +186,9 @@ ros2 security create_permission demo_keys talker demo_keys/policies.yaml
 ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 ```
 
-Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
+These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
+
+In one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```
 ros2 run demo_nodes_cpp talker
@@ -186,3 +202,11 @@ ros2 run demo_nodes_py listener
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
 Hooray!
+
+The nodes will not be able to publish/subscribe to topics not listed in the policy.
+For example, the following attempt for the `listener` node to subscribe to a topic other than `chatter` will fail:
+
+```bash
+# This will fail because the node is not permitted to subscribe to topics other than chatter.
+ros2 run demo_nodes_py listener chatter:=not_chatter
+```
