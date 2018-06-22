@@ -47,24 +47,38 @@ ros2 security create_key demo_keys talker
 ros2 security create_key demo_keys listener
 ```
 
+<detail>
+<summary>If a message "unable to write 'random state'" then set RANDFILE</summary>
+
+If `unable to write 'random state'` appears then set the environment variable `RANDFILE`.
+```bat
+set RANDFILE=C:\dev\sros2_demo\.rnd
+```
+
+Then re-run the commands above.
+
+</detail>
+
 ### Define the SROS2 environment variables
 Prepare your environment by setting three following environment variables as follows
 
-- `set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-- `set ROS_SECURITY_ENABLE=true`
-- `set ROS_SECURITY_STRATEGY=Enforce`
+```bat
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
+```
 
 
 ## Run the demo
 
 ROS2 allows you to [change DDS implementation at runtime](https://github.com/ros2/ros2/wiki/Working-with-multiple-RMW-implementations).
 This demo can be run with fastrtps by setting:
-```bash
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```bat
+set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
 And with Connext by setting:
-```bash
-export RMW_IMPLEMENTATION=rmw_connext_cpp
+```bat
+set RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
 ### Authentication and Encryption
@@ -73,9 +87,9 @@ Open a new terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-set ROS_SECURITY_ENABLE=true`
-set ROS_SECURITY_STRATEGY=Enforce`
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py talker
 ```
 
@@ -83,9 +97,9 @@ Open another terminal:
 
 ```
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys`
-set ROS_SECURITY_ENABLE=true`
-set ROS_SECURITY_STRATEGY=Enforce`
+set ROS_SECURITY_ROOT_DIRECTORY=%cd%/demo_keys
+set ROS_SECURITY_ENABLE=true
+set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py listener
 ```
 
@@ -108,7 +122,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
+curl -k https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o .\demo_keys\policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
