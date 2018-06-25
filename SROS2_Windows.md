@@ -129,13 +129,13 @@ ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 
 Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
-```
+```bat
 ros2 run demo_nodes_cpp talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program:
 
-```
+```bat
 ros2 run demo_nodes_py listener
 ```
 
