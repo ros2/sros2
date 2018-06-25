@@ -21,6 +21,12 @@ colcon build --cmake-args -DSECURITY=ON
 
 If you don't have OpenSSL installed, please see follow [these instructions](https://github.com/ros2/ros2/wiki/Windows-Install-Binary#install-openssl)
 
+### Additional configuration for RTI Connext
+
+To use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
+See [this page](https://github.com/ros2/ros2/wiki/Install-Connext-Security-Plugins) for details on installing the security plugins.
+
+
 ## Preparing the environment for the demo
 
 ### Create a folder for the files required by this demo

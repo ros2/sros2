@@ -29,6 +29,7 @@ colcon build --symlink-install --cmake-args -DSECURITY=ON
 ### Additional configuration for RTI Connext
 
 Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugins (note that you also need to install RTI's version of openssl as 5.3.1 doesnt support openssl 1.1.0 provided in Ubuntu Bionic).
+See [this page](https://github.com/ros2/ros2/wiki/Install-Connext-Security-Plugins) for details on installing the security plugins.
 
 Warning: this tutorial is for ROS Bouncy and Connext 5.3.1.
 If you use ROS Ardent or Connext 5.3.0 please refer to the [tutorial from ROS Ardent](https://github.com/ros2/sros2/blob/ardent/SROS2_Linux.md)

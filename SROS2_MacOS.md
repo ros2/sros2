@@ -51,6 +51,11 @@ source ~/ros2_ws/install/setup.bash
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
 
+### Additional configuration for RTI Connext
+
+To use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
+See [this page](https://github.com/ros2/ros2/wiki/Install-Connext-Security-Plugins) for details on installing the security plugins.
+
 ## Preparing the environment for the demo
 
 ### Create a folder for the files required by this demo
