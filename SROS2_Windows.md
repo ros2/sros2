@@ -14,7 +14,7 @@ Please follow [these instructions](https://github.com/ros2/ros2/wiki/Windows-Dev
 
 To build the ROS2 code with security extensions, call:
 ```bat
-python src\ament\ament_tools\scripts\ament.py build --build-tests --cmake-args -DSECURITY=ON --
+colcon build --cmake-args -DSECURITY=ON
 ```
 
 ### Install OpenSSL
@@ -76,6 +76,8 @@ And with Connext by setting:
 set RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
+Note that secure communication between vendors is not supported.
+
 ### Authentication and Encryption
 
 Open a new terminal:
@@ -98,14 +100,18 @@ set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py listener
 ```
 
-For comparison if you open another terminal and only run:
+These nodes will be communicating using authentication and encryption!
+If you look at the packet contents on e.g. Wireshark, the messages will be encrypted.
+
+Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py) packages arbitrarily.
+ 
+These nodes are able to communicate because we have created the appropriate keys and certificates for them.
+However, other nodes will not be able to communicate, e.g. the following invocation will fail to start a node with a name that is not associated with valid keys/certificates:
 
 ```bat
-call <path_to_ros2_install>/setup.bat
-ros2 run demo_nodes_py listener
+REM This will fail because the node name does not have valid keys/certificates
+ros2 run demo_nodes_cpp talker __node:=not_talker
 ```
-
-You will see that it cannot connect and receive the messages.
 
 ### Access Control
 
@@ -127,7 +133,9 @@ ros2 security create_permission demo_keys talker demo_keys/policies.yaml
 ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 ```
 
-Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
+These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
+
+In one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```bat
 ros2 run demo_nodes_cpp talker
@@ -141,3 +149,11 @@ ros2 run demo_nodes_py listener
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
 Hooray!
+
+The nodes will not be able to publish/subscribe to topics not listed in the policy.
+For example, the following attempt for the `listener` node to subscribe to a topic other than `chatter` will fail:
+
+```bat
+REM This will fail because the node is not permitted to subscribe to topics other than chatter.
+ros2 run demo_nodes_py listener chatter:=not_chatter
+```
