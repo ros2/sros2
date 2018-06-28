@@ -37,11 +37,11 @@ export OPENSSL_ROOT_DIR=`brew --prefix openssl`
 ```
 For convenience you can add this export to your bash_profile.
 
-Install ROS2 from source following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Development-Setup)
+Install ROS2 from source following [these instructions](https://github.com/ros2/ros2/wiki/OSX-Development-Setup)
 
-Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the ament invocation needs to be modified to pass:
+Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
-src/ament/ament_tools/scripts/ament.py build --build-tests --symlink-install --cmake-args -DSECURITY=ON --
+colcon build --symlink-install --cmake-args -DSECURITY=ON
 ```
 
 Setup your environment:
@@ -50,6 +50,11 @@ source ~/ros2_ws/install/setup.bash
 ``` 
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
+
+### Additional configuration for RTI Connext
+
+To use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
+See [this page](https://github.com/ros2/ros2/wiki/Install-Connext-Security-Plugins) for details on installing the security plugins.
 
 ## Preparing the environment for the demo
 
@@ -99,6 +104,8 @@ And with Connext by setting:
 export RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
+Note that secure communication between vendors is not supported.
+
 ### Authentication and Encryption
 
 Run the `talker` demo program:
@@ -112,7 +119,18 @@ In another terminal (after preparing the terminal as previously described), we w
 ros2 run demo_nodes_py listener
 ```
 
+These nodes will be communicating using authentication and encryption!
+If you look at the packet contents on e.g. Wireshark, the messages will be encrypted.
+
 Note: You can switch between the C++ and Python packages arbitrarily.
+
+These nodes are able to communicate because we have created the appropriate keys and certificates for them.
+However, other nodes will not be able to communicate, e.g. the following invocation will fail to start a node with a name that is not associated with valid keys/certificates:
+
+```bash
+# This will fail because the node name does not have valid keys/certificates
+ros2 run demo_nodes_cpp talker __node:=not_talker
+```
 
 
 ### Access Control
@@ -125,7 +143,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/ardent/examples/sample_policy.yaml -o ./demo_keys/policies.yaml
+curl -sk https://raw.githubusercontent.com/ros2/sros2/master/examples/sample_policy.yaml -o ./demo_keys/policies.yaml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
@@ -135,7 +153,9 @@ ros2 security create_permission demo_keys talker demo_keys/policies.yaml
 ros2 security create_permission demo_keys listener demo_keys/policies.yaml
 ```
 
-Then, in one terminal (after preparing the terminal as previously described), run the `talker` demo program:
+These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
+
+In one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```
 ros2 run demo_nodes_cpp talker
@@ -149,3 +169,11 @@ ros2 run demo_nodes_py listener
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
 Hooray!
+
+The nodes will not be able to publish/subscribe to topics not listed in the policy.
+For example, the following attempt for the `listener` node to subscribe to a topic other than `chatter` will fail:
+
+```bash
+# This will fail because the node is not permitted to subscribe to topics other than chatter.
+ros2 run demo_nodes_py listener chatter:=not_chatter
+```
