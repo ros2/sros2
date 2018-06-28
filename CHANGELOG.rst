@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.0 (2018-06-27)
+------------------
 * Update docs for bouncy leveraging remapping for demo (`#53 <https://github.com/ros2/sros2/issues/53>`_)
 * Windows tutorial tweaks (`#58 <https://github.com/ros2/sros2/issues/58>`_)
 * publish ans subscribe to all parameter service topics (`#52 <https://github.com/ros2/sros2/issues/52>`_)
