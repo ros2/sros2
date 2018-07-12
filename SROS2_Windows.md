@@ -55,7 +55,7 @@ ros2 security create_key demo_keys listener
 
 If `unable to write 'random state'` appears then set the environment variable `RANDFILE`.
 ```bat
-set RANDFILE=C:\dev\sros2_demo\.rnd
+set RANDFILE=C:\dev\ros2\sros2_demo\.rnd
 ```
 
 Then re-run the commands above.
