@@ -145,17 +145,12 @@ def create_governance_file(path, domain_id):
         f.write("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20160303/omg_shared_ca_governance.xsd">
+    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_governance.xsd">
     <domain_access_rules>
         <domain_rule>
             <domains>
               <id>%s</id>
             </domains>
-            <!-- SPECIFIED IN DDS SECURITY XSD -->
-            <!-- <allow_unauthenticated_join>false</allow_unauthenticated_join> -->
-            <!-- SPECIFIED IN DDS SECURITY BUT NOT IN THE OFFICIAL XSD,
-            IMPLEMENTED BY RTI DDSSEC-130 and RTI XSD:
-            http://community.rti.com/schema/5.3.0/dds_security_governance.xsd -->
             <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
             <enable_join_access_control>true</enable_join_access_control>
             <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
@@ -308,7 +303,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
     permission_str = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20160303/omg_shared_ca_permissions.xsd">
+    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_permissions.xsd">
   <permissions>
     <grant name="%s_policies">
       <subject_name>CN=%s</subject_name>
