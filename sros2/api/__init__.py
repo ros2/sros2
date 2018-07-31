@@ -151,6 +151,7 @@ def create_governance_file(path):
             <domains>
               <id_range>
                 <min>0</min>
+                <max>230</max>
               </id_range>
             </domains>
             <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
@@ -325,6 +326,7 @@ def create_permission_file(path, name, domain_id, permissions_dict={}):
         <domains>
           <id_range>
             <min>0</min>
+            <max>230</max>
           </id_range>
         </domains>
 """
