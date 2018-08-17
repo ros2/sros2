@@ -425,7 +425,7 @@ def create_permission_file(path, name, domain_id, permissions_dict):
 def get_permissions(name, policy_file_path):
     import yaml
     if not os.path.isfile(policy_file_path):
-        raise RuntimeError("policy file '%s' does not exist" % policy_file_path)
+        raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
     with open(policy_file_path, 'r') as graph_permissions_file:
         try:
             graph = yaml.load(graph_permissions_file)
