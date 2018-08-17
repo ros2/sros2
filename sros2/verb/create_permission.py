@@ -40,5 +40,8 @@ class CreatePermissionVerb(VerbExtension):
             allowednames=('yaml'), directories=False)
 
     def main(self, *, args):
-        success = create_permission(args)
+        try:
+            success = create_permission(args)
+        except FileNotFoundError as e:
+            raise RuntimeError(str(e))
         return 0 if success else 1
