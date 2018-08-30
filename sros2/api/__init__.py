@@ -483,8 +483,10 @@ def create_key(args):
 
     # copy the CA cert in there
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
-    dest_ca_cert_path = os.path.join(key_dir, 'ca.cert.pem')
-    shutil.copyfile(keystore_ca_cert_path, dest_ca_cert_path)
+    dest_identity_ca_cert_path = os.path.join(key_dir, 'identity_ca.cert.pem')
+    dest_permissions_ca_cert_path = os.path.join(key_dir, 'permissions_ca.cert.pem')
+    shutil.copyfile(keystore_ca_cert_path, dest_identity_ca_cert_path)
+    shutil.copyfile(keystore_ca_cert_path, dest_permissions_ca_cert_path)
 
     # copy the governance file in there
     keystore_governance_path = os.path.join(root, 'governance.p7s')
