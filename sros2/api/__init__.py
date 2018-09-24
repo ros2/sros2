@@ -302,7 +302,7 @@ def create_cert(root_path, name):
 
 
 def create_permission_file(path, name, domain_id, permissions_dict={}):
-    wildcard = permissions_dict == {}
+    wildcard = True  # permissions_dict == {}
     permission_str = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
