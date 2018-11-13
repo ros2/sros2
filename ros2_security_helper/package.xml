@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+    <package format="2">
+    <name>ros2_security_helper</name>
+    <version>1.0.0</version>
+    <description>Common AWS SDK utilities, intended for use by ROS packages using the AWS SDK.</description>
+    <author email="aws-b9-platform@amazon.com">AWS B9 Team</author>
+    <maintainer email="aws-b9-platform@amazon.com">AWS B9 Team</maintainer>
+    <license>Apache 2.0</license>
+    
+    <buildtool_depend>cmake</buildtool_depend>
+    <export>
+    <build_type>cmake</build_type>
+    </export>
+</package>

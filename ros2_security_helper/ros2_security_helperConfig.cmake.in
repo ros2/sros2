@@ -1,0 +1,8 @@
+# Compute paths
+
+set(DEFAULT_KEYSTORE keys)
+set(ros2_security_helperBASE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../..")
+set(DEFAULT_SECURE_FOLDER "${ros2_security_helperBASE_DIR}/ros2_security")
+
+include("${CMAKE_CURRENT_LIST_DIR}/GenerateSecurity.cmake")
+

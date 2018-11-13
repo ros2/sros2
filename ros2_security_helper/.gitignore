@@ -1,0 +1,10 @@
+build
+install
+.catkin_workspace
+devel
+.idea
+cmake-build-debug
+.DS_Store
+.catkin_tools
+logs
+
