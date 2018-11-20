@@ -40,6 +40,7 @@ enhance the security of ROS 2 deployments.""",
             ':CreatePermissionVerb',
             'distribute_key = sros2.verb.distribute_key:DistributeKeyVerb',
             'list_keys = sros2.verb.list_keys:ListKeysVerb',
+            'generate_permissions = sros2.verb.generate_permissions:GeneratePermissionsVerb',
         ],
     }
 )
