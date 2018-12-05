@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles>
+  <!-- Sequence of profiles -->
+  <profile node="/talker">
+    <!-- Sequence of subsystems -->
+    <topics publish="ALLOW" subscribe="DENY">
+      <!-- Sequence of namespaces -->
+      <topic>/chatter</topic>
+      <topic>/foo</topic>
+      <topic>/foo/bar/*</topic>
+    </topics>
+  </profile>
+    <!-- Profile defines by name attribute -->
+  <profile node="/listener">
+    <!-- Subsystem permissions are qualified -->
+    <topics subscribe="ALLOW">
+      <topic>/chatter</topic>
+    </topics>
+  </profile>
+  <profile node="/add_two_ints_server">
+    <services reply="ALLOW" request="ALLOW">
+      <service>/add_two_ints</service>
+    </services>
+  </profile>
+  <profile node="/add_two_ints_client">
+    <services request="ALLOW">
+      <service>/add_two_ints</service>
+    </services>
+  </profile>
+  <profile node="/fibonacci_server">
+    <actions call="ALLOW" execute="ALLOW">
+      <action>/add_two_ints</action>
+    </actions>
+  </profile>
+  <profile node="/fibonacci_client">
+    <actions call="ALLOW">
+      <action>/add_two_ints</action>
+    </actions>
+  </profile>
+</profiles>
