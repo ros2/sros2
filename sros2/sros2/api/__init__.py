@@ -19,46 +19,13 @@ import platform
 import shutil
 import subprocess
 
-HIDDEN_NODE_PREFIX = '_'
+from lxml import etree
 
-NodeName = namedtuple('NodeName', ('name', 'namespace', 'full_name'))
-TopicInfo = namedtuple('Topic', ('name', 'types'))
-
-
-def get_node_names(*, node, include_hidden_nodes=False):
-    node_names_and_namespaces = node.get_node_names_and_namespaces()
-    return [
-        NodeName(
-            name=t[0],
-            namespace=t[1],
-            full_name=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
-        for t in node_names_and_namespaces
-        if (
-            include_hidden_nodes or
-            (t[0] and not t[0].startswith(HIDDEN_NODE_PREFIX))
-        )
-    ]
-
-
-def get_topics(node_name, func):
-    names_and_types = func(node_name.name, node_name.namespace)
-    return [
-        TopicInfo(
-            name=t[0],
-            types=t[1])
-        for t in names_and_types]
-
-
-def get_subscriber_info(node, node_name):
-    return get_topics(node_name, node.get_subscriber_names_and_types_by_node)
-
-
-def get_publisher_info(node, node_name):
-    return get_topics(node_name, node.get_publisher_names_and_types_by_node)
-
-
-def get_service_info(node, node_name):
-    return get_topics(node_name, node.get_service_names_and_types_by_node)
+from sros2.policy import (
+    get_policy_schema,
+    get_transport_schema,
+    get_transport_template,
+)
 
 
 def find_openssl_executable():
@@ -341,163 +308,57 @@ def create_cert(root_path, name):
         (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
-def format_publish_permissions(topics):
-    return """
-        <publish>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </publish> """ % topics
+def create_permission_file(path, name, domain_id, policy_element):
+
+    policy_xsl_path = get_transport_template('dds', 'policy.xsl')
+    policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
+    permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
+    permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
+    permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
+    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+
+    _permissions_xml = policy_xsl(policy_element)
+    permissions_xml = permissions_xsl(_permissions_xml)
+
+    domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
+    for domain_id_element in domain_id_elements:
+        domain_id_element.text = domain_id
+
+    try:
+        permissions_xsd.assertValid(permissions_xml)
+    except etree.DocumentInvalid as e:
+        raise RuntimeError(str(e))
+
+    with open(path, 'wb') as f:
+        f.write(etree.tostring(permissions_xml, pretty_print=True))
 
 
-def format_subscription_permissions(topics):
-    return """
-        <subscribe>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </subscribe> """ % topics
-
-
-def create_permission_file(path, name, domain_id, permissions_dict):
-    permission_str = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_permissions.xsd">
-  <permissions>
-    <grant name="%s_policies">
-      <subject_name>CN=%s</subject_name>
-      <validity>
-      <!--
-       Format is CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
-                           The time zone may be specified as Z (UTC) or (+|-)hh:mm.
-                           Time zones that aren't specified are considered UTC.
-      -->
-        <not_before>2013-10-26T00:00:00</not_before>
-        <not_after>2023-10-26T22:45:30</not_after>
-      </validity>
-      <allow_rule>
-        <domains>
-          <id>%s</id>
-        </domains>
-""" % (name, name, domain_id)
-    # access control only on topics for now
-    topic_dict = permissions_dict['topics']
-    if topic_dict:
-        # add rules for automatically created ros2 topics
-        # TODO(mikaelarguedas) remove this hardcoded handling for default topics
-        # TODO(mikaelarguedas) update dictionary based on existing rule
-        # if it already exists (rather than overriding the rule)
-        topic_dict['/parameter_events'] = {'allow': ['publish', 'subscribe']}
-        topic_dict['/clock'] = {'allow': ['subscribe']}
-        # we have some policies to add !
-        for topic_name, policy in topic_dict.items():
-            # add a / if it doesn't exist
-            formatted_topic_name = '/' + (topic_name.lstrip('/'))
-            tags = []
-            publish = 'publish'
-            subscribe = 'subscribe'
-            if publish in policy['allow']:
-                tags.append(publish)
-                policy['allow'].remove(publish)
-            if subscribe in policy['allow']:
-                tags.append(subscribe)
-                policy['allow'].remove(subscribe)
-            if len(policy['allow']) > 0:
-                print('unknown permission policy \'%s\', skipping' % policy['allow'])
-                continue
-            for tag in tags:
-                permission_str += """\
-        <%s>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>
-            <topic>%s</topic>
-          </topics>
-        </%s>
-""" % (tag, 'rt' + formatted_topic_name, tag)
-        # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        service_dict = permissions_dict['services']
-        default_parameter_topics = [
-            'describe_parameters',
-            'get_parameters',
-            'get_parameter_types',
-            'list_parameters',
-            'set_parameters',
-            'set_parameters_atomically',
-        ]
-        default_parameter_topics = ['/%s/%s' % (name, topic) for topic in default_parameter_topics]
-        rw_access_pair = {'allow': ['request', 'reply']}
-        for topic in default_parameter_topics:
-            service_dict[topic] = rw_access_pair
-        published_topics_string = ''
-        subscribed_topic_string = ''
-
-        for topic, permission_dict in service_dict.items():
-            permissions = permission_dict['allow']
-            request_topic = 'rq%sRequest' % topic
-            reply_topic = 'rr%sReply' % topic
-
-            if 'reply' in permissions:
-                subscribed_topic_string += """
-                <topic>%s</topic>""" % (request_topic)
-                published_topics_string += """
-                <topic>%s</topic>""" % (reply_topic)
-            if 'request' in permissions:
-                subscribed_topic_string += """
-                <topic>%s</topic>""" % (reply_topic)
-                published_topics_string += """
-                <topic>%s</topic>""" % (request_topic)
-
-        permission_str += format_publish_permissions(published_topics_string)
-        permission_str += format_subscription_permissions(subscribed_topic_string)
-    else:
-        # no policy found: allow everything!
-        permission_str += """\
-        <publish>
-          <partitions>
-            <partition>*</partition>
-          </partitions>
-          <topics>
-            <topic>*</topic>
-          </topics>
-        </publish>
-        <subscribe>
-          <partitions>
-            <partition>*</partition>
-          </partitions>
-          <topics>
-            <topic>*</topic>
-          </topics>
-        </subscribe>
-"""
-
-    permission_str += """\
-      </allow_rule>
-      <default>DENY</default>
-    </grant>
-  </permissions>
-</dds>
-"""
-    with open(path, 'w') as f:
-        f.write(permission_str)
-
-
-def get_permissions(name, policy_file_path):
-    import yaml
+def get_policy(name, policy_file_path):
     if not os.path.isfile(policy_file_path):
         raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
-    with open(policy_file_path, 'r') as graph_permissions_file:
-        try:
-            graph = yaml.load(graph_permissions_file)
-        except yaml.YAMLError as e:
-            raise RuntimeError(str(e))
-        return graph['nodes'][name]
+    policy_tree = etree.parse(policy_file_path)
+    try:
+        policy_xsd_path = get_policy_schema('policy.xsd')
+        policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
+        policy_xsd.assertValid(policy_tree)
+    except etree.DocumentInvalid as e:
+        raise RuntimeError(str(e))
+
+    ns, node = name.rsplit('/', 1)
+    ns = '/' if not ns else ns
+    profile_element = policy_tree.find(
+        path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
+            ns=ns,
+            node=node))
+    if profile_element is None:
+        raise RuntimeError('unable to find profile "{name}"'.format(
+            name=name
+        ))
+    profiles_element = etree.Element("profiles")
+    profiles_element.append(profile_element)
+    policy_element = etree.Element('policy')
+    policy_element.append(profiles_element)
+    return policy_element
 
 
 def create_signed_permissions_file(
@@ -517,11 +378,11 @@ def create_permission(args):
     policy_file_path = args.POLICY_FILE_PATH
     domain_id = os.getenv('ROS_DOMAIN_ID', 0)
 
-    key_dir = os.path.join(root, name)
+    key_dir = os.path.join(root, name.lstrip('/'))
     print('key_dir %s' % key_dir)
-    permissions_dict = get_permissions(name, policy_file_path)
+    policy_element = get_policy(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, permissions_dict)
+    create_permission_file(permissions_path, name, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
