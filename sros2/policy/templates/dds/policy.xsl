@@ -6,16 +6,13 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:variable name="templace_validity">
   <validity>
     <not_before>2013-10-26T00:00:00</not_before>
-    <not_after>2018-10-26T22:45:30</not_after>
+    <not_after>2023-10-26T22:45:30</not_after>
   </validity>
 </xsl:variable>
 
 <xsl:variable name="templace_domains">
   <domains>
-    <id_range>
-      <min>0</min>
-      <max>232</max>
-    </id_range>
+    <id>0</id>
   </domains>
 </xsl:variable>
 
