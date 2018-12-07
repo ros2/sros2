@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2018-12-07)
+------------------
 * Merge pull request `#70 <https://github.com/ros2/sros2/issues/70>`_ from ros2/update_maintainer
   Update package maintainer for sros2
 * Update package maintainer for sros2.
