@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ros version="1.0.0">
+<policy version="1.0.0">
   <profiles>
     <profile ns="/" node="talker">
       <topics publish="ALLOW" >
@@ -32,4 +32,4 @@
       </actions>
     </profile>
   </profiles>
-</ros>
+</policy>
