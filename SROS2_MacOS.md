@@ -138,19 +138,19 @@ ros2 run demo_nodes_cpp talker __node:=not_talker
 The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
 To increase the level of security in the system, you can define strict limits, known as access control, which restrict what each node is able to do.
 For example, one node would be able to publish to a particular topic, and another node might be able to subscribe to that topic.
-To do this, we will use the sample policy file provided in `examples/sample_policy.yaml`.
+To do this, we will use the sample policy file provided in `examples/sample_policy.xml`.
 
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/master/examples/sample_policy.yaml -o ./demo_keys/policies.yaml
+curl -sk https://raw.githubusercontent.com/ros2/sros2/master/examples/sample_policy.xml -o ./demo_keys/policy.xml
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bash
-ros2 security create_permission demo_keys talker demo_keys/policies.yaml
-ros2 security create_permission demo_keys listener demo_keys/policies.yaml
+ros2 security create_permission demo_keys /talker demo_keys/policy.xml
+ros2 security create_permission demo_keys /listener demo_keys/policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
