@@ -23,6 +23,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <dds>
     <permissions>
       <xsl:for-each select="profile">
+        <xsl:variable name="ns" select="@ns" />
+        <xsl:variable name="node" select="@node" />
         <grant name="{@node}">
           <subject_name>CN=<xsl:value-of select="@node"/></subject_name>
           <xsl:copy-of select="$templace_validity" />
@@ -59,9 +61,12 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <publish>
     <topics>
       <xsl:for-each select="topic">
-        <topic>rt<xsl:value-of select="."/></topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rt<xsl:value-of select="$fqn"/></topic>
       </xsl:for-each>
-  </topics>
+    </topics>
   </publish>
 </xsl:template>
 
@@ -69,7 +74,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <subscribe>
     <topics>
       <xsl:for-each select="topic">
-        <topic>rt<xsl:value-of select="."/></topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rt<xsl:value-of select="$fqn"/></topic>
       </xsl:for-each>
     </topics>
   </subscribe>
@@ -79,14 +87,20 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <publish>
     <topics>
       <xsl:for-each select="service">
-        <topic>rq<xsl:value-of select="."/>Request</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rq<xsl:value-of select="$fqn"/>Request</topic>
       </xsl:for-each>
     </topics>
   </publish>
   <subscribe>
     <topics>
       <xsl:for-each select="service">
-        <topic>rr<xsl:value-of select="."/>Reply</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rr<xsl:value-of select="$fqn"/>Reply</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
@@ -96,14 +110,20 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <publish>
     <topics>
       <xsl:for-each select="service">
-        <topic>rr<xsl:value-of select="."/>Reply</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rr<xsl:value-of select="$fqn"/>Reply</topic>
       </xsl:for-each>
     </topics>
   </publish>
   <subscribe>
     <topics>
       <xsl:for-each select="service">
-        <topic>rq<xsl:value-of select="."/>Request</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rq<xsl:value-of select="$fqn"/>Request</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
@@ -113,20 +133,26 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <publish>
     <topics>
       <xsl:for-each select="action">
-        <topic>raq<xsl:value-of select="."/>/cancelRequest</topic>
-        <topic>raq<xsl:value-of select="."/>/get_resultRequest</topic>
-        <topic>raq<xsl:value-of select="."/>/send_goalRequest</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>raq<xsl:value-of select="$fqn"/>/cancelRequest</topic>
+        <topic>raq<xsl:value-of select="$fqn"/>/get_resultRequest</topic>
+        <topic>raq<xsl:value-of select="$fqn"/>/send_goalRequest</topic>
       </xsl:for-each>
     </topics>
   </publish>
   <subscribe>
     <topics>
       <xsl:for-each select="action">
-        <topic>rar<xsl:value-of select="."/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="."/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="."/>/send_goalReply</topic>
-        <topic>rat<xsl:value-of select="."/>/feedback</topic>
-        <topic>rat<xsl:value-of select="."/>/status</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
+        <topic>rat<xsl:value-of select="$fqn"/>/feedback</topic>
+        <topic>rat<xsl:value-of select="$fqn"/>/status</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
@@ -136,23 +162,49 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <publish>
     <topics>
       <xsl:for-each select="action">
-        <topic>rar<xsl:value-of select="."/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="."/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="."/>/send_goalReply</topic>
-        <topic>rat<xsl:value-of select="."/>/feedback</topic>
-        <topic>rat<xsl:value-of select="."/>/status</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
+        <topic>rat<xsl:value-of select="$fqn"/>/feedback</topic>
+        <topic>rat<xsl:value-of select="$fqn"/>/status</topic>
       </xsl:for-each>
     </topics>
   </publish>
   <subscribe>
     <topics>
       <xsl:for-each select="action">
-        <topic>rar<xsl:value-of select="."/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="."/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="."/>/send_goalReply</topic>
+        <xsl:variable name="fqn">
+          <xsl:apply-templates select="."/>
+        </xsl:variable>
+        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
+        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
+</xsl:template>
+
+<xsl:template match="topic|service|action">
+  <xsl:variable name="ns" select="../../@ns" />
+  <xsl:variable name="name" select="." />
+  <xsl:choose>
+    <xsl:when test="substring($name, 1, 1) = '/'">
+      <xsl:value-of select="$name"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:choose>
+        <xsl:when test="substring($ns, string-length($ns), 1) = '/'">
+          <xsl:value-of select="concat($ns,$name)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat($ns,'/',$name)"/>
+        </xsl:otherwise>
+       </xsl:choose>
+    </xsl:otherwise>
+   </xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>
