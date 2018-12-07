@@ -11,8 +11,8 @@ def package_files(directory):
 
 
 extra_files = []
-extra_files.extend(package_files('sros2/profiles/schema'))
-extra_files.extend(package_files('sros2/profiles/template'))
+extra_files.extend(package_files('sros2/policy/schemas'))
+extra_files.extend(package_files('sros2/policy/templates'))
 
 
 setup(
