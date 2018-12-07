@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<profiles>
-  <profile ns="/" node="talker">
-    <topics publish="ALLOW" >
-      <topic>chatter</topic>
-    </topics>
-  </profile>
-  <profile ns="/" node="listener">
-    <topics subscribe="ALLOW">
-      <topic>chatter</topic>
-    </topics>
-  </profile>
-  <profile ns="/" node="add_two_ints_server">
-    <services reply="ALLOW" request="ALLOW">
-      <service>add_two_ints</service>
-    </services>
-  </profile>
-  <profile ns="/" node="add_two_ints_client">
-    <services request="ALLOW">
-      <service>add_two_ints</service>
-    </services>
-  </profile>
-  <profile ns="/" node="fibonacci_server">
-    <actions call="ALLOW" execute="ALLOW">
-      <action>fibonacci</action>
-    </actions>
-  </profile>
-  <profile ns="/" node="fibonacci_client">
-    <actions call="ALLOW">
-      <action>fibonacci</action>
-    </actions>
-  </profile>
-</profiles>
+<ros version="1.0.0">
+  <profiles>
+    <profile ns="/" node="talker">
+      <topics publish="ALLOW" >
+        <topic>chatter</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="listener">
+      <topics subscribe="ALLOW">
+        <topic>chatter</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="add_two_ints_server">
+      <services reply="ALLOW" request="ALLOW">
+        <service>add_two_ints</service>
+      </services>
+    </profile>
+    <profile ns="/" node="add_two_ints_client">
+      <services request="ALLOW">
+        <service>add_two_ints</service>
+      </services>
+    </profile>
+    <profile ns="/" node="fibonacci_server">
+      <actions call="ALLOW" execute="ALLOW">
+        <action>fibonacci</action>
+      </actions>
+    </profile>
+    <profile ns="/" node="fibonacci_client">
+      <actions call="ALLOW">
+        <action>fibonacci</action>
+      </actions>
+    </profile>
+  </profiles>
+</ros>
