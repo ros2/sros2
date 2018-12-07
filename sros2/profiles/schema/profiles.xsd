@@ -2,8 +2,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-    <xs:element name="ros" type="ProfilesNode" />
-    <xs:complexType name="ProfilesNode">
+    <xs:element name="policy" type="Policy" />
+    <xs:complexType name="Policy">
         <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element name="profiles" type="Profiles" />
         </xs:sequence>

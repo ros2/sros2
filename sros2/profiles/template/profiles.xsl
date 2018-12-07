@@ -19,7 +19,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </domains>
 </xsl:variable>
 
-<xsl:template match="/ros/profiles">
+<xsl:template match="/policy/profiles">
   <dds>
     <permissions>
       <xsl:for-each select="profile">
