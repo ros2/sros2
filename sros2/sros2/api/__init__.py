@@ -23,6 +23,7 @@ from lxml import etree
 
 from sros2.policy import (
     get_policy_schema,
+    get_transport_default,
     get_transport_schema,
     get_transport_template,
 )
@@ -150,36 +151,24 @@ def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path
 def create_governance_file(path, domain_id):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
-    with open(path, 'w') as f:
-        f.write("""\
-<?xml version="1.0" encoding="UTF-8"?>
-<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_governance.xsd">
-    <domain_access_rules>
-        <domain_rule>
-            <domains>
-              <id>%s</id>
-            </domains>
-            <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
-            <enable_join_access_control>true</enable_join_access_control>
-            <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
-            <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
-            <rtps_protection_kind>SIGN</rtps_protection_kind>
-            <topic_access_rules>
-                <topic_rule>
-                    <topic_expression>*</topic_expression>
-                    <enable_discovery_protection>true</enable_discovery_protection>
-                    <enable_liveliness_protection>true</enable_liveliness_protection>
-                    <enable_read_access_control>true</enable_read_access_control>
-                    <enable_write_access_control>true</enable_write_access_control>
-                    <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
-                    <data_protection_kind>ENCRYPT</data_protection_kind>
-                </topic_rule>
-            </topic_access_rules>
-        </domain_rule>
-    </domain_access_rules>
-</dds>
-""" % domain_id)
+    governance_xml_path = get_transport_default('dds', 'governance.xml')
+    governance_xml = etree.parse(governance_xml_path)
+
+    governance_xsd_path = get_transport_schema('dds', 'governance.xsd')
+    governance_xsd = etree.XMLSchema(etree.parse(governance_xsd_path))
+
+    domain_id_elements = governance_xml.findall(
+        'domain_access_rules/domain_rule/domains/id')
+    for domain_id_element in domain_id_elements:
+        domain_id_element.text = domain_id
+
+    try:
+        governance_xsd.assertValid(governance_xml)
+    except etree.DocumentInvalid as e:
+        raise RuntimeError(str(e))
+
+    with open(path, 'wb') as f:
+        f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
