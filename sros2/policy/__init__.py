@@ -23,6 +23,12 @@ def get_policy_schema(name):
         resource_name=os.path.join('policy', 'schemas', name))
 
 
+def get_transport_default(transport, name):
+    return pkg_resources.resource_filename(
+        package_or_requirement='sros2',
+        resource_name=os.path.join('policy', 'defaults', transport, name))
+
+
 def get_transport_schema(transport, name):
     return pkg_resources.resource_filename(
         package_or_requirement='sros2',
