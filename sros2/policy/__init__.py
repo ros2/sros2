@@ -17,6 +17,12 @@ import os
 import pkg_resources
 
 
+def get_policy_default(name):
+    return pkg_resources.resource_filename(
+        package_or_requirement='sros2',
+        resource_name=os.path.join('policy', 'defaults', name))
+
+
 def get_policy_schema(name):
     return pkg_resources.resource_filename(
         package_or_requirement='sros2',
