@@ -3,14 +3,14 @@
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<xsl:variable name="templace_validity">
+<xsl:variable name="template_validity">
   <validity>
     <not_before>2013-10-26T00:00:00</not_before>
     <not_after>2023-10-26T22:45:30</not_after>
   </validity>
 </xsl:variable>
 
-<xsl:variable name="templace_domains">
+<xsl:variable name="template_domains">
   <domains>
     <id>0</id>
   </domains>
@@ -24,10 +24,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="node" select="@node" />
         <grant name="{@node}">
           <subject_name>CN=<xsl:value-of select="@node"/></subject_name>
-          <xsl:copy-of select="$templace_validity" />
+          <xsl:copy-of select="$template_validity" />
           <xsl:for-each select="./*[@*='DENY']">
             <deny_rule>
-              <xsl:copy-of select="$templace_domains" />
+              <xsl:copy-of select="$template_domains" />
               <xsl:apply-templates select="../*[@publish='DENY']" mode='publish'/>
               <xsl:apply-templates select="../*[@subscribe='DENY']" mode='subscribe'/>
               <xsl:apply-templates select="../*[@request='DENY']" mode='request'/>
@@ -38,7 +38,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
           </xsl:for-each>
           <xsl:for-each select="./*[@*='ALLOW']">
             <allow_rule>
-              <xsl:copy-of select="$templace_domains" />
+              <xsl:copy-of select="$template_domains" />
               <xsl:apply-templates select="../*[@publish='ALLOW']" mode='publish'/>
               <xsl:apply-templates select="../*[@subscribe='ALLOW']" mode='subscribe'/>
               <xsl:apply-templates select="../*[@request='ALLOW']" mode='request'/>
