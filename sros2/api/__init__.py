@@ -21,6 +21,7 @@ import subprocess
 from lxml import etree
 
 from sros2.policy import (
+    get_policy_default,
     get_policy_schema,
     get_transport_default,
     get_transport_schema,
@@ -438,9 +439,14 @@ def create_key(args):
 
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    policy_file_path = get_policy_default('policy.xml')
+    policy_element = get_policy('/default', policy_file_path)
+    profile_element = policy_element.find('profiles/profile')
+    profile_element.attrib['node'] = name
+
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, {'topics': None})
+    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    create_permission_file(permissions_path, name, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
