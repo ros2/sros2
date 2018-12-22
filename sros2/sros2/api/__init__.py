@@ -216,7 +216,7 @@ def create_keystore(args):
     gov_path = os.path.join(root, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
-        domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+        domain_id = os.getenv('ROS_DOMAIN_ID', '0')
         create_governance_file(gov_path, domain_id)
     else:
         print('found governance file, not creating a new one!')
@@ -366,7 +366,7 @@ def create_permission(args):
     root = args.ROOT
     name = args.NAME
     policy_file_path = args.POLICY_FILE_PATH
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
 
     key_dir = os.path.join(root, name.lstrip('/'))
     print('key_dir %s' % key_dir)
@@ -446,7 +446,7 @@ def create_key(args):
     profile_element.attrib['node'] = name
 
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
     create_permission_file(permissions_path, name, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
