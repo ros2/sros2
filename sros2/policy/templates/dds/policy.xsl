@@ -184,24 +184,44 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </subscribe>
 </xsl:template>
 
-<xsl:template match="topic|service|action">
-  <xsl:variable name="ns" select="../../@ns" />
-  <xsl:variable name="name" select="." />
+<xsl:template match="topic | service | action">
+  <xsl:variable name="ns" select="../../@ns"/>
+  <xsl:variable name="node" select="../../@node"/>
+  <xsl:variable name="name" select="."/>
   <xsl:choose>
     <xsl:when test="substring($name, 1, 1) = '/'">
       <xsl:value-of select="$name"/>
     </xsl:when>
+    <xsl:when test="substring($name, 1, 1) = '~'">
+      <xsl:variable name="_ns">
+        <xsl:call-template name="DelimitNamespace">
+          <xsl:with-param name="ns" select="$ns"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:variable name="_name" select="substring($name, 2)"/>
+      <xsl:value-of select="concat($_ns, $node, '/', $_name)"/>
+    </xsl:when>
     <xsl:otherwise>
-      <xsl:choose>
-        <xsl:when test="substring($ns, string-length($ns), 1) = '/'">
-          <xsl:value-of select="concat($ns,$name)"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="concat($ns,'/',$name)"/>
-        </xsl:otherwise>
-       </xsl:choose>
+      <xsl:variable name="_ns">
+        <xsl:call-template name="DelimitNamespace">
+          <xsl:with-param name="ns" select="$ns"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:value-of select="concat($_ns, $name)"/>
     </xsl:otherwise>
-   </xsl:choose>
+  </xsl:choose>
+</xsl:template>
+
+<xsl:template name="DelimitNamespace">
+  <xsl:param name="ns"/>
+  <xsl:choose>
+    <xsl:when test="substring($ns, string-length($ns), 1) = '/'">
+      <xsl:value-of select="$ns"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="concat($ns, '/')"/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>
