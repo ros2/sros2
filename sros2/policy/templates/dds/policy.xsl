@@ -20,38 +20,58 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <dds>
     <permissions>
       <xsl:for-each select="profile">
-        <xsl:variable name="ns" select="@ns" />
-        <xsl:variable name="node" select="@node" />
+        <xsl:variable name="ns" select="@ns"/>
+        <xsl:variable name="node" select="@node"/>
         <grant name="{@node}">
           <subject_name>CN=<xsl:value-of select="@node"/></subject_name>
-          <xsl:copy-of select="$template_validity" />
-          <xsl:for-each select="./*[@*='DENY']">
+          <xsl:copy-of select="$template_validity"/>
+          <xsl:if test="./*[@*='DENY']">
             <deny_rule>
-              <xsl:copy-of select="$template_domains" />
-              <xsl:apply-templates select="../*[@publish='DENY']" mode='publish'/>
-              <xsl:apply-templates select="../*[@subscribe='DENY']" mode='subscribe'/>
-              <xsl:apply-templates select="../*[@request='DENY']" mode='request'/>
-              <xsl:apply-templates select="../*[@reply='DENY']" mode='reply'/>
-              <xsl:apply-templates select="../*[@call='DENY']" mode='call'/>
-              <xsl:apply-templates select="../*[@execute='DENY']" mode='execute'/>
+              <xsl:copy-of select="$template_domains"/>
+              <xsl:for-each select="./*[@* = 'DENY']">
+                <xsl:call-template name="TranslatePermissions">
+                  <xsl:with-param name="qualifier" select="'DENY'"/>
+                </xsl:call-template>
+              </xsl:for-each>
             </deny_rule>
-          </xsl:for-each>
-          <xsl:for-each select="./*[@*='ALLOW']">
+          </xsl:if>
+          <xsl:if test="./*[@* = 'ALLOW']">
             <allow_rule>
-              <xsl:copy-of select="$template_domains" />
-              <xsl:apply-templates select="../*[@publish='ALLOW']" mode='publish'/>
-              <xsl:apply-templates select="../*[@subscribe='ALLOW']" mode='subscribe'/>
-              <xsl:apply-templates select="../*[@request='ALLOW']" mode='request'/>
-              <xsl:apply-templates select="../*[@reply='ALLOW']" mode='reply'/>
-              <xsl:apply-templates select="../*[@call='ALLOW']" mode='call'/>
-              <xsl:apply-templates select="../*[@execute='ALLOW']" mode='execute'/>
+              <xsl:copy-of select="$template_domains"/>
+              <xsl:for-each select="./*[@* = 'ALLOW']">
+                <xsl:call-template name="TranslatePermissions">
+                  <xsl:with-param name="qualifier" select="'ALLOW'"/>
+                </xsl:call-template>
+              </xsl:for-each>
             </allow_rule>
-          </xsl:for-each>
+          </xsl:if>
           <default>DENY</default>
         </grant>
       </xsl:for-each>
     </permissions>
   </dds>
+</xsl:template>
+
+<xsl:template name="TranslatePermissions">
+  <xsl:param name="qualifier"/>
+  <xsl:if test="@publish = $qualifier">
+    <xsl:apply-templates select="." mode="publish"/>
+  </xsl:if>
+  <xsl:if test="@subscribe = $qualifier">
+    <xsl:apply-templates select="." mode="subscribe"/>
+  </xsl:if>
+  <xsl:if test="@request = $qualifier">
+    <xsl:apply-templates select="." mode="request"/>
+  </xsl:if>
+  <xsl:if test="@reply = $qualifier">
+    <xsl:apply-templates select="." mode="reply"/>
+  </xsl:if>
+  <xsl:if test="@call = $qualifier">
+    <xsl:apply-templates select="." mode="call"/>
+  </xsl:if>
+  <xsl:if test="@execute = $qualifier">
+    <xsl:apply-templates select="." mode="execute"/>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="topics" mode="publish">
