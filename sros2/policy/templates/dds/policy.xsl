@@ -54,7 +54,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </dds>
 </xsl:template>
 
-<xsl:template match="topics" mode='publish'>
+<xsl:template match="topics" mode="publish">
   <publish>
     <topics>
       <xsl:for-each select="topic">
@@ -67,7 +67,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </publish>
 </xsl:template>
 
-<xsl:template match="topics" mode='subscribe'>
+<xsl:template match="topics" mode="subscribe">
   <subscribe>
     <topics>
       <xsl:for-each select="topic">
@@ -80,7 +80,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </subscribe>
 </xsl:template>
 
-<xsl:template match="services" mode='request'>
+<xsl:template match="services" mode="request">
   <publish>
     <topics>
       <xsl:for-each select="service">
@@ -103,7 +103,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </subscribe>
 </xsl:template>
 
-<xsl:template match="services" mode='reply'>
+<xsl:template match="services" mode="reply">
   <publish>
     <topics>
       <xsl:for-each select="service">
@@ -126,7 +126,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </subscribe>
 </xsl:template>
 
-<xsl:template match="actions" mode='call'>
+<xsl:template match="actions" mode="call">
   <publish>
     <topics>
       <xsl:for-each select="action">
@@ -155,7 +155,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   </subscribe>
 </xsl:template>
 
-<xsl:template match="actions" mode='execute'>
+<xsl:template match="actions" mode="execute">
   <publish>
     <topics>
       <xsl:for-each select="action">
