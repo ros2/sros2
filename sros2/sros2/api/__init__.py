@@ -260,7 +260,7 @@ def is_valid_keystore(path):
 
 def is_key_name_valid(name):
     # quick check for obvious filesystem problems
-    return '..' not in name and '/' not in name and '\\' not in name
+    return '..' not in name and '\\' not in name
 
 
 def create_request_file(path, name):
@@ -275,12 +275,12 @@ commonName = %s
 """ % name)
 
 
-def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path):
-    key_relpath = os.path.join(name, 'key.pem')
-    ecdsa_param_relpath = os.path.join(name, 'ecdsaparam')
-    cnf_relpath = os.path.join(name, 'request.cnf')
-    key_relpath = os.path.join(name, 'key.pem')
-    req_relpath = os.path.join(name, 'req.pem')
+def create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path):
+    key_relpath = os.path.join(relative_path, 'key.pem')
+    ecdsa_param_relpath = os.path.join(relative_path, 'ecdsaparam')
+    cnf_relpath = os.path.join(relative_path, 'request.cnf')
+    key_relpath = os.path.join(relative_path, 'key.pem')
+    req_relpath = os.path.join(relative_path, 'req.pem')
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -288,9 +288,9 @@ def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, re
         (openssl_executable, ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
 
 
-def create_cert(root_path, name):
-    req_relpath = os.path.join(name, 'req.pem')
-    cert_relpath = os.path.join(name, 'cert.pem')
+def create_cert(root_path, relative_path):
+    req_relpath = os.path.join(relative_path, 'req.pem')
+    cert_relpath = os.path.join(relative_path, 'cert.pem')
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -298,7 +298,7 @@ def create_cert(root_path, name):
         (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
-def create_permission_file(path, name, domain_id, policy_element):
+def create_permission_file(path, domain_id, policy_element):
 
     policy_xsl_path = get_transport_template('dds', 'policy.xsl')
     policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
@@ -372,7 +372,7 @@ def create_permission(args):
     print('key_dir %s' % key_dir)
     policy_element = get_policy(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, policy_element)
+    create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
@@ -395,7 +395,8 @@ def create_key(args):
         return False
     print('creating key for node name: %s' % name)
 
-    key_dir = os.path.join(root, name)
+    relative_path = os.path.normpath(name.lstrip('/'))
+    key_dir = os.path.join(root, relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # copy the CA cert in there
@@ -427,14 +428,14 @@ def create_key(args):
     req_path = os.path.join(key_dir, 'req.pem')
     if not os.path.isfile(key_path) or not os.path.isfile(req_path):
         print('creating key and cert request')
-        create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path)
+        create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path)
     else:
         print('found key and cert req; not creating new ones!')
 
     cert_path = os.path.join(key_dir, 'cert.pem')
     if not os.path.isfile(cert_path):
         print('creating cert')
-        create_cert(root, name)
+        create_cert(root, relative_path)
     else:
         print('found cert; not creating a new one!')
 
@@ -443,11 +444,14 @@ def create_key(args):
     policy_file_path = get_policy_default('policy.xml')
     policy_element = get_policy('/default', policy_file_path)
     profile_element = policy_element.find('profiles/profile')
-    profile_element.attrib['node'] = name
+    ns, node = name.rsplit('/', 1)
+    ns = '/' if not ns else ns
+    profile_element.attrib['ns'] = ns
+    profile_element.attrib['node'] = node
 
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     domain_id = os.getenv('ROS_DOMAIN_ID', '0')
-    create_permission_file(permissions_path, name, domain_id, policy_element)
+    create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
