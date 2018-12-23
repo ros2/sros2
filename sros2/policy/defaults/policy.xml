@@ -3,13 +3,13 @@
   <profiles>
     <profile ns="/" node="default">
       <topics publish="ALLOW" subscribe="ALLOW">
-        <topic>*</topic>
+        <topic>/*</topic>
       </topics>
       <services reply="ALLOW" request="ALLOW">
-        <service>*</service>
+        <service>/*</service>
       </services>
       <actions call="ALLOW" execute="ALLOW">
-        <action>*</action>
+        <action>/*</action>
       </actions>
     </profile>
   </profiles>
