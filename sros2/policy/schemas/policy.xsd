@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
     elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+               schemaLocation="http://www.w3.org/2001/03/xml.xsd" />
+
 
     <xs:element name="policy" type="Policy" />
     <xs:complexType name="Policy">
@@ -26,6 +31,7 @@
         </xs:sequence>
         <xs:attribute name="ns" type="xs:string" use="required" />
         <xs:attribute name="node" type="xs:string" use="required" />
+        <xs:attribute ref="xml:base" />
     </xs:complexType>
 
     <xs:complexType name="TopicExpressionList">
@@ -34,6 +40,7 @@
         </xs:sequence>
         <xs:attribute name="publish" type="RuleQualifier" use="optional" />
         <xs:attribute name="subscribe" type="RuleQualifier" use="optional" />
+        <xs:attribute ref="xml:base" />
     </xs:complexType>
 
     <xs:complexType name="ServicesExpressionList">
@@ -42,6 +49,7 @@
         </xs:sequence>
         <xs:attribute name="reply" type="RuleQualifier" use="optional" />
         <xs:attribute name="request" type="RuleQualifier" use="optional" />
+        <xs:attribute ref="xml:base" />
     </xs:complexType>
 
     <xs:complexType name="ActionsExpressionList">
@@ -50,6 +58,7 @@
         </xs:sequence>
         <xs:attribute name="call" type="RuleQualifier" use="optional" />
         <xs:attribute name="execute" type="RuleQualifier" use="optional" />
+        <xs:attribute ref="xml:base" />
     </xs:complexType>
 
     <xs:simpleType name="Expression">
