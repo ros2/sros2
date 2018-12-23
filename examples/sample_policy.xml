@@ -4,49 +4,49 @@
   <profiles>
     <profile ns="/" node="talker">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <topics publish="ALLOW" >
         <topic>chatter</topic>
       </topics>
     </profile>
     <profile ns="/" node="listener">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <topics subscribe="ALLOW" >
         <topic>chatter</topic>
       </topics>
     </profile>
     <profile ns="/" node="add_two_ints_server">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <services reply="ALLOW">
         <service>add_two_ints</service>
       </services>
     </profile>
     <profile ns="/" node="add_two_ints_client">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <services request="ALLOW">
         <service>add_two_ints</service>
       </services>
     </profile>
     <profile ns="/" node="minimal_action_server">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <actions execute="ALLOW">
         <action>fibonacci</action>
       </actions>
     </profile>
     <profile ns="/" node="minimal_action_client">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <actions call="ALLOW">
         <action>fibonacci</action>
       </actions>
     </profile>
     <profile ns="/" node="admin">
       <xi:include href="common/node.xml"
-        xpointer="xpointer(id('node')/*)"/>
+        xpointer="xpointer(/profile/*)"/>
       <actions call="ALLOW" execute="ALLOW">
         <action>fibonacci</action>
       </actions>
