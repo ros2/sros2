@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<profile xml:id="parameters">
+  <topics publish="ALLOW" subscribe="ALLOW" >
+    <topic>parameter_events</topic>
+  </topics>
+
+  <services reply="ALLOW" >
+    <service>~describe_parameters</service>
+    <service>~get_parameter_types</service>
+    <service>~get_parameters</service>
+    <service>~list_parameters</service>
+    <service>~set_parameters</service>
+    <service>~set_parameters_atomically</service>
+  </services>
+</profile>
