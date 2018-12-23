@@ -427,7 +427,12 @@ def create_key(args):
     req_path = os.path.join(key_dir, 'req.pem')
     if not os.path.isfile(key_path) or not os.path.isfile(req_path):
         print('creating key and cert request')
-        create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path)
+        create_key_and_cert_req(
+            root,
+            relative_path,
+            cnf_path,
+            ecdsa_param_path,
+            key_path, req_path)
     else:
         print('found key and cert req; not creating new ones!')
 
