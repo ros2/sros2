@@ -72,8 +72,8 @@ ros2 security create_keystore demo_keys
 #### Generate keys and certificates for the talker and listener nodes
 
 ```bash
-ros2 security create_key demo_keys talker
-ros2 security create_key demo_keys listener
+ros2 security create_key demo_keys /talker
+ros2 security create_key demo_keys /listener
 ```
 
 ### Define the SROS2 environment variables

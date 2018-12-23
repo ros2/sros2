@@ -20,10 +20,16 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <dds>
     <permissions>
       <xsl:for-each select="profile">
-        <xsl:variable name="ns" select="@ns"/>
-        <xsl:variable name="node" select="@node"/>
-        <grant name="{@node}">
-          <subject_name>CN=<xsl:value-of select="@node"/></subject_name>
+        <xsl:variable name="_ns">
+          <xsl:call-template name="DelimitNamespace">
+            <xsl:with-param name="ns" select="@ns"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="common_name">
+          <xsl:value-of select="concat($_ns, @node)"/>
+        </xsl:variable>
+        <grant name="{$common_name}">
+          <subject_name>CN=<xsl:value-of select="$common_name"/></subject_name>
           <xsl:copy-of select="$template_validity"/>
           <xsl:if test="./*[@*='DENY']">
             <deny_rule>
