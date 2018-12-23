@@ -368,7 +368,8 @@ def create_permission(args):
     policy_file_path = args.POLICY_FILE_PATH
     domain_id = os.getenv('ROS_DOMAIN_ID', '0')
 
-    key_dir = os.path.join(root, name.lstrip('/'))
+    relative_path = os.path.normpath(name.lstrip('/'))
+    key_dir = os.path.join(root, relative_path)
     print('key_dir %s' % key_dir)
     policy_element = get_policy(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
