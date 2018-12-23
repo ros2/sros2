@@ -300,15 +300,12 @@ def create_cert(root_path, relative_path):
 
 def create_permission_file(path, domain_id, policy_element):
 
-    policy_xsl_path = get_transport_template('dds', 'policy.xsl')
-    policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
-    _permissions_xml = policy_xsl(policy_element)
-    permissions_xml = permissions_xsl(_permissions_xml)
+    permissions_xml = permissions_xsl(policy_element)
 
     domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
     for domain_id_element in domain_id_elements:
