@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<profile xml:id="node">
+  <xi:include
+    xmlns:xi="http://www.w3.org/2003/XInclude"
+    href="node/time.xml"
+    xpointer="xpointer(id('time')/*)"/>
+  <xi:include
+    xmlns:xi="http://www.w3.org/2003/XInclude"
+    href="node/parameters.xml"
+    xpointer="xpointer(id('parameters')/*)"/>
+</profile>
