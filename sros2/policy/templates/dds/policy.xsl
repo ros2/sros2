@@ -159,9 +159,9 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="fqn">
           <xsl:apply-templates select="."/>
         </xsl:variable>
-        <topic>raq<xsl:value-of select="$fqn"/>/cancelRequest</topic>
-        <topic>raq<xsl:value-of select="$fqn"/>/get_resultRequest</topic>
-        <topic>raq<xsl:value-of select="$fqn"/>/send_goalRequest</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/cancel_goalRequest</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/get_resultRequest</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/send_goalRequest</topic>
       </xsl:for-each>
     </topics>
   </publish>
@@ -171,11 +171,11 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="fqn">
           <xsl:apply-templates select="."/>
         </xsl:variable>
-        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
-        <topic>rat<xsl:value-of select="$fqn"/>/feedback</topic>
-        <topic>rat<xsl:value-of select="$fqn"/>/status</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/cancel_goalReply</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/get_resultReply</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/send_goalReply</topic>
+        <topic>rt<xsl:value-of select="$fqn"/>/_action/feedback</topic>
+        <topic>rt<xsl:value-of select="$fqn"/>/_action/status</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
@@ -188,11 +188,11 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="fqn">
           <xsl:apply-templates select="."/>
         </xsl:variable>
-        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
-        <topic>rat<xsl:value-of select="$fqn"/>/feedback</topic>
-        <topic>rat<xsl:value-of select="$fqn"/>/status</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/cancel_goalReply</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/get_resultReply</topic>
+        <topic>rr<xsl:value-of select="$fqn"/>/_action/send_goalReply</topic>
+        <topic>rt<xsl:value-of select="$fqn"/>/_action/feedback</topic>
+        <topic>rt<xsl:value-of select="$fqn"/>/_action/status</topic>
       </xsl:for-each>
     </topics>
   </publish>
@@ -202,9 +202,9 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="fqn">
           <xsl:apply-templates select="."/>
         </xsl:variable>
-        <topic>rar<xsl:value-of select="$fqn"/>/cancelReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/get_resultReply</topic>
-        <topic>rar<xsl:value-of select="$fqn"/>/send_goalReply</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/cancel_goalRequest</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/get_resultRequest</topic>
+        <topic>rq<xsl:value-of select="$fqn"/>/_action/send_goalRequest</topic>
       </xsl:for-each>
     </topics>
   </subscribe>
