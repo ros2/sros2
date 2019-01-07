@@ -389,6 +389,8 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         topic_dict['/clock'] = {'allow': ['subscribe']}
         # we have some policies to add !
         for topic_name, policy in topic_dict.items():
+            # add a "/" if it doesn't exist
+            formatted_topic_name = "/" + (topic_name.lstrip('/'))
             tags = []
             publish = 'publish'
             subscribe = 'subscribe'
@@ -411,9 +413,8 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             <topic>%s</topic>
           </topics>
         </%s>
-""" % (tag, 'rt' + topic_name, tag)
+""" % (tag, 'rt' + formatted_topic_name, tag)
         # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-
         service_dict = permissions_dict['services']
         default_parameter_topics = [
             'describe_parameters',
