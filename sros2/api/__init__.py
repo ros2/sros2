@@ -341,7 +341,7 @@ def get_policy(name, policy_file_path):
         raise RuntimeError('unable to find profile "{name}"'.format(
             name=name
         ))
-    profiles_element = etree.Element("profiles")
+    profiles_element = etree.Element('profiles')
     profiles_element.append(profile_element)
     policy_element = etree.Element('policy')
     policy_element.append(profiles_element)
