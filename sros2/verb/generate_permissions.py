@@ -23,18 +23,21 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from ros2cli.node.strategy import NodeStrategy
+from collections import defaultdict
+
 from ros2cli.node.direct import DirectNode
-from sros2.api import get_subscriber_info
+from ros2cli.node.strategy import NodeStrategy
+from sros2.api import get_node_names
 from sros2.api import get_publisher_info
 from sros2.api import get_service_info
-from sros2.api import get_node_names
+from sros2.api import get_subscriber_info
 from sros2.verb import VerbExtension
-from collections import defaultdict
+
 
 def formatTopics(topic_list, permission, topic_map):
     for topic in topic_list:
         topic_map[topic.name].append(permission)
+
 
 class GeneratePermissionsVerb(VerbExtension):
     """Generate permissions."""
@@ -61,19 +64,19 @@ class GeneratePermissionsVerb(VerbExtension):
                 formatTopics(subscribers, 'subscribe', topic_map)
                 formatted_topic_map = {}
                 for topic_name, permission_list in topic_map.items():
-                    formatted_topic_map[topic_name] = {'allow' : permission_list}
+                    formatted_topic_map[topic_name] = {'allow': permission_list}
                 service_map = defaultdict(list)
                 formatTopics(services, 'reply', service_map)
                 formatted_services_map = {}
                 for service, permission_list in service_map.items():
-                    formatted_services_map[service] = {'allow' : permission_list}
-                policy_dict[node_name.name] = {'topics' : formatted_topic_map}
+                    formatted_services_map[service] = {'allow': permission_list}
+                policy_dict[node_name.name] = {'topics': formatted_topic_map}
                 policy_dict[node_name.name]['services'] = formatted_services_map
         import yaml
         from io import open
-        formatted_policy_dict = {'nodes' : policy_dict}
+        formatted_policy_dict = {'nodes': policy_dict}
         if policy_dict:
             with open(args.POLICY_FILE_PATH, 'w') as stream:
                 yaml.dump(formatted_policy_dict, stream, default_flow_style=False)
         else:
-            print("No nodes found to generate policies")
+            print('No nodes found to generate policies')
