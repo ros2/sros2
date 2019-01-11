@@ -12,11 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import namedtuple
 import itertools
 import os
 import platform
 import shutil
 import subprocess
+
+HIDDEN_NODE_PREFIX = '_'
+
+NodeName = namedtuple('NodeName', ('name', 'namespace', 'full_name'))
+TopicInfo = namedtuple('Topic', ('name', 'types'))
+
+
+def get_node_names(*, node, include_hidden_nodes=False):
+    node_names_and_namespaces = node.get_node_names_and_namespaces()
+    return [
+        NodeName(
+            name=t[0],
+            namespace=t[1],
+            full_name=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
+        for t in node_names_and_namespaces
+        if (
+            include_hidden_nodes or
+            (t[0] and not t[0].startswith(HIDDEN_NODE_PREFIX))
+        )
+    ]
+
+
+def get_topics(node_name, func):
+    names_and_types = func(node_name.name, node_name.namespace)
+    return [
+        TopicInfo(
+            name=t[0],
+            types=t[1])
+        for t in names_and_types]
+
+
+def get_subscriber_info(node, node_name):
+    return get_topics(node_name, node.get_subscriber_names_and_types_by_node)
+
+
+def get_publisher_info(node, node_name):
+    return get_topics(node_name, node.get_publisher_names_and_types_by_node)
+
+
+def get_service_info(node, node_name):
+    return get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
 def find_openssl_executable():
@@ -299,6 +341,28 @@ def create_cert(root_path, name):
         (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
+def format_publish_permissions(topics):
+    return """
+        <publish>
+          <partitions>
+            <partition></partition>
+          </partitions>
+          <topics>%s
+          </topics>
+        </publish> """ % topics
+
+
+def format_subscription_permissions(topics):
+    return """
+        <subscribe>
+          <partitions>
+            <partition></partition>
+          </partitions>
+          <topics>%s
+          </topics>
+        </subscribe> """ % topics
+
+
 def create_permission_file(path, name, domain_id, permissions_dict):
     permission_str = """\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -328,19 +392,23 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         # TODO(mikaelarguedas) remove this hardcoded handling for default topics
         # TODO(mikaelarguedas) update dictionary based on existing rule
         # if it already exists (rather than overriding the rule)
-        topic_dict['parameter_events'] = {'allow': 'ps'}
-        topic_dict['clock'] = {'allow': 's'}
+        topic_dict['/parameter_events'] = {'allow': ['publish', 'subscribe']}
+        topic_dict['/clock'] = {'allow': ['subscribe']}
         # we have some policies to add !
         for topic_name, policy in topic_dict.items():
+            # add a / if it doesn't exist
+            formatted_topic_name = '/' + (topic_name.lstrip('/'))
             tags = []
-            if policy['allow'] == 'ps':
-                tags = ['publish', 'subscribe']
-            elif policy['allow'] == 's':
-                tags = ['subscribe']
-            elif policy['allow'] == 'p':
-                tags = ['publish']
-            else:
-                print("unknown permission policy '%s', skipping" % policy['allow'])
+            publish = 'publish'
+            subscribe = 'subscribe'
+            if publish in policy['allow']:
+                tags.append(publish)
+                policy['allow'].remove(publish)
+            if subscribe in policy['allow']:
+                tags.append(subscribe)
+                policy['allow'].remove(subscribe)
+            if len(policy['allow']) > 0:
+                print('unknown permission policy \'%s\', skipping' % policy['allow'])
                 continue
             for tag in tags:
                 permission_str += """\
@@ -352,12 +420,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             <topic>%s</topic>
           </topics>
         </%s>
-""" % (tag, 'rt/' + topic_name, tag)
+""" % (tag, 'rt' + formatted_topic_name, tag)
         # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        service_topic_prefixes = {
-            'Request': 'rq/%s/' % name,
-            'Reply': 'rr/%s/' % name,
-        }
+        service_dict = permissions_dict['services']
         default_parameter_topics = [
             'describe_parameters',
             'get_parameters',
@@ -366,30 +431,31 @@ def create_permission_file(path, name, domain_id, permissions_dict):
             'set_parameters',
             'set_parameters_atomically',
         ]
-        for topic_suffix, topic_prefix in service_topic_prefixes.items():
-            service_topics = [
-                (topic_prefix + topic + topic_suffix) for topic in default_parameter_topics]
-            topics_string = ''
-            for service_topic in service_topics:
-                topics_string += """
-            <topic>%s</topic>""" % (service_topic)
-            permission_str += """
-        <publish>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </publish>
-        <subscribe>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </subscribe>
-""" % (topics_string, topics_string)
+        default_parameter_topics = ['/%s/%s' % (name, topic) for topic in default_parameter_topics]
+        rw_access_pair = {'allow': ['request', 'reply']}
+        for topic in default_parameter_topics:
+            service_dict[topic] = rw_access_pair
+        published_topics_string = ''
+        subscribed_topic_string = ''
 
+        for topic, permission_dict in service_dict.items():
+            permissions = permission_dict['allow']
+            request_topic = 'rq%sRequest' % topic
+            reply_topic = 'rr%sReply' % topic
+
+            if 'reply' in permissions:
+                subscribed_topic_string += """
+                <topic>%s</topic>""" % (request_topic)
+                published_topics_string += """
+                <topic>%s</topic>""" % (reply_topic)
+            if 'request' in permissions:
+                subscribed_topic_string += """
+                <topic>%s</topic>""" % (reply_topic)
+                published_topics_string += """
+                <topic>%s</topic>""" % (request_topic)
+
+        permission_str += format_publish_permissions(published_topics_string)
+        permission_str += format_subscription_permissions(subscribed_topic_string)
     else:
         # no policy found: allow everything!
         permission_str += """\
