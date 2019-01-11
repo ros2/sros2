@@ -2,6 +2,19 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.0 (2018-12-07)
+------------------
+* Merge pull request `#70 <https://github.com/ros2/sros2/issues/70>`_ from ros2/update_maintainer
+  Update package maintainer for sros2
+* Update package maintainer for sros2.
+* separating identity and permission CAs (`#67 <https://github.com/ros2/sros2/issues/67>`_)
+* ignore __pycache_\_ in git
+  Signed-off-by: William Woodall <william@osrfoundation.org>
+* raise FileNotFoundError if provided permission file doesn't exist (`#64 <https://github.com/ros2/sros2/issues/64>`_)
+* refer to new xsd now that it's available (`#62 <https://github.com/ros2/sros2/issues/62>`_)
+* fixup path of RANDFILE to match rest of tutorial (`#61 <https://github.com/ros2/sros2/issues/61>`_)
+* Contributors: Michael Carroll, Mikael Arguedas, William Woodall
+
 0.5.0 (2018-06-27)
 ------------------
 * Update docs for bouncy leveraging remapping for demo (`#53 <https://github.com/ros2/sros2/issues/53>`_)

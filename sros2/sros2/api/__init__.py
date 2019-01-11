@@ -17,6 +17,7 @@ import os
 import platform
 import shutil
 import subprocess
+from collections import namedtuple
 
 from lxml import etree
 
@@ -27,6 +28,48 @@ from sros2.policy import (
     get_transport_schema,
     get_transport_template,
 )
+
+HIDDEN_NODE_PREFIX = '_'
+
+NodeName = namedtuple('NodeName', ('name', 'namespace', 'full_name'))
+TopicInfo = namedtuple('Topic', ('name', 'types'))
+
+
+def get_node_names(*, node, include_hidden_nodes=False):
+    node_names_and_namespaces = node.get_node_names_and_namespaces()
+    return [
+        NodeName(
+            name=t[0],
+            namespace=t[1],
+            full_name=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
+        for t in node_names_and_namespaces
+        if (
+            include_hidden_nodes or
+            (t[0] and not t[0].startswith(HIDDEN_NODE_PREFIX))
+        )
+    ]
+
+
+def get_topics(node_name, func):
+    names_and_types = func(node_name.name, node_name.namespace)
+    return [
+        TopicInfo(
+            name=t[0],
+            types=t[1])
+        for t in names_and_types]
+
+
+def get_subscriber_info(node, node_name):
+    return get_topics(node_name, node.get_subscriber_names_and_types_by_node)
+
+
+def get_publisher_info(node, node_name):
+    return get_topics(node_name, node.get_publisher_names_and_types_by_node)
+
+
+def get_service_info(node, node_name):
+    return get_topics(node_name, node.get_service_names_and_types_by_node)
+
 
 
 def find_openssl_executable():
