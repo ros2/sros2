@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import namedtuple
 import itertools
 import os
 import platform
 import shutil
 import subprocess
-from collections import namedtuple
 
 from lxml import etree
 
@@ -69,7 +69,6 @@ def get_publisher_info(node, node_name):
 
 def get_service_info(node, node_name):
     return get_topics(node_name, node.get_service_names_and_types_by_node)
-
 
 
 def find_openssl_executable():
