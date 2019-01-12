@@ -104,6 +104,8 @@ class GeneratePolicyVerb(VerbExtension):
                 permission.text = '~' + expression.fqn[len(node_name.fqn + '/'):]
             elif expression.fqn.startswith(node_name.ns + '/'):
                 permission.text = expression.fqn[len(node_name.ns + '/'):]
+            elif expression.fqn.count('/') == 1 and node_name.ns == '/':
+                permission.text = expression.fqn[len('/'):]
             else:
                 permission.text = expression.fqn
             permissions.append(permission)
