@@ -4,6 +4,7 @@
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
  xmlns:ext="http://exslt.org/common" exclude-result-prefixes="ext">
  <xsl:output omit-xml-declaration="yes" indent="yes"/>
+ <xsl:strip-space elements="*"/>
 
 
 <xsl:variable name="template_validity">
