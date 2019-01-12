@@ -23,25 +23,25 @@ from lxml import etree
 
 from sros2.policy import (
     get_policy_default,
-    get_policy_schema,
     get_transport_default,
     get_transport_schema,
     get_transport_template,
+    load_policy,
 )
 
 HIDDEN_NODE_PREFIX = '_'
 
-NodeName = namedtuple('NodeName', ('name', 'namespace', 'full_name'))
-TopicInfo = namedtuple('Topic', ('name', 'types'))
+NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
+TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
     return [
         NodeName(
-            name=t[0],
-            namespace=t[1],
-            full_name=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
+            node=t[0],
+            ns=t[1],
+            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
         for t in node_names_and_namespaces
         if (
             include_hidden_nodes or
@@ -51,11 +51,11 @@ def get_node_names(*, node, include_hidden_nodes=False):
 
 
 def get_topics(node_name, func):
-    names_and_types = func(node_name.name, node_name.namespace)
+    names_and_types = func(node_name.node, node_name.ns)
     return [
         TopicInfo(
-            name=t[0],
-            types=t[1])
+            fqn=t[0],
+            type=t[1])
         for t in names_and_types]
 
 
@@ -362,16 +362,7 @@ def create_permission_file(path, domain_id, policy_element):
 
 
 def get_policy(name, policy_file_path):
-    if not os.path.isfile(policy_file_path):
-        raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
-    policy_tree = etree.parse(policy_file_path)
-    policy_tree.xinclude()
-    try:
-        policy_xsd_path = get_policy_schema('policy.xsd')
-        policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
-        policy_xsd.assertValid(policy_tree)
-    except etree.DocumentInvalid as e:
-        raise RuntimeError(str(e))
+    policy_tree = load_policy(policy_file_path)
 
     ns, node = name.rsplit('/', 1)
     ns = '/' if not ns else ns
