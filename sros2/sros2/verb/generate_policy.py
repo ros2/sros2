@@ -132,6 +132,5 @@ class GeneratePolicyVerb(VerbExtension):
                     self.add_permission(
                         profile, 'service', 'reply', 'ALLOW', reply_services, node_name)
 
-        from io import open
         with open(args.POLICY_FILE_PATH, 'w') as stream:
             dump_policy(policy, stream)
