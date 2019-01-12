@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from lxml import etree
 
 from sros2.policy import (
@@ -45,4 +47,6 @@ permissions_xml = permissions_xsl(policy_xml)
 permissions_xsd.assertValid(permissions_xml)
 
 # Output permissions
-print(etree.tostring(permissions_xml, pretty_print=True).decode())
+permissions_xml_path = os.path.join('permissions.xml')
+with open(permissions_xml_path, 'w') as f:
+    f.write(etree.tostring(permissions_xml, pretty_print=True).decode())

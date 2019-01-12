@@ -52,6 +52,6 @@ def test_policy_to_permissions():
     # Assert expected permissions
     permissions_xml_path = os.path.join(test_dir, 'policies', 'permissions.xml')
     with open(permissions_xml_path) as f:
-        expected = f.read() + '\n'
+        expected = f.read()
         actual = etree.tostring(permissions_xml, pretty_print=True).decode()
         assert actual == expected
