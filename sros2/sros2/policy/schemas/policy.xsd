@@ -22,7 +22,7 @@
     </xs:complexType>
 
     <xs:complexType name="Profile">
-        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
             <xs:choice minOccurs="1" maxOccurs="1">
                 <xs:element name="topics" minOccurs="1" type="TopicExpressionList" />
                 <xs:element name="services" minOccurs="1" type="ServicesExpressionList" />
