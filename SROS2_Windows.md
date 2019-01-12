@@ -110,7 +110,7 @@ These nodes will be communicating using authentication and encryption!
 If you look at the packet contents on e.g. Wireshark, the messages will be encrypted.
 
 Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py) packages arbitrarily.
- 
+
 These nodes are able to communicate because we have created the appropriate keys and certificates for them.
 However, other nodes will not be able to communicate, e.g. the following invocation will fail to start a node with a name that is not associated with valid keys/certificates:
 
@@ -129,14 +129,14 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bat
-curl -k https://raw.githubusercontent.com/ros2/sros2/master/examples/sample_policy.xml -o .\demo_keys\policy.xml
+svn checkout https://github.com/ros2/sros2/trunk/sros2/sros2/test/policies
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bat
-ros2 security create_permission demo_keys /talker demo_keys/policy.xml
-ros2 security create_permission demo_keys /listener demo_keys/policy.xml
+ros2 security create_permission demo_keys /talker policies/sample_policy.xml
+ros2 security create_permission demo_keys /listener policies/sample_policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
