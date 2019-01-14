@@ -301,7 +301,7 @@ def is_valid_keystore(path):
 
 def is_key_name_valid(name):
     # quick check for obvious filesystem problems
-    return '..' not in name and '\\' not in name
+    return ('..' not in name) and ('\\' not in name) and (name.startswith('/'))
 
 
 def create_request_file(path, name):
