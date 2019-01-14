@@ -4,7 +4,7 @@
     <topic>parameter_events</topic>
   </topics>
 
-  <services reply="ALLOW" >
+  <services reply="ALLOW" request="ALLOW" >
     <service>~describe_parameters</service>
     <service>~get_parameter_types</service>
     <service>~get_parameters</service>
