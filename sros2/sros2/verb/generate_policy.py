@@ -40,6 +40,7 @@ from sros2.api import (
 from sros2.policy import (
     dump_policy,
     load_policy,
+    POLICY_VERSION,
 )
 
 from sros2.verb import VerbExtension
@@ -66,7 +67,7 @@ class GeneratePolicyVerb(VerbExtension):
         else:
             profiles = etree.Element('profiles')
             policy = etree.Element('policy')
-            policy.attrib['version'] = '1.0.0'
+            policy.attrib['version'] = POLICY_VERSION
             policy.append(profiles)
             return policy
 
