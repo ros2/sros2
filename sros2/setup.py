@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='sros2',
-    version='0.5.0',
+    version='0.6.1',
     packages=find_packages(exclude=['test']),
     install_requires=['setuptools'],
     zip_safe=True,
