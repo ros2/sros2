@@ -15,5 +15,5 @@ Macro definition:
     # NODES (macro multi-arg) takes the node names for which keys will be generated
     # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
     # ROS_SECURITY_ROOT_DIRECTORY (env variable) the location of the keystore
-    # POLICY_FILE (cmake arg) if defined, will compile policies by node name into the access private certificates (e.g POLICY_FILE=/etc/policies/<policy.yaml>, Generate: <node_name> /etc/policies/<policy.yaml>) **if defined, all nodes must have a policy defined for them**
+    # POLICY_FILE (cmake arg) if defined, will compile policies by node name into the access private certificates (e.g POLICY_FILE=/etc/policies/<policy.xml>, Generate: <node_name> /etc/policies/<policy.xml>) **if defined, all nodes must have a policy defined for them**
 ```
