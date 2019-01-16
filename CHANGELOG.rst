@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.1 (2019-01-15)
+------------------
+* Restructured sros2 to enable additional packages in this repository. (`#74 <https://github.com/ros2/sros2/issues/74>`_)
+* Added generate_permissions verb + update policy definition to support services and actions (`#71 <https://github.com/ros2/sros2/issues/71>`_)
+* Contributors: Jacob Perron, Ross Desmond
+
 0.6.0 (2018-12-07)
 ------------------
 * Merge pull request `#70 <https://github.com/ros2/sros2/issues/70>`_ from ros2/update_maintainer
