@@ -2,6 +2,9 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.2 (2019-02-08)
+------------------
+
 0.6.1 (2019-01-15)
 ------------------
 * Restructured sros2 to enable additional packages in this repository. (`#74 <https://github.com/ros2/sros2/issues/74>`_)

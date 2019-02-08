@@ -2,6 +2,11 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.2 (2019-02-08)
+------------------
+* Create package for sros2 cmake macros. (`#75 <https://github.com/ros2/sros2/issues/75>`_)
+* Contributors: Ross Desmond
+
 0.6.1 (2019-01-15)
 ------------------
 
