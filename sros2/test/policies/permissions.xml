@@ -26,6 +26,7 @@
             <topic>rr/talker/set_parameters_atomicallyReply</topic>
             <topic>rt/chatter</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -74,6 +75,7 @@
             <topic>rr/listener/set_parametersReply</topic>
             <topic>rr/listener/set_parameters_atomicallyReply</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -124,6 +126,7 @@
             <topic>rr/add_two_ints_server/set_parametersReply</topic>
             <topic>rr/add_two_ints_server/set_parameters_atomicallyReply</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -174,6 +177,7 @@
             <topic>rr/add_two_ints_client/set_parametersReply</topic>
             <topic>rr/add_two_ints_client/set_parameters_atomicallyReply</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -228,6 +232,7 @@
             <topic>rr/minimal_action_server/set_parametersReply</topic>
             <topic>rr/minimal_action_server/set_parameters_atomicallyReply</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -282,6 +287,7 @@
             <topic>rr/minimal_action_client/set_parametersReply</topic>
             <topic>rr/minimal_action_client/set_parameters_atomicallyReply</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
@@ -346,6 +352,7 @@
             <topic>rt/fibonacci/_action/status</topic>
             <topic>rt/chatter</topic>
             <topic>rt/parameter_events</topic>
+            <topic>rt/rosout</topic>
           </topics>
         </publish>
         <subscribe>
