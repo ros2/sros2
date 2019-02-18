@@ -35,7 +35,7 @@ class CreatePermissionVerb(VerbExtension):
         arg.completer = DirectoriesCompleter()
         parser.add_argument('NAME', help='key name, aka ROS node name')
         arg = parser.add_argument(
-            'POLICY_FILE_PATH', help='path of the permission yaml file')
+            'POLICY_FILE_PATH', help='path of the policy yaml file')
         arg.completer = FilesCompleter(
             allowednames=('yaml'), directories=False)
 
