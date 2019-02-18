@@ -422,7 +422,9 @@ def create_permission_file(path, name, domain_id, permissions_dict):
         </%s>
 """ % (tag, 'rt' + formatted_topic_name, tag)
         # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        service_dict = permissions_dict['services']
+        service_dict = dict()
+        if 'services' in permissions_dict:
+            service_dict = permissions_dict['services']
         default_parameter_topics = [
             'describe_parameters',
             'get_parameters',

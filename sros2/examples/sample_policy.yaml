@@ -27,10 +27,10 @@ nodes:
       #  - publish # this would allow the talker to publish on all topics
       /chatter:
         allow: 
-        -publish # allow publishing on chatter
+        - publish # allow publishing on chatter
       /chatter2:
         allow: 
-        - publish# allow publishing on chatter2
+        - publish # allow publishing on chatter2
       /chatter3:
         allow: 
-        -publish # allow publishing on chatter3
+        - publish # allow publishing on chatter3

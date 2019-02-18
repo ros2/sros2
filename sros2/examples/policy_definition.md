@@ -27,6 +27,6 @@ nodes:
     <node_name>:
         <ipc_type>:
             <ipc_identifier>
-                access:
-                    -<access_permissions>
+                allow:
+                    - <allow_permissions>
 ```
