@@ -1,5 +1,22 @@
+import os
+
 from setuptools import find_packages
 from setuptools import setup
+
+
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
+
+extra_files = []
+extra_files.extend(package_files('sros2/policy/defaults'))
+extra_files.extend(package_files('sros2/policy/schemas'))
+extra_files.extend(package_files('sros2/policy/templates'))
+
 
 setup(
     name='sros2',
@@ -40,7 +57,10 @@ enhance the security of ROS 2 deployments.""",
             ':CreatePermissionVerb',
             'distribute_key = sros2.verb.distribute_key:DistributeKeyVerb',
             'list_keys = sros2.verb.list_keys:ListKeysVerb',
-            'generate_permissions = sros2.verb.generate_permissions:GeneratePermissionsVerb',
+            'generate_policy = sros2.verb.generate_policy:GeneratePolicyVerb',
         ],
-    }
+    },
+    package_data={
+        'sros2': extra_files,
+    },
 )

@@ -1,4 +1,4 @@
-# Try SROS2 in MacOS 
+# Try SROS2 in MacOS
 
 ## Install OpenSSL
 
@@ -16,7 +16,7 @@ For convenience you can add this export to your bash_profile.
 
 ## Install ROS2
 
-### Install from binaries 
+### Install from binaries
 
 First install ROS2 from binaries following [these instructions](https://github.com/ros2/ros2/wiki/OSX-Install-Binary)
 
@@ -24,7 +24,7 @@ First install ROS2 from binaries following [these instructions](https://github.c
 Setup your environment:
 ```bash
 source . ~/ros2_install/ros2-osx/setup.bash
-``` 
+```
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
 
@@ -47,7 +47,7 @@ colcon build --symlink-install --cmake-args -DSECURITY=ON
 Setup your environment:
 ```bash
 source ~/ros2_ws/install/setup.bash
-``` 
+```
 
 In the rest of these instructions we assume that every terminal setup the environment as instructed above.
 
@@ -78,8 +78,8 @@ ros2 security create_keystore demo_keys
 #### Generate keys and certificates for the talker and listener nodes
 
 ```bash
-ros2 security create_key demo_keys talker
-ros2 security create_key demo_keys listener
+ros2 security create_key demo_keys /talker
+ros2 security create_key demo_keys /listener
 ```
 
 ### Define the SROS2 environment variables
@@ -138,19 +138,19 @@ ros2 run demo_nodes_cpp talker __node:=not_talker
 The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
 To increase the level of security in the system, you can define strict limits, known as access control, which restrict what each node is able to do.
 For example, one node would be able to publish to a particular topic, and another node might be able to subscribe to that topic.
-To do this, we will use the sample policy file provided in `examples/sample_policy.yaml`.
+To do this, we will use the sample policy file provided in `examples/sample_policy.xml`.
 
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-curl -sk https://raw.githubusercontent.com/ros2/sros2/master/examples/sample_policy.yaml -o ./demo_keys/policies.yaml
+svn checkout https://github.com/ros2/sros2/trunk/sros2/sros2/test/policies
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bash
-ros2 security create_permission demo_keys talker demo_keys/policies.yaml
-ros2 security create_permission demo_keys listener demo_keys/policies.yaml
+ros2 security create_permission demo_keys /talker policies/sample_policy.xml
+ros2 security create_permission demo_keys /listener policies/sample_policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
