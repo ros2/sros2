@@ -16,7 +16,7 @@ macro(ros2_secure_node)
     # ros2_secure_node(NODES <node_1> <node_2>...<node_n>)
 
     # NODES (macro multi-arg) takes the node names for which keys will be generated
-    # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
+    # SECURITY (cmake arg) if not defined or OFF, will not generate key/keystores
     # ROS_SECURITY_ROOT_DIRECTORY (env variable) will the location of the keystore
     # POLICY_FILE (cmake arg) if defined, will compile policies by node name into the access private certificates (e.g POLICY_FILE=/etc/policies/<policy.xml>, Generate: <node_name> /etc/policies/<policy.xml>)
     IF (NOT SECURITY)
@@ -28,16 +28,16 @@ macro(ros2_secure_node)
     set(multiValueArgs NODES)
     cmake_parse_arguments(ros2_secure_node "" "" "${multiValueArgs}" ${ARGN} )
     foreach(node ${ros2_secure_node_NODES})
-        message(STATUS "${PROGRAM} security create_key ${SECURITY_KEYSTORE} ${node} ${policy}")
-        execute_process (
-            COMMAND ${PROGRAM} security create_key ${SECURITY_KEYSTORE} ${node} 
-        )
+        set(create_key_command "${PROGRAM} security create_key ${SECURITY_KEYSTORE} ${node}")
+        message(STATUS "Executing: ${create_key_command}")
+        execute_process(COMMAND ${create_key_command})
         if (POLICY_FILE)
             if (EXISTS ${POLICY_FILE})
                 set(policy ${POLICY_FILE})
-                message(STATUS "Executing: ${PROGRAM} security create_permission ${SECURITY_KEYSTORE} ${node} ${policy}")
+                set(create_permission_command "${PROGRAM} security create_permission ${SECURITY_KEYSTORE} ${node} ${policy}")
+                message(STATUS "Executing: ${create_permission_command}")
                 execute_process (
-                    COMMAND ${PROGRAM} security create_permission ${SECURITY_KEYSTORE} ${node} ${policy}
+                    COMMAND ${create_permission_command}
                     RESULT_VARIABLE POLICY_RESULT
                     ERROR_VARIABLE POLICY_ERROR
                     )
