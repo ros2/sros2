@@ -125,11 +125,11 @@ class GeneratePolicyVerb(VerbExtension):
                     self.add_permission(
                         profile, 'topic', 'subscribe', 'ALLOW', subscribe_topics, node_name)
                 publish_topics = get_publisher_info(node=node, node_name=node_name)
-                if subscribe_topics:
+                if publish_topics:
                     self.add_permission(
                         profile, 'topic', 'publish', 'ALLOW', publish_topics, node_name)
                 reply_services = get_service_info(node=node, node_name=node_name)
-                if subscribe_topics:
+                if reply_services:
                     self.add_permission(
                         profile, 'service', 'reply', 'ALLOW', reply_services, node_name)
 
