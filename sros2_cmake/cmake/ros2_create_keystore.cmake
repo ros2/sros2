@@ -13,32 +13,32 @@
 # limitations under the License.
 
 macro(ros2_create_keystore)
-    # ros2_create_keystore()
+  # ros2_create_keystore()
+  #
+  # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
+  # ROS_SECURITY_ROOT_DIRECTORY (env variable) will the location of the keystore
+  if(NOT SECURITY)
+    return()
+  endif()
+  find_program(PROGRAM ros2)
+  if(DEFINED ENV{ROS_SECURITY_ROOT_DIRECTORY})
+    set(SECURITY_KEYSTORE $ENV{ROS_SECURITY_ROOT_DIRECTORY})
+  else()
+    set(SECURITY_KEYSTORE ${DEFAULT_KEYSTORE})
+  endif()
+  message(STATUS "Keystore located at ${SECURITY_KEYSTORE}")
+  if(NOT EXISTS ${SECURITY_KEYSTORE})
+    message(STATUS "Creating keystore directory")
+    file(MAKE_DIRECTORY ${SECURITY_KEYSTORE})
+  endif()
 
-    # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
-    # ROS_SECURITY_ROOT_DIRECTORY (env variable) will the location of the keystore
-    IF (NOT SECURITY)
-        return()
-    endif()
-    find_program(PROGRAM ros2)
-    if (DEFINED ENV{ROS_SECURITY_ROOT_DIRECTORY})
-        set(SECURITY_KEYSTORE $ENV{ROS_SECURITY_ROOT_DIRECTORY})
-    else()
-        SET(SECURITY_KEYSTORE ${DEFAULT_KEYSTORE})
-    endif()
-    message(STATUS "Keystore located at ${SECURITY_KEYSTORE}")
-    IF (NOT EXISTS ${SECURITY_KEYSTORE})
-        message(STATUS "Creating keystore directory")
-        file(MAKE_DIRECTORY ${SECURITY_KEYSTORE})
-    endif()
-
-    # Check to see if the security keystore already has already been created
-    file(GLOB RESULT "${SECURITY_KEYSTORE}/")
-    list(LENGTH RESULT RES_LEN)
-    if(${RES_LEN} EQUAL 0)
-        message(STATUS "Creating keystore directory")
-        execute_process (
-	        COMMAND ${PROGRAM} security create_keystore ${SECURITY_KEYSTORE}
-	    )
-    endif()
+  # Check to see if the security keystore already has already been created
+  file(GLOB RESULT "${SECURITY_KEYSTORE}/")
+  list(LENGTH RESULT RES_LEN)
+  if(${RES_LEN} EQUAL 0)
+    message(STATUS "Creating keystore directory")
+    execute_process(
+      COMMAND ${PROGRAM} security create_keystore ${SECURITY_KEYSTORE}
+    )
+  endif()
 endmacro()

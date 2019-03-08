@@ -19,19 +19,29 @@ import platform
 import shutil
 import subprocess
 
+from lxml import etree
+
+from sros2.policy import (
+    get_policy_default,
+    get_transport_default,
+    get_transport_schema,
+    get_transport_template,
+    load_policy,
+)
+
 HIDDEN_NODE_PREFIX = '_'
 
-NodeName = namedtuple('NodeName', ('name', 'namespace', 'full_name'))
-TopicInfo = namedtuple('Topic', ('name', 'types'))
+NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
+TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
     return [
         NodeName(
-            name=t[0],
-            namespace=t[1],
-            full_name=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
+            node=t[0],
+            ns=t[1],
+            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
         for t in node_names_and_namespaces
         if (
             include_hidden_nodes or
@@ -41,11 +51,11 @@ def get_node_names(*, node, include_hidden_nodes=False):
 
 
 def get_topics(node_name, func):
-    names_and_types = func(node_name.name, node_name.namespace)
+    names_and_types = func(node_name.node, node_name.ns)
     return [
         TopicInfo(
-            name=t[0],
-            types=t[1])
+            fqn=t[0],
+            type=t[1])
         for t in names_and_types]
 
 
@@ -183,36 +193,24 @@ def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path
 def create_governance_file(path, domain_id):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
-    with open(path, 'w') as f:
-        f.write("""\
-<?xml version="1.0" encoding="UTF-8"?>
-<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_governance.xsd">
-    <domain_access_rules>
-        <domain_rule>
-            <domains>
-              <id>%s</id>
-            </domains>
-            <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
-            <enable_join_access_control>true</enable_join_access_control>
-            <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
-            <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
-            <rtps_protection_kind>SIGN</rtps_protection_kind>
-            <topic_access_rules>
-                <topic_rule>
-                    <topic_expression>*</topic_expression>
-                    <enable_discovery_protection>true</enable_discovery_protection>
-                    <enable_liveliness_protection>true</enable_liveliness_protection>
-                    <enable_read_access_control>true</enable_read_access_control>
-                    <enable_write_access_control>true</enable_write_access_control>
-                    <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
-                    <data_protection_kind>ENCRYPT</data_protection_kind>
-                </topic_rule>
-            </topic_access_rules>
-        </domain_rule>
-    </domain_access_rules>
-</dds>
-""" % domain_id)
+    governance_xml_path = get_transport_default('dds', 'governance.xml')
+    governance_xml = etree.parse(governance_xml_path)
+
+    governance_xsd_path = get_transport_schema('dds', 'governance.xsd')
+    governance_xsd = etree.XMLSchema(etree.parse(governance_xsd_path))
+
+    domain_id_elements = governance_xml.findall(
+        'domain_access_rules/domain_rule/domains/id')
+    for domain_id_element in domain_id_elements:
+        domain_id_element.text = domain_id
+
+    try:
+        governance_xsd.assertValid(governance_xml)
+    except etree.DocumentInvalid as e:
+        raise RuntimeError(str(e))
+
+    with open(path, 'wb') as f:
+        f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
@@ -259,7 +257,7 @@ def create_keystore(args):
     gov_path = os.path.join(root, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
-        domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+        domain_id = os.getenv('ROS_DOMAIN_ID', '0')
         create_governance_file(gov_path, domain_id)
     else:
         print('found governance file, not creating a new one!')
@@ -303,7 +301,7 @@ def is_valid_keystore(path):
 
 def is_key_name_valid(name):
     # quick check for obvious filesystem problems
-    return '..' not in name and '/' not in name and '\\' not in name
+    return ('..' not in name) and ('\\' not in name) and (name.startswith('/'))
 
 
 def create_request_file(path, name):
@@ -318,12 +316,12 @@ commonName = %s
 """ % name)
 
 
-def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path):
-    key_relpath = os.path.join(name, 'key.pem')
-    ecdsa_param_relpath = os.path.join(name, 'ecdsaparam')
-    cnf_relpath = os.path.join(name, 'request.cnf')
-    key_relpath = os.path.join(name, 'key.pem')
-    req_relpath = os.path.join(name, 'req.pem')
+def create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path):
+    key_relpath = os.path.join(relative_path, 'key.pem')
+    ecdsa_param_relpath = os.path.join(relative_path, 'ecdsaparam')
+    cnf_relpath = os.path.join(relative_path, 'request.cnf')
+    key_relpath = os.path.join(relative_path, 'key.pem')
+    req_relpath = os.path.join(relative_path, 'req.pem')
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -331,9 +329,9 @@ def create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, re
         (openssl_executable, ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
 
 
-def create_cert(root_path, name):
-    req_relpath = os.path.join(name, 'req.pem')
-    cert_relpath = os.path.join(name, 'cert.pem')
+def create_cert(root_path, relative_path):
+    req_relpath = os.path.join(relative_path, 'req.pem')
+    cert_relpath = os.path.join(relative_path, 'cert.pem')
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -341,163 +339,46 @@ def create_cert(root_path, name):
         (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
-def format_publish_permissions(topics):
-    return """
-        <publish>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </publish> """ % topics
+def create_permission_file(path, domain_id, policy_element):
+
+    permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
+    permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
+    permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
+    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+
+    permissions_xml = permissions_xsl(policy_element)
+
+    domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
+    for domain_id_element in domain_id_elements:
+        domain_id_element.text = domain_id
+
+    try:
+        permissions_xsd.assertValid(permissions_xml)
+    except etree.DocumentInvalid as e:
+        raise RuntimeError(str(e))
+
+    with open(path, 'wb') as f:
+        f.write(etree.tostring(permissions_xml, pretty_print=True))
 
 
-def format_subscription_permissions(topics):
-    return """
-        <subscribe>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>%s
-          </topics>
-        </subscribe> """ % topics
+def get_policy(name, policy_file_path):
+    policy_tree = load_policy(policy_file_path)
 
-
-def create_permission_file(path, name, domain_id, permissions_dict):
-    permission_str = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_permissions.xsd">
-  <permissions>
-    <grant name="%s_policies">
-      <subject_name>CN=%s</subject_name>
-      <validity>
-      <!--
-       Format is CCYY-MM-DDThh:mm:ss[Z|(+|-)hh:mm]
-                           The time zone may be specified as Z (UTC) or (+|-)hh:mm.
-                           Time zones that aren't specified are considered UTC.
-      -->
-        <not_before>2013-10-26T00:00:00</not_before>
-        <not_after>2023-10-26T22:45:30</not_after>
-      </validity>
-      <allow_rule>
-        <domains>
-          <id>%s</id>
-        </domains>
-""" % (name, name, domain_id)
-    # access control only on topics for now
-    topic_dict = permissions_dict['topics']
-    if topic_dict:
-        # add rules for automatically created ros2 topics
-        # TODO(mikaelarguedas) remove this hardcoded handling for default topics
-        # TODO(mikaelarguedas) update dictionary based on existing rule
-        # if it already exists (rather than overriding the rule)
-        topic_dict['/parameter_events'] = {'allow': ['publish', 'subscribe']}
-        topic_dict['/clock'] = {'allow': ['subscribe']}
-        # we have some policies to add !
-        for topic_name, policy in topic_dict.items():
-            # add a / if it doesn't exist
-            formatted_topic_name = '/' + (topic_name.lstrip('/'))
-            tags = []
-            publish = 'publish'
-            subscribe = 'subscribe'
-            if publish in policy['allow']:
-                tags.append(publish)
-                policy['allow'].remove(publish)
-            if subscribe in policy['allow']:
-                tags.append(subscribe)
-                policy['allow'].remove(subscribe)
-            if len(policy['allow']) > 0:
-                print('unknown permission policy \'%s\', skipping' % policy['allow'])
-                continue
-            for tag in tags:
-                permission_str += """\
-        <%s>
-          <partitions>
-            <partition></partition>
-          </partitions>
-          <topics>
-            <topic>%s</topic>
-          </topics>
-        </%s>
-""" % (tag, 'rt' + formatted_topic_name, tag)
-        # TODO(mikaelarguedas) remove this hardcoded handling for default parameter topics
-        service_dict = permissions_dict['services']
-        default_parameter_topics = [
-            'describe_parameters',
-            'get_parameters',
-            'get_parameter_types',
-            'list_parameters',
-            'set_parameters',
-            'set_parameters_atomically',
-        ]
-        default_parameter_topics = ['/%s/%s' % (name, topic) for topic in default_parameter_topics]
-        rw_access_pair = {'allow': ['request', 'reply']}
-        for topic in default_parameter_topics:
-            service_dict[topic] = rw_access_pair
-        published_topics_string = ''
-        subscribed_topic_string = ''
-
-        for topic, permission_dict in service_dict.items():
-            permissions = permission_dict['allow']
-            request_topic = 'rq%sRequest' % topic
-            reply_topic = 'rr%sReply' % topic
-
-            if 'reply' in permissions:
-                subscribed_topic_string += """
-                <topic>%s</topic>""" % (request_topic)
-                published_topics_string += """
-                <topic>%s</topic>""" % (reply_topic)
-            if 'request' in permissions:
-                subscribed_topic_string += """
-                <topic>%s</topic>""" % (reply_topic)
-                published_topics_string += """
-                <topic>%s</topic>""" % (request_topic)
-
-        permission_str += format_publish_permissions(published_topics_string)
-        permission_str += format_subscription_permissions(subscribed_topic_string)
-    else:
-        # no policy found: allow everything!
-        permission_str += """\
-        <publish>
-          <partitions>
-            <partition>*</partition>
-          </partitions>
-          <topics>
-            <topic>*</topic>
-          </topics>
-        </publish>
-        <subscribe>
-          <partitions>
-            <partition>*</partition>
-          </partitions>
-          <topics>
-            <topic>*</topic>
-          </topics>
-        </subscribe>
-"""
-
-    permission_str += """\
-      </allow_rule>
-      <default>DENY</default>
-    </grant>
-  </permissions>
-</dds>
-"""
-    with open(path, 'w') as f:
-        f.write(permission_str)
-
-
-def get_permissions(name, policy_file_path):
-    import yaml
-    if not os.path.isfile(policy_file_path):
-        raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
-    with open(policy_file_path, 'r') as graph_permissions_file:
-        try:
-            graph = yaml.load(graph_permissions_file)
-        except yaml.YAMLError as e:
-            raise RuntimeError(str(e))
-        return graph['nodes'][name]
+    ns, node = name.rsplit('/', 1)
+    ns = '/' if not ns else ns
+    profile_element = policy_tree.find(
+        path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
+            ns=ns,
+            node=node))
+    if profile_element is None:
+        raise RuntimeError('unable to find profile "{name}"'.format(
+            name=name
+        ))
+    profiles_element = etree.Element('profiles')
+    profiles_element.append(profile_element)
+    policy_element = etree.Element('policy')
+    policy_element.append(profiles_element)
+    return policy_element
 
 
 def create_signed_permissions_file(
@@ -515,13 +396,14 @@ def create_permission(args):
     root = args.ROOT
     name = args.NAME
     policy_file_path = args.POLICY_FILE_PATH
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
 
-    key_dir = os.path.join(root, name)
+    relative_path = os.path.normpath(name.lstrip('/'))
+    key_dir = os.path.join(root, relative_path)
     print('key_dir %s' % key_dir)
-    permissions_dict = get_permissions(name, policy_file_path)
+    policy_element = get_policy(name, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, permissions_dict)
+    create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(root, 'ca.cert.pem')
@@ -544,7 +426,8 @@ def create_key(args):
         return False
     print('creating key for node name: %s' % name)
 
-    key_dir = os.path.join(root, name)
+    relative_path = os.path.normpath(name.lstrip('/'))
+    key_dir = os.path.join(root, relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # copy the CA cert in there
@@ -576,22 +459,35 @@ def create_key(args):
     req_path = os.path.join(key_dir, 'req.pem')
     if not os.path.isfile(key_path) or not os.path.isfile(req_path):
         print('creating key and cert request')
-        create_key_and_cert_req(root, name, cnf_path, ecdsa_param_path, key_path, req_path)
+        create_key_and_cert_req(
+            root,
+            relative_path,
+            cnf_path,
+            ecdsa_param_path,
+            key_path, req_path)
     else:
         print('found key and cert req; not creating new ones!')
 
     cert_path = os.path.join(key_dir, 'cert.pem')
     if not os.path.isfile(cert_path):
         print('creating cert')
-        create_cert(root, name)
+        create_cert(root, relative_path)
     else:
         print('found cert; not creating a new one!')
 
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
-    domain_id = os.getenv('ROS_DOMAIN_ID', 0)
+    policy_file_path = get_policy_default('policy.xml')
+    policy_element = get_policy('/default', policy_file_path)
+    profile_element = policy_element.find('profiles/profile')
+    ns, node = name.rsplit('/', 1)
+    ns = '/' if not ns else ns
+    profile_element.attrib['ns'] = ns
+    profile_element.attrib['node'] = node
+
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    create_permission_file(permissions_path, name, domain_id, {'topics': None})
+    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
+    create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(root, 'ca.key.pem')
