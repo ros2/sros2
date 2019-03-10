@@ -8,8 +8,7 @@ set(INCLUDE_INSTALL_DIR include/)
 set(SYSCONFIG_INSTALL_DIR share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_lint_cmake REQUIRED)
   ament_lint_cmake()
 endif()
 
