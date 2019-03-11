@@ -7,6 +7,8 @@ set(LIB_INSTALL_DIR lib/)
 set(INCLUDE_INSTALL_DIR include/)
 set(SYSCONFIG_INSTALL_DIR share/${PROJECT_NAME})
 
+# ament_cmake_test provides BUILD_TESTING definition
+find_package(ament_cmake_test REQUIRED)
 if(BUILD_TESTING)
   find_package(ament_cmake_lint_cmake REQUIRED)
   ament_lint_cmake()

@@ -10,6 +10,7 @@
 
     <buildtool_depend>cmake</buildtool_depend>
 
+    <build_depend>ament_cmake_test</build_depend>
     <build_depend>sros2</build_depend>
     <build_depend>ros2cli</build_depend>
 
