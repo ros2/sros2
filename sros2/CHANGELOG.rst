@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [crystal-backport] Backport XML and XSLT functionality (`#93 <https://github.com/ros2/sros2/issues/93>`_)
+* Contributors: Mikael Arguedas, Jacob Perron, Ross Desmond, Ruffin White
+
 0.6.2 (2019-02-08)
 ------------------
 

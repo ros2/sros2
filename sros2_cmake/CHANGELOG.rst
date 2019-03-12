@@ -2,6 +2,13 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* linter invocation fixup (`#97 <https://github.com/ros2/sros2/issues/97>`_)
+* command needs to be a list and not a string (`#96 <https://github.com/ros2/sros2/issues/96>`_) (`#98 <https://github.com/ros2/sros2/issues/98>`_)
+* [crystal-backport] Backport XML and XSLT functionality (`#93 <https://github.com/ros2/sros2/issues/93>`_)
+* Contributors: Mikael Arguedas, Jacob Perron, Ross Desmond, Ruffin White
+
 0.6.2 (2019-02-08)
 ------------------
 * Create package for sros2 cmake macros. (`#75 <https://github.com/ros2/sros2/issues/75>`_)
