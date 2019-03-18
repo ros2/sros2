@@ -177,7 +177,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
-svn checkout https://github.com/ros2/sros2/trunk/sros2/sros2/test/policies
+svn checkout https://github.com/ros2/sros2/trunk/sros2/test/policies
 ```
 
 And now we will use it to generate the XML permission files expected by the middleware:
