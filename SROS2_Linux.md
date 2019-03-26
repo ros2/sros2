@@ -4,9 +4,9 @@
 
 ### Install from debian packages
 
-First install ROS2 from binaries following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Install-Debians)
+First install ROS2 from binaries following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians)
 
-Setup your environment following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Install-Debians#environment-setup)
+Setup your environment following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians#environment-setup)
 
 In the rest of these instruction we assume that every terminal setup the environment as instructed above.
 
@@ -19,7 +19,7 @@ You will need to have openssl installed on your machine:
 sudo apt update && sudo apt install libssl-dev
 ```
 
-First install ROS2 from source following [these instructions](https://github.com/ros2/ros2/wiki/Linux-Development-Setup)
+First install ROS2 from source following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Development-Setup/)
 
 Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
@@ -29,7 +29,7 @@ colcon build --symlink-install --cmake-args -DSECURITY=ON
 ### Additional configuration for RTI Connext
 
 Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugins (note that you also need to install RTI's version of openssl as 5.3.1 doesnt support openssl 1.1.0 provided in Ubuntu Bionic).
-See [this page](https://github.com/ros2/ros2/wiki/Install-Connext-Security-Plugins) for details on installing the security plugins.
+See [this page](https://index.ros.org/doc/ros2/Installation/Install-Connext-Security-Plugins) for details on installing the security plugins.
 
 Warning: this tutorial is for ROS Bouncy and Connext 5.3.1.
 If you use ROS Ardent or Connext 5.3.0 please refer to the [tutorial from ROS Ardent](https://github.com/ros2/sros2/blob/ardent/SROS2_Linux.md)
@@ -88,7 +88,7 @@ These variables need to be defined in each terminal used for the demo. For conve
 
 ### Run the demo
 
-ROS2 allows you to [change DDS implementation at runtime](https://github.com/ros2/ros2/wiki/Working-with-multiple-RMW-implementations).
+ROS2 allows you to [change DDS implementation at runtime](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations).
 This demo can be run with fastrtps by setting:
 ```bash
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
