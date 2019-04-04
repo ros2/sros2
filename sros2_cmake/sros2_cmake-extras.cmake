@@ -14,6 +14,5 @@
 
 set(DEFAULT_KEYSTORE keys)
 
-include("${sros2_cmake_DIR}/ros2_create_keystore.cmake")
 include("${sros2_cmake_DIR}/ros2_secure_node.cmake")
 
