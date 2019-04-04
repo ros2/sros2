@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(DEFAULT_KEYSTORE keys)
+set(DEFAULT_KEYSTORE "${CMAKE_INSTALL_PREFIX}/ros2_security/keystore")
 
 include("${sros2_cmake_DIR}/ros2_create_keystore.cmake")
 include("${sros2_cmake_DIR}/ros2_secure_node.cmake")
