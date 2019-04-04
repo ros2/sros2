@@ -31,5 +31,5 @@ class CreateKeyVerb(VerbExtension):
         parser.add_argument('NAME', help='key name, aka ROS node name')
 
     def main(self, *, args):
-        success = create_key(args)
+        success = create_key(args.ROOT, args.NAME)
         return 0 if success else 1

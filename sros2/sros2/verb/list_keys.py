@@ -30,5 +30,5 @@ class ListKeysVerb(VerbExtension):
         arg.completer = DirectoriesCompleter()
 
     def main(self, *, args):
-        success = list_keys(args)
+        success = list_keys(args.ROOT)
         return 0 if success else 1

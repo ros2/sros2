@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Open Source Robotics Foundation, Inc.
+# Copyright 2019 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,25 +23,29 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from sros2.api import create_permission
+from sros2.api import generate_artifacts
 from sros2.verb import VerbExtension
 
 
-class CreatePermissionVerb(VerbExtension):
-    """Create permission."""
+class GenerateArtifactsVerb(VerbExtension):
+    """Generate keys and permission files from a list of identities and policy files."""
 
     def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+        arg = parser.add_argument('-k', '--keystore-root-path', help='root path of keystore')
         arg.completer = DirectoriesCompleter()
-        parser.add_argument('NAME', help='key name, aka ROS node name')
+        parser.add_argument(
+            '-n', '--node-names', nargs='*', default=[],
+            help='list of identities, aka ROS node names')
         arg = parser.add_argument(
-            'POLICY_FILE_PATH', help='path of the policy xml file')
+            '-p', '--policy-files', nargs='*', default=[],
+            help='list of policy xml file paths')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
 
     def main(self, *, args):
         try:
-            success = create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
+            success = generate_artifacts(
+                args.keystore_root_path, args.node_names, args.policy_files)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1

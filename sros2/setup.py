@@ -56,8 +56,9 @@ enhance the security of ROS 2 deployments.""",
             'create_permission = sros2.verb.create_permission'
             ':CreatePermissionVerb',
             'distribute_key = sros2.verb.distribute_key:DistributeKeyVerb',
-            'list_keys = sros2.verb.list_keys:ListKeysVerb',
+            'generate_artifacts = sros2.verb.generate_artifacts:GenerateArtifactsVerb',
             'generate_policy = sros2.verb.generate_policy:GeneratePolicyVerb',
+            'list_keys = sros2.verb.list_keys:ListKeysVerb',
         ],
     },
     package_data={
