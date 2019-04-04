@@ -41,7 +41,7 @@ class CreatePermissionVerb(VerbExtension):
 
     def main(self, *, args):
         try:
-            success = create_permission(args)
+            success = create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1
