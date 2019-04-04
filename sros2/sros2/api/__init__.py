@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Open Source Robotics Foundation, Inc.
+# Copyright 2016-2019 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 
 from lxml import etree
 
@@ -30,6 +31,7 @@ from sros2.policy import (
 )
 
 HIDDEN_NODE_PREFIX = '_'
+DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
@@ -254,7 +256,7 @@ def create_keystore(keystore_path):
     gov_path = os.path.join(keystore_path, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
-        domain_id = os.getenv('ROS_DOMAIN_ID', '0')
+        domain_id = os.getenv(DOMAIN_ID_ENV, '0')
         create_governance_file(gov_path, domain_id)
     else:
         print('found governance file, not creating a new one!')
@@ -358,7 +360,10 @@ def create_permission_file(path, domain_id, policy_element):
 
 def get_policy(name, policy_file_path):
     policy_tree = load_policy(policy_file_path)
+    return get_policy_from_tree(name, policy_tree)
 
+
+def get_policy_from_tree(name, policy_tree):
     ns, node = name.rsplit('/', 1)
     ns = '/' if not ns else ns
     profile_element = policy_tree.find(
@@ -387,12 +392,16 @@ def create_signed_permissions_file(
 
 
 def create_permission(keystore_path, identity, policy_file_path):
-    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
+    policy_element = get_policy(identity, policy_file_path)
+    create_permissions_from_policy_element(keystore_path, identity, policy_element)
+    return True
 
+
+def create_permissions_from_policy_element(keystore_path, identity, policy_element):
+    domain_id = os.getenv(DOMAIN_ID_ENV, '0')
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = os.path.join(keystore_path, relative_path)
     print('key_dir %s' % key_dir)
-    policy_element = get_policy(identity, policy_file_path)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, domain_id, policy_element)
 
@@ -402,7 +411,6 @@ def create_permission(keystore_path, identity, policy_file_path):
     create_signed_permissions_file(
         permissions_path, signed_permissions_path,
         keystore_ca_cert_path, keystore_ca_key_path)
-    return True
 
 
 def create_key(keystore_path, identity):
@@ -474,7 +482,7 @@ def create_key(keystore_path, identity):
     profile_element.attrib['node'] = node
 
     permissions_path = os.path.join(key_dir, 'permissions.xml')
-    domain_id = os.getenv('ROS_DOMAIN_ID', '0')
+    domain_id = os.getenv(DOMAIN_ID_ENV, '0')
     create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
@@ -495,3 +503,37 @@ def list_keys(keystore_path):
 
 def distribute_key(source_keystore_path, taget_keystore_path):
     raise NotImplementedError()
+
+
+def get_keystore_path_from_env():
+    root_keystore_env_var = 'ROS_SECURITY_ROOT_DIRECTORY'
+    root_keystore_path = os.getenv(root_keystore_env_var)
+    if root_keystore_path is None:
+        print('%s is empty' % root_keystore_env_var, file=sys.stderr)
+    return root_keystore_path
+
+
+def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
+    if keystore_path is None:
+        keystore_path = get_keystore_path_from_env()
+        if keystore_path is None:
+            return False
+    if not is_valid_keystore(keystore_path):
+        print('%s is not a valid keystore, creating new keystore' % keystore_path)
+        create_keystore(keystore_path)
+
+    # create keys for all provided identities
+    for identity in identity_names:
+        if not create_key(keystore_path, identity):
+            return False
+    for policy_file in policy_files:
+        policy_tree = load_policy(policy_file)
+        profiles_element = policy_tree.find('profiles')
+        for profile in profiles_element:
+            identity_name = profile.get('ns').rstrip('/') + '/' + profile.get('node')
+            if not create_key(keystore_path, identity_name):
+                return False
+            policy_element = get_policy_from_tree(identity_name, policy_tree)
+            create_permissions_from_policy_element(
+                keystore_path, identity_name, policy_element)
+    return True
