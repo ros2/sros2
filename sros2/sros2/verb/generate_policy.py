@@ -52,7 +52,7 @@ def formatTopics(topic_list, permission, topic_map):
 
 
 class GeneratePolicyVerb(VerbExtension):
-    """Generate permissions."""
+    """Generate XML policy file from ROS graph data."""
 
     def add_arguments(self, parser, cli_name):
 
