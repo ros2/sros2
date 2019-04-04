@@ -285,15 +285,13 @@ def create_keystore(keystore_path):
 
 
 def is_valid_keystore(path):
-    ca_conf_found = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
-    ecdsa_param_found = os.path.isfile(os.path.join(path, 'ecdsaparam'))
-    index_found = os.path.isfile(os.path.join(path, 'index.txt'))
-    ca_key_found = os.path.isfile(os.path.join(path, 'ca.key.pem'))
-    ca_cert_found = os.path.isfile(os.path.join(path, 'ca.cert.pem'))
-    signed_gov_found = os.path.isfile(os.path.join(path, 'governance.p7s'))
-    return ecdsa_param_found and ca_key_found and \
-        ca_cert_found and signed_gov_found and \
-        index_found and ca_conf_found
+    res = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
+    res &= os.path.isfile(os.path.join(path, 'ecdsaparam'))
+    res &= os.path.isfile(os.path.join(path, 'index.txt'))
+    res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
+    res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
+    res &= os.path.isfile(os.path.join(path, 'governance.p7s'))
+    return res
 
 
 def is_key_name_valid(name):
