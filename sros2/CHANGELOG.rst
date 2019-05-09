@@ -2,6 +2,17 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.0 (2019-05-08)
+------------------
+* Merge pull request `#107 <https://github.com/ros2/sros2/issues/107>`_ from mikaelarguedas/autogenerate_artifacts
+* complete xml and not yaml files for create_permission (`#104 <https://github.com/ros2/sros2/issues/104>`_)
+* Fix bug preventing generate_policy verb from working with publishers and services
+* Add missing attributes to test permissions XML file
+* add reference to schema in generated permission files (`#84 <https://github.com/ros2/sros2/issues/84>`_)
+* Correct sros2 cli test folder location (`#83 <https://github.com/ros2/sros2/issues/83>`_)
+* Merge pull request `#72 <https://github.com/ros2/sros2/issues/72>`_ from ros2/xml_profile
+* Contributors: Jacob Perron, Michael Carroll, Mikael Arguedas, Ruffin
+
 0.6.2 (2019-02-08)
 ------------------
 
