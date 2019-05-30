@@ -28,7 +28,7 @@ It will be needed in the tutorial for downloading the sample policies. Run:
 choco install -y svn
 ```
 
-After openning a new command promt, you should be able to run:
+After opening a new command prompt, you should be able to run:
 ```bat
 svn help
 ```
