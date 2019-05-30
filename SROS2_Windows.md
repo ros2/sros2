@@ -21,6 +21,18 @@ colcon build --cmake-args -DSECURITY=ON
 
 If you don't have OpenSSL installed, please see follow [these instructions](https://index.ros.org/doc/ros2/Installation/Windows-Install-Binary#install-openssl)
 
+### Install svn
+
+It will be needed in the tutorial for downloading the sample policies. Run:
+```bat
+choco install -y svn
+```
+
+After opening a new command prompt, you should be able to run:
+```bat
+svn help
+```
+
 ### Additional configuration for RTI Connext
 
 To use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
