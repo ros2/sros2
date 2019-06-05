@@ -298,7 +298,12 @@ def is_valid_keystore(path):
 
 def is_key_name_valid(name):
     # quick check for obvious filesystem problems
-    return ('..' not in name) and ('\\' not in name) and (name.startswith('/'))
+    if ('..' in name) or ('\\' in name) or (not name.startswith('/')):
+        return False
+    # name must contain characters other than whitespace and '/'
+    if not name.strip('/ '):
+        return False
+    return True
 
 
 def create_request_file(path, name):
@@ -418,7 +423,7 @@ def create_key(keystore_path, identity):
         print("'%s' is not a valid keystore " % keystore_path)
         return False
     if not is_key_name_valid(identity):
-        print("bad character in requested identity: '%s'" % identity)
+        print("'%s' is not a valid key name" % identity)
         return False
     print("creating key for identity: '%s'" % identity)
 
