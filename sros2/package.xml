@@ -10,6 +10,7 @@
   <author email="morgan@osrfoundation.org">Morgan Quigley</author>
   <author>Mikael Arguedas</author>
 
+  <depend>rclpy</depend>
   <depend>ros2cli</depend>
 
   <exec_depend>openssl</exec_depend>

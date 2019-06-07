@@ -22,6 +22,11 @@ import sys
 
 from lxml import etree
 
+from rclpy.exceptions import InvalidNamespaceException
+from rclpy.exceptions import InvalidNodeNameException
+from rclpy.validate_namespace import validate_namespace
+from rclpy.validate_node_name import validate_node_name
+
 from sros2.policy import (
     get_policy_default,
     get_transport_default,
@@ -297,8 +302,18 @@ def is_valid_keystore(path):
 
 
 def is_key_name_valid(name):
-    # quick check for obvious filesystem problems
-    return ('..' not in name) and ('\\' not in name) and (name.startswith('/'))
+    ns_and_name = name.rsplit('/', 1)
+    if len(ns_and_name) != 2:
+        print("The key name needs to start with '/'")
+        return False
+    node_ns = ns_and_name[0] if ns_and_name[0] else '/'
+    node_name = ns_and_name[1]
+
+    try:
+        return (validate_namespace(node_ns) and validate_node_name(node_name))
+    except (InvalidNamespaceException, InvalidNodeNameException) as e:
+        print('{}'.format(e))
+        return False
 
 
 def create_request_file(path, name):
@@ -418,7 +433,6 @@ def create_key(keystore_path, identity):
         print("'%s' is not a valid keystore " % keystore_path)
         return False
     if not is_key_name_valid(identity):
-        print("bad character in requested identity: '%s'" % identity)
         return False
     print("creating key for identity: '%s'" % identity)
 
