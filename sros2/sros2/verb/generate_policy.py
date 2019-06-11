@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 
 try:
     from argcomplete.completers import DirectoriesCompleter
@@ -116,6 +117,11 @@ class GeneratePolicyVerb(VerbExtension):
         node_names = []
         with NodeStrategy(args) as node:
             node_names = get_node_names(node=node, include_hidden_nodes=False)
+
+        if not len(node_names):
+            print('No nodes detected in the ROS graph. No policy file was generated.',
+                  file=sys.stderr)
+            return 1
 
         with DirectNode(args) as node:
             for node_name in node_names:
