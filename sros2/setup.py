@@ -23,6 +23,7 @@ setup(
     version='0.6.2',
     packages=find_packages(exclude=['test']),
     install_requires=['setuptools'],
+    requires=['cryptography'],
     zip_safe=True,
     author='Morgan Quigley',
     author_email='morgan@osrfoundation.org',
