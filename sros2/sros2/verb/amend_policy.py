@@ -29,6 +29,8 @@ except ImportError:
 
 from lxml import etree
 
+from rclpy.duration import Duration
+from rclpy.time import Time
 from ros2cli.node.direct import DirectNode
 from ros2cli.node.strategy import NodeStrategy
 
@@ -87,6 +89,7 @@ class AmendPolicyVerb(VerbExtension):
             allowednames=('xml'), directories=False)
         parser.add_argument(
             '--time-out', '-t',
+            default=int(9999), type=int,
             help='a duration for monitoring the events (seconds)')
 
     def getEvents(self):
@@ -99,13 +102,12 @@ class AmendPolicyVerb(VerbExtension):
         pass
 
     def main(self, *, args):
-        node = NodeStrategy(args)
+        node = DirectNode(args)
 
-        if args.time_out is not None:
-            self.time_point_final = node._clock.now() + Duration(args.time_out)
+        time_point_final = node.get_clock().now() + Duration(seconds=args.time_out)
 
         try:
-            while (node._clock.now() < self.time_point_final):
-                print('trololo')
+            while (node._clock.now() < time_point_final):
+                print(node._clock.now(), ' < ', time_point_final)
         except KeyboardInterrupt:
             print('done.')
