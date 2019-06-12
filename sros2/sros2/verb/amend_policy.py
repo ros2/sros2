@@ -76,16 +76,18 @@ def eventPermissionForProfile(profile, event):
                 rule_type=event.rule_type)
 """
 
-    
-    
 
 class AmendPolicyVerb(VerbExtension):
-    def add_arguments(self, parser, cli_name):
+    """Interactively add missing permissions to a permission file."""
 
+    def add_arguments(self, parser, cli_name):
         arg = parser.add_argument(
             'POLICY_FILE_PATH', help='path of the policy xml file')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
+        parser.add_argument(
+            '--time-out', '-t',
+            help='a duration for monitoring the events (seconds)')
 
     def getEvents(self):
         pass
@@ -97,5 +99,13 @@ class AmendPolicyVerb(VerbExtension):
         pass
 
     def main(self, *, args):
-        pass
+        node = NodeStrategy(args)
 
+        if args.time_out is not None:
+            self.time_point_final = node._clock.now() + Duration(args.time_out)
+
+        try:
+            while (node._clock.now() < self.time_point_final):
+                print('trololo')
+        except KeyboardInterrupt:
+            print('done.')

@@ -51,6 +51,7 @@ enhance the security of ROS 2 deployments.""",
             'sros2.verb = sros2.verb:VerbExtension',
         ],
         'sros2.verb': [
+            'amend_policy = sros2.verb.amend_policy:AmendPolicyVerb',
             'create_key = sros2.verb.create_key:CreateKeyVerb',
             'create_keystore = sros2.verb.create_keystore:CreateKeystoreVerb',
             'create_permission = sros2.verb.create_permission'
