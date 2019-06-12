@@ -2,6 +2,9 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.7.0 (2019-05-08)
 ------------------
 * make sros2_cmake use generate_artifacts command (`#108 <https://github.com/ros2/sros2/issues/108>`_)

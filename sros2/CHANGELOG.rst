@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Guard against empty ROS graph when generating policy (`#118 <https://github.com/ros2/sros2/issues/118>`_)
+* Guard against invalid key names (`#117 <https://github.com/ros2/sros2/issues/117>`_)
+* Contributors: Jacob Perron
+
 0.7.0 (2019-05-08)
 ------------------
 * Merge pull request `#107 <https://github.com/ros2/sros2/issues/107>`_ from mikaelarguedas/autogenerate_artifacts
