@@ -36,5 +36,5 @@ class ListKeysVerb(VerbExtension):
             if list_keys(args.ROOT):
                 return 0
         except FileNotFoundError as e:
-            print('{}: {!r}'.format(e.strerror, e.filename), file=sys.stderr)
+            print('No such file or directory: {!r}'.format(e.filename), file=sys.stderr)
         return 1
