@@ -96,7 +96,7 @@ class AmendPolicyVerb(VerbExtension):
     """Interactively add missing permissions to a permission file."""
 
     def __init__(self):
-        self.unregistered_event_cache = []
+        self.event_cache = []
 
     def add_arguments(self, parser, cli_name):
         arg = parser.add_argument(
@@ -182,7 +182,7 @@ class AmendPolicyVerb(VerbExtension):
         permission_group.append(AmendPolicyVerb.create_permission(event))
 
     def getEvents(self):
-        pass
+        return ['Foo', 'Bar', 'Baz']
 
     def getPolicyEventStatus(self, policy, event):
         # Find all profiles for the node in the event
@@ -193,8 +193,12 @@ class AmendPolicyVerb(VerbExtension):
         event_permissions = [getEventPermissionForProfile(p, event) for p in profiles]
         return EventPermission.reduce(event_permissions)
 
+    def filterEvents(self, events):
+        return list(set(unregistered_events).difference(
+                self.event_cache))
+
     def keepCached(self, event):
-        self.unregistered_event_cache.append(event)
+        self.event_cache.append(event)
 
     def promptUserAboutPermission(self, event):
         usr_input = None
@@ -227,11 +231,10 @@ class AmendPolicyVerb(VerbExtension):
             while (node._clock.now() < time_point_final):
                 print('Scanning for events...', end='\r')
 
-                unregistered_events = ['Foo', 'Bar']  # get_unregistered_events
+                unregistered_events = self.getEvents()
 
-                filtered_unregistered_events = list(
-                    set(unregistered_events).difference(
-                        self.unregistered_event_cache))
+                filtered_unregistered_events = \
+                    filterEvents(unregistered_events)
 
                 for unregistered_event in filtered_unregistered_events:
                     self.promptUserAboutPermission(unregistered_event)
