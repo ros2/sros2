@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import namedtuple
+import datetime
 import itertools
 import os
 import platform
@@ -20,6 +21,11 @@ import shutil
 import subprocess
 import sys
 
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend as cryptography_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
@@ -116,6 +122,25 @@ def check_openssl_version(openssl_executable):
         raise RuntimeError('need openssl 1.0.2 minimum')
 
 
+def write_key(
+    key,
+    key_path,
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption()
+):
+    with open(key_path, 'wb') as f:
+        f.write(key.private_bytes(
+            encoding=encoding,
+            format=format,
+            encryption_algorithm=encryption_algorithm))
+
+
+def write_cert(cert, cert_path, encoding=serialization.Encoding.PEM):
+    with open(cert_path, 'wb') as f:
+        f.write(cert.public_bytes(encoding=encoding))
+
+
 def create_ca_conf_file(path):
     with open(path, 'w') as f:
         f.write("""\
@@ -189,12 +214,21 @@ def create_ecdsa_param_file(path):
     run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
 
 
-def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s' %
-        (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
+    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    write_key(private_key, ca_key_out_path)
+
+    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
+    builder = x509.CertificateBuilder()\
+        .issuer_name(x509.Name([common_name])) \
+        .serial_number(x509.random_serial_number()) \
+        .not_valid_before(datetime.datetime.today() - datetime.timedelta(days=1)) \
+        .not_valid_after(datetime.datetime.today() + datetime.timedelta(days=3650)) \
+        .public_key(private_key.public_key()) \
+        .subject_name(x509.Name([common_name])) \
+        .add_extension(x509.BasicConstraints(ca=True, path_length=1), critical=True)
+    cert = builder.sign(private_key, hashes.SHA256(), cryptography_backend())
+    write_cert(cert, ca_cert_out_path)
 
 
 def create_governance_file(path, domain_id):
@@ -236,24 +270,18 @@ def create_keystore(keystore_path):
         print('directory already exists: %s' % keystore_path)
 
     ca_conf_path = os.path.join(keystore_path, 'ca_conf.cnf')
+    ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
+    ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+
     if not os.path.isfile(ca_conf_path):
         print('creating CA file: %s' % ca_conf_path)
         create_ca_conf_file(ca_conf_path)
     else:
         print('found CA conf file, not writing a new one!')
 
-    ecdsa_param_path = os.path.join(keystore_path, 'ecdsaparam')
-    if not os.path.isfile(ecdsa_param_path):
-        print('creating ECDSA param file: %s' % ecdsa_param_path)
-        create_ecdsa_param_file(ecdsa_param_path)
-    else:
-        print('found ECDSA param file, not writing a new one!')
-
-    ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     if not (os.path.isfile(ca_key_path) and os.path.isfile(ca_cert_path)):
         print('creating new CA key/cert pair')
-        create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path)
+        create_ca_key_cert(ca_key_path, ca_cert_path)
     else:
         print('found CA key and cert, not creating new ones!')
 
@@ -352,7 +380,6 @@ def create_cert(root_path, relative_path):
 
 
 def create_permission_file(path, domain_id, policy_element):
-
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
