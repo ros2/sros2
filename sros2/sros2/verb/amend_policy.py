@@ -95,6 +95,9 @@ def getEventPermissionForProfile(profile, event):
 class AmendPolicyVerb(VerbExtension):
     """Interactively add missing permissions to a permission file."""
 
+    def __init__(self):
+        self.unregistered_event_cache = []
+
     def add_arguments(self, parser, cli_name):
         arg = parser.add_argument(
             'POLICY_FILE_PATH', help='path of the policy xml file')
@@ -190,14 +193,50 @@ class AmendPolicyVerb(VerbExtension):
         event_permissions = [getEventPermissionForProfile(p, event) for p in profiles]
         return EventPermission.reduce(event_permissions)
 
+    def keepCached(self, event):
+        self.unregistered_event_cache.append(event)
+
+    def promptUserAboutPermission(self, event):
+        usr_input = None
+        while usr_input not in ['Y', 'y', 'N', 'n', '']:
+            print('Event: ', event)
+            usr_input = input('Do you want to add this event '
+                              'to the permission list? (Y/n) : ')
+
+            if usr_input not in ['Y', 'y', 'N', 'n', '']:
+                print("Unknown command '", usr_input, "'.")
+                print('Please try again.\n')
+
+        if usr_input in ['Y', 'y', '']:
+            self.addPermission(event)
+            print('Permission granted !')
+        elif usr_input in ['N', 'n']:
+            print('Permission denied !')
+
+        self.keepCached(event)
+
+        print('\n')
+
     def main(self, *, args):
         node = DirectNode(args)
 
-        time_point_final = node.get_clock().now() + Duration(seconds=args.time_out)
+        time_point_final = node.get_clock().now() + \
+            Duration(seconds=args.time_out)
 
         try:
             while (node._clock.now() < time_point_final):
-                print(node._clock.now(), ' < ', time_point_final)
+                print('Scanning for events...', end='\r')
+
+                unregistered_events = ['Foo', 'Bar']  # get_unregistered_events
+
+                filtered_unregistered_events = list(
+                    set(unregistered_events).difference(
+                        self.unregistered_event_cache))
+
+                for unregistered_event in filtered_unregistered_events:
+                    self.promptUserAboutPermission(unregistered_event)
+
+                # print(node._clock.now(), ' < ', time_point_final)
                 # TODO(artivis) use rate once available
                 time.sleep(0.25)
         except KeyboardInterrupt:
