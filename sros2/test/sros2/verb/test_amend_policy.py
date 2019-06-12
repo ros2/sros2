@@ -28,7 +28,4 @@ def test_getFQN():
 
     # Fully qualified name
     assert getFQN(node_name, '/foo/chatter') == '/foo/chatter' 
-    
-def test_policyAllowsEvent():
-    node_name = NodeName('talker', '/', '/talker')
-    policy_document = 
+   
