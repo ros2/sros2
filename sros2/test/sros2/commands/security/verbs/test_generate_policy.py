@@ -17,7 +17,6 @@ import pytest
 import tempfile
 
 import rclpy
-from rclpy.qos import QoSProfile
 from ros2cli import cli
 from std_msgs.msg import String
 from sros2.policy import load_policy
@@ -32,9 +31,8 @@ def test_generate_policy():
 
         try:
             # Create a publisher and subscription
-            node.create_publisher(String, 'topic_pub', QoSProfile(depth=10))
-            node.create_subscription(
-                String, 'topic_sub', lambda msg: None, QoSProfile(depth=10))
+            node.create_publisher(String, 'topic_pub', 1)
+            node.create_subscription(String, 'topic_sub', lambda msg: None, 1)
 
             # Generate the policy for the running node
             assert cli.main(
