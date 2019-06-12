@@ -65,10 +65,10 @@ def getFQN(node_name, expression):
         fqn = node_name.ns + '/' +  expression
     return fqn
 
-class EventPermission(Enum)
-    ALLOW = 'ALLOW' 
-    DENY = 'DENY' 
-    NOT_ALLOWED = 'NOT_ALLOWED' 
+class EventPermission(Enum):
+    ALLOW = 'ALLOW'
+    DENY = 'DENY'
+    NOT_ALLOWED = 'NOT_ALLOWED'
 """
 def eventPermissionForProfile(profile, event):
     path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
