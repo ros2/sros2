@@ -16,7 +16,7 @@ import os
 import tempfile
 
 from ros2cli import cli
-from sros2.api import create_keystore, create_key
+from sros2.api import create_key, create_keystore
 
 
 def test_list_keys(capsys):
