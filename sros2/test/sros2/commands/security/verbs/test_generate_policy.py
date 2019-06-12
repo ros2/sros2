@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import os
-import pytest
 import tempfile
+
+import pytest
 
 import rclpy
 from ros2cli import cli
-from std_msgs.msg import String
 from sros2.policy import load_policy
+from std_msgs.msg import String
 
 
 def test_generate_policy():
