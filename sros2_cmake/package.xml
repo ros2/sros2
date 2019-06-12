@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
     <package format="2">
     <name>sros2_cmake</name>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
     <description>Cmake macros to configure security for nodes</description>
     <author email="aws-b9-platform@amazon.com">AWS B9 Team</author>
     <maintainer email="aws-b9-platform@amazon.com">AWS B9 Team</maintainer>

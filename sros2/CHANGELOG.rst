@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.1 (2019-06-12)
+------------------
 * Guard against empty ROS graph when generating policy (`#118 <https://github.com/ros2/sros2/issues/118>`_)
 * Guard against invalid key names (`#117 <https://github.com/ros2/sros2/issues/117>`_)
 * Contributors: Jacob Perron
