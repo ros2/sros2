@@ -12,8 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from lxml import etree
+
 from sros2.api import NodeName
-from sros2.verb.amend_policy import getFQN
+from sros2.verb.amend_policy import (
+    Event,
+    EventPermission,
+    getEventPermissionForProfile,
+    getFQN
+)
+
+TEST_POLICY = """<profile ns='/ns' node='node'>
+  <topics publish="ALLOW" subscribe="ALLOW" >
+    <topic>parameter_events</topic>
+  </topics>
+
+  <topics publish="DENY" >
+    <topic>denied_topic</topic>
+  </topics>
+
+  <services reply="ALLOW" request="ALLOW" >
+    <service>~describe_parameters</service>
+    <service>~get_parameter_types</service>
+    <service>~get_parameters</service>
+    <service>~list_parameters</service>
+    <service>~set_parameters</service>
+    <service>~set_parameters_atomically</service>
+  </services>
+</profile>
+"""
 
 
 def test_getFQN():
@@ -27,5 +54,21 @@ def test_getFQN():
     assert getFQN(node_name, '~foo/chatter') == '/ns/node/foo/chatter'
 
     # Fully qualified name
-    assert getFQN(node_name, '/foo/chatter') == '/foo/chatter' 
-   
+    assert getFQN(node_name, '/foo/chatter') == '/foo/chatter'
+
+
+def test_getEventPermissionForProfile():
+    node_name = NodeName('node', '/ns', '/ns/node')
+    # Get profile
+    profile = etree.fromstring(TEST_POLICY)
+
+    assert EventPermission.ALLOW == getEventPermissionForProfile(
+      profile, Event(node_name, 'topic', 'subscribe', 'parameter_events'))
+    assert EventPermission.ALLOW == getEventPermissionForProfile(
+      profile, Event(node_name, 'topic', 'publish', 'parameter_events'))
+    assert EventPermission.ALLOW == getEventPermissionForProfile(
+      profile, Event(node_name, 'service', 'reply', '~get_parameters'))
+    assert EventPermission.NOT_SPECIFIED == getEventPermissionForProfile(
+      profile, Event(node_name, 'topic', 'publish', 'not_a_topic'))
+    assert EventPermission.DENY == getEventPermissionForProfile(
+      profile, Event(node_name, 'topic', 'publish', 'denied_topic'))

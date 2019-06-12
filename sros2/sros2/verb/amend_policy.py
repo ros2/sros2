@@ -11,11 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import os
-import time
 from collections import namedtuple
-from enum import Enum
+import time
 
 try:
     from argcomplete.completers import DirectoriesCompleter
@@ -28,56 +25,62 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from lxml import etree
-
 from rclpy.duration import Duration
-from rclpy.time import Time
 from ros2cli.node.direct import DirectNode
-from ros2cli.node.strategy import NodeStrategy
-
-from sros2.api import (
-    get_node_names,
-    get_publisher_info,
-    get_service_info,
-    get_subscriber_info
-)
-
-from sros2.policy import (
-    dump_policy,
-    load_policy,
-    POLICY_VERSION,
-)
 
 from sros2.verb import VerbExtension
 
 Event = namedtuple('Event', ('node_name', 'permission_type', 'rule_type', 'expression'))
 
-"""
-Returns an expression's fully qualified name
-"""
+
 def getFQN(node_name, expression):
-    fqn = ''
-    #Expression name is already fully qualified
-    if expression.startswith('/') or expression.startswith('rostopic://'):
-        fqn = expression;
-    #Private name
+    """Return an expression's fully qualified name."""
+    fqn = expression
+    # Expression name is already fully qualified
+    if expression.startswith('/'):
+        fqn = expression
+    # Fully qualified with uri
+    elif expression.startswith('rostopic://'):
+        fqn = '/' + expression[len('rostopic://'):]
+    # Private name
     elif expression.startswith('~'):
         fqn = node_name.fqn + '/' + expression[len('~'):]
-    #Relative or base name
+    # Relative or base name
     else:
-        fqn = node_name.ns + '/' +  expression
+        fqn = node_name.ns + '/' + expression
     return fqn
 
-class EventPermission(Enum):
+
+class EventPermission:
     ALLOW = 'ALLOW'
     DENY = 'DENY'
-    NOT_ALLOWED = 'NOT_ALLOWED'
-"""
-def eventPermissionForProfile(profile, event):
-    path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
+    NOT_SPECIFIED = 'NOT_SPECIFIED'
+
+    @staticmethod
+    def reduce(rule_qualifiers):
+        if EventPermission.DENY in rule_qualifiers:
+            return EventPermission.DENY
+        if EventPermission.ALLOW in rule_qualifiers:
+            return EventPermission.ALLOW
+        else:
+            return EventPermission.NOT_SPECIFIED
+
+
+def getEventPermissionForProfile(profile, event):
+    permission_groups = profile.findall(
+            path='{permission_type}s[@{rule_type}]'.format(
                 permission_type=event.permission_type,
-                rule_type=event.rule_type)
-"""
+                rule_type=event.rule_type))
+    rule_qualifiers = set()
+    for permission_group in permission_groups:
+        expression_in_group = False
+        for elem in permission_group:
+            if getFQN(event.node_name, elem.text) == getFQN(event.node_name, event.expression):
+                expression_in_group = True
+                break
+        if expression_in_group:
+            rule_qualifiers.add(permission_group.attrib[event.rule_type])
+    return EventPermission.reduce(rule_qualifiers)
 
 
 class AmendPolicyVerb(VerbExtension):
@@ -96,8 +99,14 @@ class AmendPolicyVerb(VerbExtension):
     def getEvents(self):
         pass
 
-    def getPolicyEventStatus(self, event):
-        pass
+    def getPolicyEventStatus(self, policy, event):
+        # Find all profiles for the node in the event
+        profiles = policy.findall(
+            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
+                ns=event.node_name.ns,
+                node=event.node_name.node))
+        event_permissions = [getEventPermissionForProfile(p, event) for p in profiles]
+        return EventPermission.reduce(event_permissions)
 
     def addPermission(self, event):
         pass
