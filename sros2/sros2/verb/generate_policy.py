@@ -141,3 +141,4 @@ class GeneratePolicyVerb(VerbExtension):
 
         with open(args.POLICY_FILE_PATH, 'w') as stream:
             dump_policy(policy, stream)
+        return 0
