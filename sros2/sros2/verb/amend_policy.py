@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 from collections import namedtuple
 from enum import Enum
 
@@ -109,5 +110,7 @@ class AmendPolicyVerb(VerbExtension):
         try:
             while (node._clock.now() < time_point_final):
                 print(node._clock.now(), ' < ', time_point_final)
+                # TODO(artivis) use rate once available
+                time.sleep(0.25)
         except KeyboardInterrupt:
             print('done.')
