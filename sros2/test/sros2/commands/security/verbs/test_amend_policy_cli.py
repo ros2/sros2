@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import builtins
+import mock
+
 import os
 from test import get_policies_path
 
@@ -30,13 +33,14 @@ def test_ament_policy():
     try:
         # Create a publisher and subscription
         node.create_publisher(String, 'denied_topic', 1)
-        node.create_subscription(String, 'topic_sub', lambda msg: None, 1)
+        node.create_subscription(String, 'parameter_events', lambda msg: None, 1)
 
         # Generate the policy for the running node
-        assert cli.main(
-            argv=['security', 'amend_policy',
-                  os.path.join(get_policies_path(), 'dummy_policy.xml'),
-                  '-t 5']) is None
+        with mock.patch.object(builtins, 'input', lambda _: 'Y'):
+            assert cli.main(
+                argv=['security', 'amend_policy',
+                    os.path.join(get_policies_path(), 'dummy_policy.xml'),
+                    '-t 5']) is None
     finally:
         node.destroy_node()
         rclpy.shutdown(context=context)
