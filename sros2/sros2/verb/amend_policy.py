@@ -73,6 +73,7 @@ TEST_POLICY = """<profile ns='/ns' node='node'>
 
 
 POLICY_FILE_NOT_FOUND = 'Package policy file not found'
+POLICY_FILE_NOT_VALID = 'Package policy file not valid'
 
 Event = namedtuple('Event',
                    ('node_name', 'permission_type', 'rule_type', 'expression'))
@@ -97,10 +98,9 @@ def getFQN(node_name, expression):
 
 
 class EventList:
-    def __init__(self):
-        self.subsribe = []
-        self.publish = []
-        self.reply_service = []
+    subscribe = []
+    publish = []
+    reply_service = []
 
 
 class EventPermission:
@@ -154,7 +154,6 @@ class AmendPolicyVerb(VerbExtension):
             default=int(9999), type=int,
             help='a duration for monitoring the events (seconds)')
 
-    @staticmethod
     def get_policy(policy_file_path):
         """Return a policy tree from the path or an empty policy tree if it doens't exist."""
         if os.path.isfile(policy_file_path):
@@ -227,21 +226,21 @@ class AmendPolicyVerb(VerbExtension):
 
         permission_group.append(AmendPolicyVerb.create_permission(event))
 
-    def getEvents(self):
-        # events = EventList
-        # subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
-        # if subscribe_topics:
-        #     events.subscribe = events.subscribe + subscribe_topics
-        # publish_topics = get_publisher_info(node=node, node_name=node_name)
-        # if publish_topics:
-        #     events.publish = events.publish + publish_topics
-        # reply_services = get_service_info(node=node, node_name=node_name)
-        # if reply_services:
-        #     events.reply_service = events.reply_service + reply_services
-        return [Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'subscribe', 'parameter_events'),
-                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'parameter_events'),
-                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'denied_topic'),
-                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'foo')]
+        def getEvents(self, node, node_name):
+        events = EventList
+        subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
+        if subscribe_topics:
+            events.subscribe = events.subscribe + subscribe_topics
+        publish_topics = get_publisher_info(node=node, node_name=node_name)
+        if publish_topics:
+            events.publish = events.publish + publish_topics
+        reply_services = get_service_info(node=node, node_name=node_name)
+        if reply_services:
+            events.reply_service = events.reply_service + reply_services
+        # return [Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'subscribe', 'parameter_events'),
+        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'parameter_events'),
+        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'denied_topic'),
+        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'foo')]
 
     def getPolicyEventStatus(self, policy, event):
         # Find all profiles for the node in the event
@@ -256,6 +255,9 @@ class AmendPolicyVerb(VerbExtension):
         return EventPermission.reduce(event_permissions)
 
     def filterEvents(self, events):
+
+        if events is None:
+            return []
 
         not_cached_events = list(set(events).difference(
                                 self.event_cache))
@@ -295,25 +297,29 @@ class AmendPolicyVerb(VerbExtension):
         print('\n')
 
     def main(self, *, args):
+        try:
+            self.profile = load_policy(args.policy_file_path)
+        except FileNotFoundError as e:
+            print("POLICY FILE NOT FOUND")
+            return POLICY_FILE_NOT_FOUND
+        except RuntimeError as e:
+            print("POLICY FILE NOT VALID")
+            return POLICY_FILE_NOT_VALID
+
+        self.profile = etree.fromstring(TEST_POLICY)
+
         node = DirectNode(args)
 
         time_point_final = node.get_clock().now() + \
             Duration(seconds=args.time_out)
 
         try:
-            self.profile = load_policy(args.policy_file_path)
-        except FileNotFoundError as e:
-            pass
-        except RuntimeError as e:
-            pass
-
-        self.profile = etree.fromstring(TEST_POLICY)
-
-        try:
             while (node._clock.now() < time_point_final):
                 print('Scanning for events...')  # , end='\r'
 
-                events = self.getEvents()
+                # TODO(artivis) get_node_name
+                node_name = NodeName('node', '/ns', '/ns/node')
+                events = self.getEvents(node, node_name)
 
                 filtered_events = self.filterEvents(events)
 
@@ -324,4 +330,4 @@ class AmendPolicyVerb(VerbExtension):
                 # TODO(artivis) use rate once available
                 time.sleep(0.25)
         except KeyboardInterrupt:
-            print('done.')
+            pass
