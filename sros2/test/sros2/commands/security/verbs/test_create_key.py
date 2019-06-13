@@ -23,6 +23,8 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 from ros2cli import cli
 
+from sros2.api import create_keystore
+
 
 def load_cert(path):
     with open(path, 'rb') as f:
@@ -84,11 +86,10 @@ def check_identity_ca_cert_pem(path):
 def test_create_key():
     with tempfile.TemporaryDirectory() as keystore_dir:
         # First, create the keystore
-        assert cli.main(argv=['security', 'create_keystore', keystore_dir]) == 0
+        assert create_keystore(keystore_dir)
 
         # Now using that keystore, create a keypair
         assert cli.main(argv=['security', 'create_key', keystore_dir, '/test_node']) == 0
-
         assert os.path.isdir(os.path.join(keystore_dir, 'test_node'))
 
         expected_files = (
