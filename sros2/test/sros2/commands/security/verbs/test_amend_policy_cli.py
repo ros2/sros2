@@ -13,17 +13,12 @@
 # limitations under the License.
 
 import os
-import tempfile
+from test import get_policies_path
 
-import pytest
 
 import rclpy
-
-from ament_index_python import get_package_prefix
 from ros2cli import cli
-from sros2.policy import load_policy
 from std_msgs.msg import String
-from test import get_policies_path
 
 
 def test_ament_policy():

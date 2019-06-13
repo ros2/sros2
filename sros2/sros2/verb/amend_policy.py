@@ -15,8 +15,6 @@ from collections import namedtuple
 import os
 import time
 
-from collections import namedtuple
-
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
@@ -33,21 +31,18 @@ from lxml import etree
 from rclpy.duration import Duration
 from ros2cli.node.direct import DirectNode
 
+from sros2.api import (
+    get_publisher_info,
+    get_service_info,
+    get_subscriber_info,
+    NodeName
+)
+
 from sros2.policy import (
     load_policy,
     POLICY_VERSION,
 )
 
-from sros2.api import (
-    NodeName,
-    get_publisher_info,
-    get_service_info,
-    get_subscriber_info
-)
-
-from sros2.policy import load_policy
-
->>>>>>> wip filtering
 from sros2.verb import VerbExtension
 
 POLICY_FILE_NOT_FOUND = 'Package policy file not found'
@@ -204,7 +199,7 @@ class AmendPolicyVerb(VerbExtension):
 
         permission_group.append(AmendPolicyVerb.create_permission(event))
 
-        def getEvents(self, node, node_name):
+    def getEvents(self, node, node_name):
         events = EventList
         subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
         if subscribe_topics:
@@ -273,9 +268,9 @@ class AmendPolicyVerb(VerbExtension):
     def main(self, *, args):
         try:
             self.profile = load_policy(args.policy_file_path)
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return POLICY_FILE_NOT_FOUND
-        except RuntimeError as e:
+        except RuntimeError:
             return POLICY_FILE_NOT_VALID
 
         node = DirectNode(args)
