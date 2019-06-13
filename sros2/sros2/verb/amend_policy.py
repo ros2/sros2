@@ -262,7 +262,7 @@ class AmendPolicyVerb(VerbExtension):
             self.addPermission(event, EventPermission.ALLOW)
             print('Permission granted !')
         elif usr_input in ['N', 'n']:
-            print('Permission denied !')
+            pass
 
         self.keepCached(event)
 
