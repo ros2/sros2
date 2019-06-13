@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import sys
 
 try:
@@ -26,8 +25,6 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from lxml import etree
-
 from ros2cli.node.direct import DirectNode
 from ros2cli.node.strategy import NodeStrategy
 
@@ -35,14 +32,11 @@ from sros2.api import (
     get_node_names,
     get_publisher_info,
     get_service_info,
-    get_subscriber_info
+    get_subscriber_info,
+    PolicyBuilder,
 )
 
-from sros2.policy import (
-    dump_policy,
-    load_policy,
-    POLICY_VERSION,
-)
+from sros2.policy import dump_policy
 
 from sros2.verb import VerbExtension
 
@@ -56,64 +50,13 @@ class GeneratePolicyVerb(VerbExtension):
     """Generate XML policy file from ROS graph data."""
 
     def add_arguments(self, parser, cli_name):
-
         arg = parser.add_argument(
             'POLICY_FILE_PATH', help='path of the policy xml file')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
 
-    def get_policy(self, policy_file_path):
-        if os.path.isfile(policy_file_path):
-            return load_policy(policy_file_path)
-        else:
-            profiles = etree.Element('profiles')
-            policy = etree.Element('policy')
-            policy.attrib['version'] = POLICY_VERSION
-            policy.append(profiles)
-            return policy
-
-    def get_profile(self, policy, node_name):
-        profile = policy.find(
-            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
-                ns=node_name.ns,
-                node=node_name.node))
-        if profile is None:
-            profile = etree.Element('profile')
-            profile.attrib['ns'] = node_name.ns
-            profile.attrib['node'] = node_name.node
-            profiles = policy.find('profiles')
-            profiles.append(profile)
-        return profile
-
-    def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
-        permissions = profile.find(
-            path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
-                permission_type=permission_type,
-                rule_type=rule_type,
-                rule_qualifier=rule_qualifier))
-        if permissions is None:
-            permissions = etree.Element(permission_type + 's')
-            permissions.attrib[rule_type] = rule_qualifier
-            profile.append(permissions)
-        return permissions
-
-    def add_permission(
-            self, profile, permission_type, rule_type, rule_qualifier, expressions, node_name):
-        permissions = self.get_permissions(profile, permission_type, rule_type, rule_qualifier)
-        for expression in expressions:
-            permission = etree.Element(permission_type)
-            if expression.fqn.startswith(node_name.fqn + '/'):
-                permission.text = '~' + expression.fqn[len(node_name.fqn + '/'):]
-            elif expression.fqn.startswith(node_name.ns + '/'):
-                permission.text = expression.fqn[len(node_name.ns + '/'):]
-            elif expression.fqn.count('/') == 1 and node_name.ns == '/':
-                permission.text = expression.fqn[len('/'):]
-            else:
-                permission.text = expression.fqn
-            permissions.append(permission)
-
     def main(self, *, args):
-        policy = self.get_policy(args.POLICY_FILE_PATH)
+        builder = PolicyBuilder(args.POLICY_FILE_PATH)
         node_names = []
         with NodeStrategy(args) as node:
             node_names = get_node_names(node=node, include_hidden_nodes=False)
@@ -125,20 +68,20 @@ class GeneratePolicyVerb(VerbExtension):
 
         with DirectNode(args) as node:
             for node_name in node_names:
-                profile = self.get_profile(policy, node_name)
+                profile = builder.get_profile(node_name)
                 subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
                 if subscribe_topics:
-                    self.add_permission(
+                    builder.add_permission(
                         profile, 'topic', 'subscribe', 'ALLOW', subscribe_topics, node_name)
                 publish_topics = get_publisher_info(node=node, node_name=node_name)
                 if publish_topics:
-                    self.add_permission(
+                    builder.add_permission(
                         profile, 'topic', 'publish', 'ALLOW', publish_topics, node_name)
                 reply_services = get_service_info(node=node, node_name=node_name)
                 if reply_services:
-                    self.add_permission(
+                    builder.add_permission(
                         profile, 'service', 'reply', 'ALLOW', reply_services, node_name)
 
         with open(args.POLICY_FILE_PATH, 'w') as stream:
-            dump_policy(policy, stream)
+            dump_policy(builder.policy, stream)
         return 0
