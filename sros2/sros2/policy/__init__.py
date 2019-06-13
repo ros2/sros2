@@ -58,8 +58,10 @@ def get_transport_template(transport, name):
 
 
 def load_policy(policy_file_path):
+    """Load a policy from a policy file."""
     if not os.path.isfile(policy_file_path):
-        raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
+        raise FileNotFoundError(
+            "policy file '%s' does not exist" % policy_file_path)
     policy = etree.parse(policy_file_path)
     policy.xinclude()
     try:
@@ -72,6 +74,7 @@ def load_policy(policy_file_path):
 
 
 def dump_policy(policy, stream):
+    """Write a policy to a policy file."""
     policy_xsl_path = get_policy_template('policy.xsl')
     policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
     policy = policy_xsl(policy)
