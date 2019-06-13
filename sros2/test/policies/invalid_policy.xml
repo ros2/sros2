@@ -1,0 +1,5 @@
+<profile foo='foo'>
+  <topics bar='bar'>
+    <topic>parameter_events</topic>
+  </topics>
+</profile>
