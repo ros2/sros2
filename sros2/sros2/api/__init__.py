@@ -21,6 +21,10 @@ import subprocess
 import sys
 
 from lxml import etree
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
 
 from rclpy.exceptions import InvalidNamespaceException
 from rclpy.exceptions import InvalidNodeNameException
@@ -220,12 +224,61 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
+def _sign_bytes(cert, key, byte_string):
+    # Using two flags here to get the output required:
+    #   - PKCS7_DETACHED: Use cleartext signing
+    #   - PKCS7_TEXT: Set the MIME headers for text/plain
+    flags = SSLBinding.lib.PKCS7_DETACHED
+    flags |= SSLBinding.lib.PKCS7_TEXT
+
+    # Convert the byte string into a buffer for SSL
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        pkcs7 = SSLBinding.lib.PKCS7_sign(
+            cert._x509, key._evp_pkey, SSLBinding.ffi.NULL, bio_in, flags)
+    finally:
+        # Free the memory allocated for the buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    # PKCS7_sign consumes the buffer; allocate a new one again to get it into the final document
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        # Allocate a buffer for the output document
+        bio_out = SSLBinding.lib.BIO_new(SSLBinding.lib.BIO_s_mem())
+        try:
+            # Write the final document out to the buffer
+            SSLBinding.lib.SMIME_write_PKCS7(bio_out, pkcs7, bio_in, flags)
+
+            # Copy the output document back to python-managed memory
+            result_buffer = SSLBinding.ffi.new('char**')
+            buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
+            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
+        finally:
+            # Free the memory required for the output buffer
+            SSLBinding.lib.BIO_free(bio_out)
+    finally:
+        # Free the memory allocated for the input buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    return output
+
+
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (openssl_executable, gov_path, signed_gov_path, ca_cert_path, ca_key_path))
+    # Load the CA cert and key from disk
+    with open(ca_cert_path, 'rb') as cert_file:
+        cert = x509.load_pem_x509_certificate(
+            cert_file.read(), default_backend())
+
+    with open(ca_key_path, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(), None, default_backend())
+
+    # Get the contents of the governance file (which we're about to sign)
+    with open(gov_path, 'rb') as f:
+        content = f.read()
+
+    with open(signed_gov_path, 'wb') as f:
+        f.write(_sign_bytes(cert, private_key, content))
 
 
 def create_keystore(keystore_path):
@@ -398,7 +451,6 @@ def get_policy_from_tree(name, policy_tree):
 
 def create_signed_permissions_file(
         permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
-
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
