@@ -19,8 +19,8 @@ from sros2.verb.amend_policy import (
     AmendPolicyVerb,
     Event,
     EventPermission,
-    getEventPermissionForProfile,
-    getFQN
+    get_event_permission_for_profile,
+    get_FQN
 )
 
 TEST_POLICY = """<policy version="0.1.0">
@@ -46,35 +46,35 @@ TEST_POLICY = """<policy version="0.1.0">
 """
 
 
-def test_getFQN():
+def test_get_FQN():
     node_name = NodeName('node', '/ns', '/ns/node')
     # Relative name
-    assert getFQN(node_name, 'chatter') == '/ns/chatter'
-    assert getFQN(node_name, 'foo/chatter') == '/ns/foo/chatter'
+    assert get_FQN(node_name, 'chatter') == '/ns/chatter'
+    assert get_FQN(node_name, 'foo/chatter') == '/ns/foo/chatter'
 
     # Private name
-    assert getFQN(node_name, '~chatter') == '/ns/node/chatter'
-    assert getFQN(node_name, '~foo/chatter') == '/ns/node/foo/chatter'
+    assert get_FQN(node_name, '~chatter') == '/ns/node/chatter'
+    assert get_FQN(node_name, '~foo/chatter') == '/ns/node/foo/chatter'
 
     # Fully qualified name
-    assert getFQN(node_name, '/foo/chatter') == '/foo/chatter'
+    assert get_FQN(node_name, '/foo/chatter') == '/foo/chatter'
 
 
-def test_getEventPermissionForProfile():
+def test_get_event_permission_for_profile():
     node_name = NodeName('node', '/ns', '/ns/node')
     # Get profile
     policy = etree.fromstring(TEST_POLICY)
     profile = policy[0]
 
-    assert EventPermission.ALLOW == getEventPermissionForProfile(
+    assert EventPermission.ALLOW == get_event_permission_for_profile(
       profile, Event(node_name, 'topic', 'subscribe', 'parameter_events'))
-    assert EventPermission.ALLOW == getEventPermissionForProfile(
+    assert EventPermission.ALLOW == get_event_permission_for_profile(
       profile, Event(node_name, 'topic', 'publish', 'parameter_events'))
-    assert EventPermission.ALLOW == getEventPermissionForProfile(
+    assert EventPermission.ALLOW == get_event_permission_for_profile(
       profile, Event(node_name, 'service', 'reply', '~get_parameters'))
-    assert EventPermission.NOT_SPECIFIED == getEventPermissionForProfile(
+    assert EventPermission.NOT_SPECIFIED == get_event_permission_for_profile(
       profile, Event(node_name, 'topic', 'publish', 'not_a_topic'))
-    assert EventPermission.DENY == getEventPermissionForProfile(
+    assert EventPermission.DENY == get_event_permission_for_profile(
       profile, Event(node_name, 'topic', 'publish', 'denied_topic'))
 
 

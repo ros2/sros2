@@ -13,11 +13,10 @@
 # limitations under the License.
 
 import builtins
-import mock
-
 import os
 from test import get_policies_path
 
+import mock
 
 import rclpy
 from ros2cli import cli
@@ -38,7 +37,8 @@ def test_ament_policy():
         # Generate the policy for the running node
         with mock.patch.object(builtins, 'input', lambda _: 'Y'):
             assert cli.main(
-                argv=['security', 'amend_policy',
+                argv=[
+                    'security', 'amend_policy',
                     os.path.join(get_policies_path(), 'dummy_policy.xml'),
                     '-t 5']) is None
     finally:
