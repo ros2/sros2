@@ -38,7 +38,39 @@ from sros2.policy import (
     POLICY_VERSION,
 )
 
+from sros2.api import (
+    NodeName,
+    get_publisher_info,
+    get_service_info,
+    get_subscriber_info
+)
+
+from sros2.policy import load_policy
+
+>>>>>>> wip filtering
 from sros2.verb import VerbExtension
+
+
+TEST_POLICY = """<profile ns='/ns' node='node'>
+  <topics publish="ALLOW" subscribe="ALLOW" >
+    <topic>parameter_events</topic>
+  </topics>
+
+  <topics publish="DENY" >
+    <topic>denied_topic</topic>
+  </topics>
+
+  <services reply="ALLOW" request="ALLOW" >
+    <service>~describe_parameters</service>
+    <service>~get_parameter_types</service>
+    <service>~get_parameters</service>
+    <service>~list_parameters</service>
+    <service>~set_parameters</service>
+    <service>~set_parameters_atomically</service>
+  </services>
+</profile>
+"""
+
 
 POLICY_FILE_NOT_FOUND = 'Package policy file not found'
 
@@ -62,6 +94,13 @@ def getFQN(node_name, expression):
     else:
         fqn = node_name.ns + '/' + expression
     return fqn
+
+
+class EventList:
+    def __init__(self):
+        self.subsribe = []
+        self.publish = []
+        self.reply_service = []
 
 
 class EventPermission:
@@ -189,7 +228,20 @@ class AmendPolicyVerb(VerbExtension):
         permission_group.append(AmendPolicyVerb.create_permission(event))
 
     def getEvents(self):
-        return ['Foo', 'Bar', 'Baz']
+        # events = EventList
+        # subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
+        # if subscribe_topics:
+        #     events.subscribe = events.subscribe + subscribe_topics
+        # publish_topics = get_publisher_info(node=node, node_name=node_name)
+        # if publish_topics:
+        #     events.publish = events.publish + publish_topics
+        # reply_services = get_service_info(node=node, node_name=node_name)
+        # if reply_services:
+        #     events.reply_service = events.reply_service + reply_services
+        return [Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'subscribe', 'parameter_events'),
+                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'parameter_events'),
+                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'denied_topic'),
+                Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'foo')]
 
     def getPolicyEventStatus(self, policy, event):
         # Find all profiles for the node in the event
@@ -198,8 +250,8 @@ class AmendPolicyVerb(VerbExtension):
                 ns=event.node_name.ns,
                 node=event.node_name.node))
 
-        event_permissions =
-        [getEventPermissionForProfile(p, event) for p in profiles]
+        event_permissions = \
+            [getEventPermissionForProfile(p, event) for p in profiles]
 
         return EventPermission.reduce(event_permissions)
 
@@ -210,13 +262,17 @@ class AmendPolicyVerb(VerbExtension):
 
         filtered_events = []
         for not_cached_event in not_cached_events:
-            if getEventPermissionForProfile(self.profile, not_cached_event) ==
-            EventPermission.ALLOW:
-                keepCached(not_cached_event)
+            print(not_cached_event)
+            print(getEventPermissionForProfile(self.profile, not_cached_event))
+            if (
+                getEventPermissionForProfile(self.profile, not_cached_event) ==
+                EventPermission.ALLOW
+            ):
+                self.keepCached(not_cached_event)
             else:
                 filtered_events.append(not_cached_event)
 
-        return not_cached_event
+        return filtered_events
 
     def keepCached(self, event):
         self.event_cache.append(event)
@@ -227,10 +283,6 @@ class AmendPolicyVerb(VerbExtension):
             print('Event: ', event)
             usr_input = input('Do you want to add this event '
                               'to the permission list? (Y/n) : ')
-
-            if usr_input not in ['Y', 'y', 'N', 'n', '']:
-                print("Unknown command '", usr_input, "'.")
-                print('Please try again.\n')
 
         if usr_input in ['Y', 'y', '']:
             self.addPermission(event)
@@ -245,25 +297,28 @@ class AmendPolicyVerb(VerbExtension):
     def main(self, *, args):
         node = DirectNode(args)
 
-        time_point_final = node.get_clock().now() +
-        Duration(seconds=args.time_out)
+        time_point_final = node.get_clock().now() + \
+            Duration(seconds=args.time_out)
 
-        if not os.path.isfile(policy_file_path):
-            return POLICY_FILE_NOT_FOUND
+        try:
+            self.profile = load_policy(args.policy_file_path)
+        except FileNotFoundError as e:
+            pass
+        except RuntimeError as e:
+            pass
 
-        self.profile = etree.parse(policy_file_path)
+        self.profile = etree.fromstring(TEST_POLICY)
 
         try:
             while (node._clock.now() < time_point_final):
-                print('Scanning for events...', end='\r')
+                print('Scanning for events...')  # , end='\r'
 
-                unregistered_events = self.getEvents()
+                events = self.getEvents()
 
-                filtered_unregistered_events =
-                filterEvents(unregistered_events)
+                filtered_events = self.filterEvents(events)
 
-                for unregistered_event in filtered_unregistered_events:
-                    self.promptUserAboutPermission(unregistered_event)
+                for filtered_event in filtered_events:
+                    self.promptUserAboutPermission(filtered_event)
 
                 # print(node._clock.now(), ' < ', time_point_final)
                 # TODO(artivis) use rate once available
