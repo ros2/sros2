@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+import os
 import time
 
 try:
@@ -25,8 +26,15 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
+from lxml import etree
+
 from rclpy.duration import Duration
 from ros2cli.node.direct import DirectNode
+
+from sros2.policy import (
+    load_policy,
+    POLICY_VERSION,
+)
 
 from sros2.verb import VerbExtension
 
@@ -71,7 +79,8 @@ def getEventPermissionForProfile(profile, event):
             path='{permission_type}s[@{rule_type}]'.format(
                 permission_type=event.permission_type,
                 rule_type=event.rule_type))
-    rule_qualifiers = set()
+    # Base case is that permissions for the event is not specified
+    rule_qualifiers = set(EventPermission.NOT_SPECIFIED)
     for permission_group in permission_groups:
         expression_in_group = False
         for elem in permission_group:
@@ -96,6 +105,79 @@ class AmendPolicyVerb(VerbExtension):
             default=int(9999), type=int,
             help='a duration for monitoring the events (seconds)')
 
+    @staticmethod
+    def get_policy(policy_file_path):
+        """Return a policy tree from the path or an empty policy tree if it doens't exist."""
+        if os.path.isfile(policy_file_path):
+            return load_policy(policy_file_path)
+        else:
+            profiles = etree.Element('profiles')
+            policy = etree.Element('policy')
+            policy.attrib['version'] = POLICY_VERSION
+            policy.append(profiles)
+            return policy
+
+    @staticmethod
+    def get_profiles(policy, node_name):
+        """Return all profiles for the given node in policy."""
+        profiles = policy.findall(
+            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
+                ns=node_name.ns,
+                node=node_name.node))
+        if not profiles:
+            profile = etree.Element('profile')
+            profile.attrib['ns'] = node_name.ns
+            profile.attrib['node'] = node_name.node
+            all_profiles = policy.find('profiles')
+            if not all_profiles:
+                all_profiles = etree.Element('profiles')
+                policy.append(all_profiles)
+            all_profiles.append(profile)
+            profiles = [profile]
+        return profiles
+
+    @staticmethod
+    def get_permission_groups(profile, permission_type, rule_type, rule_qualifier):
+        """Return all permission groups in a profile with the specified properties."""
+        return profile.findall(
+            path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
+                permission_type=permission_type,
+                rule_type=rule_type,
+                rule_qualifier=rule_qualifier))
+
+    @staticmethod
+    def create_permission(event):
+        expression_fqn = getFQN(event.node_name, event.expression)
+        permission = etree.Element(event.permission_type)
+        if expression_fqn.startswith(event.node_name.fqn + '/'):
+            permission.text = '~' + expression_fqn[len(event.node_name.fqn + '/'):]
+        elif expression_fqn.startswith(event.node_name.ns + '/'):
+            permission.text = expression_fqn[len(event.node_name.ns + '/'):]
+        elif expression_fqn.count('/') == 1 and event.node_name.ns == '/':
+            permission.text = expression_fqn[len('/'):]
+        else:
+            permission.text = expression_fqn
+        return permission
+
+    @staticmethod
+    def add_permission(policy, event, rule_qualifier):
+        """Add a permission to the policy for the given event."""
+        profiles = AmendPolicyVerb.get_profiles(policy, event.node_name)
+        profiles_with_permissions = [p for p in profiles if AmendPolicyVerb.get_permission_groups(
+            p, event.permission_type, event.rule_type, rule_qualifier)]
+        profile = profiles[0] if not profiles_with_permissions else profiles_with_permissions[0]
+
+        permission_groups = AmendPolicyVerb.get_permission_groups(
+            profile, event.permission_type, event.rule_type, rule_qualifier)
+        if len(permission_groups) == 0:
+            permission_group = etree.Element(event.permission_type + 's')
+            permission_group.attrib[event.rule_type] = rule_qualifier
+            profile.append(permission_group)
+        else:
+            permission_group = permission_groups[0]
+
+        permission_group.append(AmendPolicyVerb.create_permission(event))
+
     def getEvents(self):
         pass
 
@@ -107,9 +189,6 @@ class AmendPolicyVerb(VerbExtension):
                 node=event.node_name.node))
         event_permissions = [getEventPermissionForProfile(p, event) for p in profiles]
         return EventPermission.reduce(event_permissions)
-
-    def addPermission(self, event):
-        pass
 
     def main(self, *, args):
         node = DirectNode(args)
