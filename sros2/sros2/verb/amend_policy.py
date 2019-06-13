@@ -39,8 +39,9 @@ from sros2.api import (
 )
 
 from sros2.policy import (
+    dump_policy,
     load_policy,
-    POLICY_VERSION,
+    POLICY_VERSION
 )
 
 from sros2.verb import VerbExtension
@@ -256,7 +257,7 @@ class AmendPolicyVerb(VerbExtension):
                               'to the permission list? (Y/n) : ')
 
         if usr_input in ['Y', 'y', '']:
-            self.addPermission(event)
+            self.add_permission(event)
             print('Permission granted !')
         elif usr_input in ['N', 'n']:
             print('Permission denied !')
@@ -294,5 +295,7 @@ class AmendPolicyVerb(VerbExtension):
                 # TODO(artivis) use rate once available
                 time.sleep(0.25)
 
+            with open(args.policy_file_path, 'w') as stream:
+                dump_policy(self.profile, stream)
         except KeyboardInterrupt:
             pass
