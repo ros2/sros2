@@ -50,28 +50,6 @@ from sros2.policy import load_policy
 >>>>>>> wip filtering
 from sros2.verb import VerbExtension
 
-
-TEST_POLICY = """<profile ns='/ns' node='node'>
-  <topics publish="ALLOW" subscribe="ALLOW" >
-    <topic>parameter_events</topic>
-  </topics>
-
-  <topics publish="DENY" >
-    <topic>denied_topic</topic>
-  </topics>
-
-  <services reply="ALLOW" request="ALLOW" >
-    <service>~describe_parameters</service>
-    <service>~get_parameter_types</service>
-    <service>~get_parameters</service>
-    <service>~list_parameters</service>
-    <service>~set_parameters</service>
-    <service>~set_parameters_atomically</service>
-  </services>
-</profile>
-"""
-
-
 POLICY_FILE_NOT_FOUND = 'Package policy file not found'
 POLICY_FILE_NOT_VALID = 'Package policy file not valid'
 
@@ -237,10 +215,6 @@ class AmendPolicyVerb(VerbExtension):
         reply_services = get_service_info(node=node, node_name=node_name)
         if reply_services:
             events.reply_service = events.reply_service + reply_services
-        # return [Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'subscribe', 'parameter_events'),
-        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'parameter_events'),
-        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'denied_topic'),
-        #         Event(NodeName('node', '/ns', '/ns/node'), 'topic', 'publish', 'foo')]
 
     def getPolicyEventStatus(self, policy, event):
         # Find all profiles for the node in the event
@@ -300,13 +274,9 @@ class AmendPolicyVerb(VerbExtension):
         try:
             self.profile = load_policy(args.policy_file_path)
         except FileNotFoundError as e:
-            print("POLICY FILE NOT FOUND")
             return POLICY_FILE_NOT_FOUND
         except RuntimeError as e:
-            print("POLICY FILE NOT VALID")
             return POLICY_FILE_NOT_VALID
-
-        self.profile = etree.fromstring(TEST_POLICY)
 
         node = DirectNode(args)
 
@@ -326,8 +296,8 @@ class AmendPolicyVerb(VerbExtension):
                 for filtered_event in filtered_events:
                     self.promptUserAboutPermission(filtered_event)
 
-                # print(node._clock.now(), ' < ', time_point_final)
                 # TODO(artivis) use rate once available
                 time.sleep(0.25)
+
         except KeyboardInterrupt:
             pass
