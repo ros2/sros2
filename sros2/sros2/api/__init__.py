@@ -125,6 +125,7 @@ def check_openssl_version(openssl_executable):
 def write_key(
     key,
     key_path,
+    *,
     encoding=serialization.Encoding.PEM,
     format=serialization.PrivateFormat.PKCS8,
     encryption_algorithm=serialization.NoEncryption()
@@ -136,7 +137,7 @@ def write_key(
             encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path, encoding=serialization.Encoding.PEM):
+def write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
     with open(cert_path, 'wb') as f:
         f.write(cert.public_bytes(encoding=encoding))
 
@@ -219,14 +220,22 @@ def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     write_key(private_key, ca_key_out_path)
 
     common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
-    builder = x509.CertificateBuilder()\
-        .issuer_name(x509.Name([common_name])) \
-        .serial_number(x509.random_serial_number()) \
-        .not_valid_before(datetime.datetime.today() - datetime.timedelta(days=1)) \
-        .not_valid_after(datetime.datetime.today() + datetime.timedelta(days=3650)) \
-        .public_key(private_key.public_key()) \
-        .subject_name(x509.Name([common_name])) \
-        .add_extension(x509.BasicConstraints(ca=True, path_length=1), critical=True)
+    builder = x509.CertificateBuilder(
+        ).issuer_name(
+            x509.Name([common_name])
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            datetime.datetime.today() - datetime.timedelta(days=1)
+        ).not_valid_after(
+            datetime.datetime.today() + datetime.timedelta(days=3650)
+        ).public_key(
+            private_key.public_key()
+        ).subject_name(
+            x509.Name([common_name])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=1), critical=True
+        )
     cert = builder.sign(private_key, hashes.SHA256(), cryptography_backend())
     write_cert(cert, ca_cert_out_path)
 
