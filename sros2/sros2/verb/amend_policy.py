@@ -127,7 +127,7 @@ class AmendPolicyVerb(VerbExtension):
             help='a duration for monitoring the events (seconds)')
 
     def get_policy(policy_file_path):
-        """Return a policy tree from the path or an empty policy tree if it doens't exist."""
+        """Return a policy tree from the path or an empty policy tree if it doesn't exist."""
         if os.path.isfile(policy_file_path):
             return load_policy(policy_file_path)
         else:
