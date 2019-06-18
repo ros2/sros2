@@ -1,0 +1,22 @@
+<policy xmlns:xi="http://www.w3.org/2001/XInclude" version="0.1.0">
+  <profiles>
+    <profile node="node" ns="/ns">
+      <services reply="ALLOW">
+        <service>~describe_parameters</service>
+        <service>~get_parameter_types</service>
+        <service>~get_parameters</service>
+        <service>~list_parameters</service>
+        <service>~set_parameters</service>
+        <service>~set_parameters_atomically</service>
+      </services>
+      <topics subscribe="ALLOW">
+        <topic>parameter_events</topic>
+      </topics>
+      <topics publish="ALLOW">
+        <topic>denied_topic</topic>
+        <topic>parameter_events</topic>
+        <topic>rosout</topic>
+      </topics>
+    </profile>
+  </profiles>
+</policy>

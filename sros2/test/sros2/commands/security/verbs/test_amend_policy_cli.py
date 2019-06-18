@@ -13,37 +13,50 @@
 # limitations under the License.
 
 import builtins
+import mock
 import os
+import rclpy
+import tempfile
+
+from shutil import copyfile
 from test import get_policies_path
 
-import mock
-
-import rclpy
 from ros2cli import cli
+from sros2.policy import load_policy
 from std_msgs.msg import String
 
 
 def test_ament_policy():
-    # Create a test-specific context so that amend_policy can still init
-    context = rclpy.Context()
-    rclpy.init(context=context)
-    node = rclpy.create_node('node', namespace='ns', context=context)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a test-specific context so that amend_policy can still init
+        context = rclpy.Context()
+        rclpy.init(context=context)
+        node = rclpy.create_node('node', namespace='ns', context=context)
 
-    try:
-        # Create a publisher and subscription
-        node.create_publisher(String, 'denied_topic', 1)
-        node.create_subscription(String, 'parameter_events', lambda msg: None, 1)
+        # Duplicate test xml
+        policy_test_file = os.path.join(get_policies_path(), 'dummy_policy.xml')
+        policy_generated_test_file = os.path.join(tmpdir, 'dummy_policy.xml')
+        policy_expected_file = os.path.join(get_policies_path(), 'expected_dummy_policy.xml')
 
-        # Generate the policy for the running node
-        with mock.patch.object(builtins, 'input', lambda _: 'Y'):
-            assert cli.main(
-                argv=[
-                    'security', 'amend_policy',
-                    os.path.join(get_policies_path(), 'dummy_policy.xml'),
-                    '-t 5']) is None
-    finally:
-        node.destroy_node()
-        rclpy.shutdown(context=context)
+        copyfile(policy_test_file, policy_generated_test_file)
+
+        try:
+            # Create a publisher and subscription
+            node.create_publisher(String, 'denied_topic', 1)
+            node.create_subscription(String, 'parameter_events', lambda msg: None, 1)
+
+            # Generate the policy for the running node
+            with mock.patch.object(builtins, 'input', lambda _: 'Y'):
+                assert cli.main(
+                    argv=['security', 'amend_policy', policy_generated_test_file, '-t 5']) is None
+
+            # Compare generated policy file against expected
+            assert (open(policy_expected_file, 'r').read() ==
+                    open(policy_generated_test_file, 'r').read())
+
+        finally:
+            node.destroy_node()
+            rclpy.shutdown(context=context)
 
     # # Load the policy and pull out the allowed publications and subscriptions
     # policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
