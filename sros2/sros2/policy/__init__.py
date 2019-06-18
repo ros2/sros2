@@ -64,13 +64,18 @@ def load_policy(policy_file_path):
             "policy file '%s' does not exist" % policy_file_path)
     policy = etree.parse(policy_file_path)
     policy.xinclude()
+    assert_valid_policy(policy)
+    return policy
+
+
+def assert_valid_policy(policy):
+    """Assert the validity of the policy. Throw a RuntimeError if not valid."""
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')
         policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
         policy_xsd.assertValid(policy)
     except etree.DocumentInvalid as e:
         raise RuntimeError(str(e))
-    return policy
 
 
 def dump_policy(policy, stream):
