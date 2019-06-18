@@ -126,6 +126,7 @@ class AmendPolicyVerb(VerbExtension):
             default=int(9999), type=int,
             help='a duration for monitoring the events (seconds)')
 
+    @staticmethod
     def get_policy(policy_file_path):
         """Return a policy tree from the path or an empty policy tree if it doesn't exist."""
         if os.path.isfile(policy_file_path):
@@ -270,9 +271,7 @@ class AmendPolicyVerb(VerbExtension):
 
     def main(self, *, args):
         try:
-            self.policy = load_policy(args.policy_file_path)
-        except FileNotFoundError:
-            return POLICY_FILE_NOT_FOUND
+            self.policy = self.get_policy(args.policy_file_path)
         except RuntimeError:
             return POLICY_FILE_NOT_VALID
 
