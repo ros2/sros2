@@ -40,6 +40,7 @@
         </xs:sequence>
         <xs:attribute name="publish" type="RuleQualifier" use="optional" />
         <xs:attribute name="subscribe" type="RuleQualifier" use="optional" />
+        <xs:attribute name="protection" type="ProtectionKind" use="required" />
         <xs:attribute ref="xml:base" />
     </xs:complexType>
 
@@ -49,6 +50,7 @@
         </xs:sequence>
         <xs:attribute name="reply" type="RuleQualifier" use="optional" />
         <xs:attribute name="request" type="RuleQualifier" use="optional" />
+        <xs:attribute name="protection" type="ProtectionKind" use="required" />
         <xs:attribute ref="xml:base" />
     </xs:complexType>
 
@@ -58,6 +60,7 @@
         </xs:sequence>
         <xs:attribute name="call" type="RuleQualifier" use="optional" />
         <xs:attribute name="execute" type="RuleQualifier" use="optional" />
+        <xs:attribute name="protection" type="ProtectionKind" use="required" />
         <xs:attribute ref="xml:base" />
     </xs:complexType>
 
@@ -69,6 +72,14 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="ALLOW" />
             <xs:enumeration value="DENY" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ProtectionKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ENCRYPT" />
+            <xs:enumeration value="NONE" />
+            <xs:enumeration value="SIGN" />
         </xs:restriction>
     </xs:simpleType>
 

@@ -8,8 +8,8 @@
             </domains>
             <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
             <enable_join_access_control>true</enable_join_access_control>
-            <discovery_protection_kind>ENCRYPT</discovery_protection_kind>
-            <liveliness_protection_kind>ENCRYPT</liveliness_protection_kind>
+            <discovery_protection_kind>SIGN</discovery_protection_kind>
+            <liveliness_protection_kind>SIGN</liveliness_protection_kind>
             <rtps_protection_kind>SIGN</rtps_protection_kind>
             <topic_access_rules>
                 <topic_rule>
@@ -18,7 +18,7 @@
                     <enable_liveliness_protection>true</enable_liveliness_protection>
                     <enable_read_access_control>true</enable_read_access_control>
                     <enable_write_access_control>true</enable_write_access_control>
-                    <metadata_protection_kind>ENCRYPT</metadata_protection_kind>
+                    <metadata_protection_kind>SIGN</metadata_protection_kind>
                     <data_protection_kind>ENCRYPT</data_protection_kind>
                 </topic_rule>
             </topic_access_rules>

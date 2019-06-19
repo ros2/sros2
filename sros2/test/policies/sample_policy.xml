@@ -11,13 +11,13 @@
     <profile ns="/" node="admin">
       <xi:include href="common/node.xml"
         xpointer="xpointer(/profile/*)"/>
-      <actions call="ALLOW" execute="ALLOW">
+      <actions call="ALLOW" execute="ALLOW" protection="ENCRYPT">
         <action>fibonacci</action>
       </actions>
-      <services reply="ALLOW" request="ALLOW">
+      <services reply="ALLOW" request="ALLOW" protection="ENCRYPT">
         <service>add_two_ints</service>
       </services>
-      <topics publish="ALLOW" subscribe="ALLOW">
+      <topics publish="ALLOW" subscribe="ALLOW" protection="SIGN">
         <topic>chatter</topic>
       </topics>
     </profile>

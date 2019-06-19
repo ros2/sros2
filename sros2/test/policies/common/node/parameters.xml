@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <profile>
-  <topics publish="ALLOW" subscribe="ALLOW" >
+  <topics publish="ALLOW" subscribe="ALLOW" protection="ENCRYPT">
     <topic>parameter_events</topic>
   </topics>
 
-  <services reply="ALLOW" request="ALLOW" >
+  <services reply="ALLOW" request="ALLOW" protection="ENCRYPT">
     <service>~describe_parameters</service>
     <service>~get_parameter_types</service>
     <service>~get_parameters</service>

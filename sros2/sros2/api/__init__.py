@@ -197,14 +197,14 @@ def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path
         (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
 
 
-def create_governance_file(path, domain_id):
-    # for this application we are only looking to authenticate and encrypt;
-    # we do not need/want access control at this point.
-    governance_xml_path = get_transport_default('dds', 'governance.xml')
-    governance_xml = etree.parse(governance_xml_path)
-
+def create_governance_file(path, domain_id, policy_element):
     governance_xsd_path = get_transport_schema('dds', 'governance.xsd')
     governance_xsd = etree.XMLSchema(etree.parse(governance_xsd_path))
+
+    governance_xsl_path = get_transport_template('dds', 'governance.xsl')
+    governance_xsl = etree.XSLT(etree.parse(governance_xsl_path))
+
+    governance_xml = governance_xsl(policy_element)
 
     domain_id_elements = governance_xml.findall(
         'domain_access_rules/domain_rule/domains/id')
@@ -220,7 +220,7 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
-def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
+def create_signed_governance_file(gov_path, signed_gov_path, ca_cert_path, ca_key_path):
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -257,23 +257,6 @@ def create_keystore(keystore_path):
     else:
         print('found CA key and cert, not creating new ones!')
 
-    # create governance file
-    gov_path = os.path.join(keystore_path, 'governance.xml')
-    if not os.path.isfile(gov_path):
-        print('creating governance file: %s' % gov_path)
-        domain_id = os.getenv(DOMAIN_ID_ENV, '0')
-        create_governance_file(gov_path, domain_id)
-    else:
-        print('found governance file, not creating a new one!')
-
-    # sign governance file
-    signed_gov_path = os.path.join(keystore_path, 'governance.p7s')
-    if not os.path.isfile(signed_gov_path):
-        print('creating signed governance file: %s' % signed_gov_path)
-        create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path)
-    else:
-        print('found signed governance file, not creating a new one!')
-
     # create index file
     index_path = os.path.join(keystore_path, 'index.txt')
     if not os.path.isfile(index_path):
@@ -297,7 +280,6 @@ def is_valid_keystore(path):
     res &= os.path.isfile(os.path.join(path, 'index.txt'))
     res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
     res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
-    res &= os.path.isfile(os.path.join(path, 'governance.p7s'))
     return res
 
 
@@ -409,6 +391,7 @@ def create_signed_permissions_file(
 def create_permission(keystore_path, identity, policy_file_path):
     policy_element = get_policy(identity, policy_file_path)
     create_permissions_from_policy_element(keystore_path, identity, policy_element)
+    create_governance_from_policy_element(keystore_path, identity, policy_element)
     return True
 
 
@@ -425,6 +408,22 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     create_signed_permissions_file(
         permissions_path, signed_permissions_path,
+        keystore_ca_cert_path, keystore_ca_key_path)
+
+
+def create_governance_from_policy_element(keystore_path, identity, policy_element):
+    domain_id = os.getenv(DOMAIN_ID_ENV, '0')
+    relative_path = os.path.normpath(identity.lstrip('/'))
+    key_dir = os.path.join(keystore_path, relative_path)
+    print('key_dir %s' % key_dir)
+    governance_path = os.path.join(key_dir, 'governance.xml')
+    create_governance_file(governance_path, domain_id, policy_element)
+
+    signed_governance_path = os.path.join(key_dir, 'governance.p7s')
+    keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
+    create_signed_governance_file(
+        governance_path, signed_governance_path,
         keystore_ca_cert_path, keystore_ca_key_path)
 
 
@@ -447,10 +446,10 @@ def create_key(keystore_path, identity):
     shutil.copyfile(keystore_ca_cert_path, dest_identity_ca_cert_path)
     shutil.copyfile(keystore_ca_cert_path, dest_permissions_ca_cert_path)
 
-    # copy the governance file in there
-    keystore_governance_path = os.path.join(keystore_path, 'governance.p7s')
-    dest_governance_path = os.path.join(key_dir, 'governance.p7s')
-    shutil.copyfile(keystore_governance_path, dest_governance_path)
+    # # copy the governance file in there
+    # keystore_governance_path = os.path.join(keystore_path, 'governance.p7s')
+    # dest_governance_path = os.path.join(key_dir, 'governance.p7s')
+    # shutil.copyfile(keystore_governance_path, dest_governance_path)
 
     ecdsa_param_path = os.path.join(key_dir, 'ecdsaparam')
     if not os.path.isfile(ecdsa_param_path):
@@ -505,6 +504,15 @@ def create_key(keystore_path, identity):
         permissions_path, signed_permissions_path,
         keystore_ca_cert_path, keystore_ca_key_path)
 
+    governance_path = os.path.join(key_dir, 'governance.xml')
+    create_governance_file(governance_path, domain_id, policy_element)
+    signed_governance_path = os.path.join(key_dir, 'governance.p7s')
+    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
+    create_signed_governance_file(
+        governance_path, signed_governance_path,
+        keystore_ca_cert_path, keystore_ca_key_path)
+
+
     return True
 
 
@@ -549,5 +557,7 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
                 return False
             policy_element = get_policy_from_tree(identity_name, policy_tree)
             create_permissions_from_policy_element(
+                keystore_path, identity_name, policy_element)
+            create_governance_from_policy_element(
                 keystore_path, identity_name, policy_element)
     return True

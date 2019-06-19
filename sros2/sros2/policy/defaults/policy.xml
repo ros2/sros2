@@ -2,13 +2,13 @@
 <policy version="0.1.0">
   <profiles>
     <profile ns="/" node="default">
-      <topics publish="ALLOW" subscribe="ALLOW">
+      <topics publish="ALLOW" subscribe="ALLOW" protection="ENCRYPT">
         <topic>/*</topic>
       </topics>
-      <services reply="ALLOW" request="ALLOW">
+      <services reply="ALLOW" request="ALLOW" protection="ENCRYPT">
         <service>/*</service>
       </services>
-      <actions call="ALLOW" execute="ALLOW">
+      <actions call="ALLOW" execute="ALLOW" protection="ENCRYPT">
         <action>/*</action>
       </actions>
     </profile>

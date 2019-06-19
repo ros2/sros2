@@ -5,14 +5,14 @@
     <profile ns="/" node="talker">
       <xi:include href="common/node.xml"
         xpointer="xpointer(/profile/*)"/>
-      <topics publish="ALLOW" >
+      <topics publish="ALLOW" protection="SIGN">
         <topic>chatter</topic>
       </topics>
     </profile>
     <profile ns="/" node="listener">
       <xi:include href="common/node.xml"
         xpointer="xpointer(/profile/*)"/>
-      <topics subscribe="ALLOW" >
+      <topics subscribe="ALLOW" protection="SIGN">
         <topic>chatter</topic>
       </topics>
     </profile>

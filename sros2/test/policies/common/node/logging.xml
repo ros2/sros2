@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <profile>
-  <topics publish="ALLOW" >
+  <topics publish="ALLOW" protection="ENCRYPT">
     <topic>rosout</topic>
   </topics>
 </profile>
