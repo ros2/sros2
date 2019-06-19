@@ -122,7 +122,7 @@ def check_openssl_version(openssl_executable):
         raise RuntimeError('need openssl 1.0.2 minimum')
 
 
-def write_key(
+def _write_key(
     key,
     key_path,
     *,
@@ -137,7 +137,7 @@ def write_key(
             encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
+def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
     with open(cert_path, 'wb') as f:
         f.write(cert.public_bytes(encoding=encoding))
 
@@ -216,8 +216,9 @@ def create_ecdsa_param_file(path):
 
 
 def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
+    # DDS-Security 9.3.1 calls for prime256v1 - SECP256R1 is another alias for that
     private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
-    write_key(private_key, ca_key_out_path)
+    _write_key(private_key, ca_key_out_path)
 
     common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
     builder = x509.CertificateBuilder(
@@ -237,7 +238,7 @@ def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
             x509.BasicConstraints(ca=True, path_length=1), critical=True
         )
     cert = builder.sign(private_key, hashes.SHA256(), cryptography_backend())
-    write_cert(cert, ca_cert_out_path)
+    _write_cert(cert, ca_cert_out_path)
 
 
 def create_governance_file(path, domain_id):
