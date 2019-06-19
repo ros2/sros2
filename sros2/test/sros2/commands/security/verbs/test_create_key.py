@@ -16,6 +16,7 @@ import os
 import tempfile
 from xml.etree import ElementTree
 
+import cryptography
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -50,28 +51,41 @@ def check_common_name(entity, expected_value):
     assert names[0].value == expected_value
 
 
-def check_cert_pem(path):
+def verify_signature(cert, signatory):
+    try:
+        signatory.public_key().verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            ec.ECDSA(cert.signature_hash_algorithm))
+    except cryptography.exceptions.InvalidSignature:
+        return False
+    return True
+
+
+def check_cert_pem(path, signatory):
     cert = load_cert(path)
     check_common_name(cert.subject, u'/test_node')
     check_common_name(cert.issuer, u'sros2testCA')
+    assert verify_signature(cert, signatory)
 
 
-def check_permissions_xml(path):
+def check_permissions_xml(path, signatory):
     ElementTree.parse(path)
 
 
-def check_permissions_ca_cert_pem(path):
+def check_permissions_ca_cert_pem(path, signatory):
     cert = load_cert(path)
     check_common_name(cert.subject, u'sros2testCA')
     check_common_name(cert.issuer, u'sros2testCA')
+    assert verify_signature(cert, signatory)
 
 
-def check_req_pem(path):
+def check_req_pem(path, signatory):
     csr = load_csr(path)
     check_common_name(csr.subject, u'/test_node')
 
 
-def check_key_pem(path):
+def check_key_pem(path, signatory):
     private_key = load_private_key(path)
     public_key = private_key.public_key()
     assert isinstance(public_key.curve, ec.SECP256R1)
@@ -81,6 +95,7 @@ def check_identity_ca_cert_pem(path):
     cert = load_cert(path)
     check_common_name(cert.subject, u'sros2testCA')
     check_common_name(cert.issuer, u'sros2testCA')
+    return cert
 
 
 def test_create_key():
@@ -100,12 +115,16 @@ def test_create_key():
             ('req.pem', check_req_pem),
             ('permissions.p7s', None),
             ('key.pem', check_key_pem),
-            ('identity_ca.cert.pem', check_identity_ca_cert_pem),
             ('governance.p7s', None),
             ('ecdsaparam', None),
         )
+
+        signatory_path = os.path.join(keystore_dir, 'test_node', 'identity_ca.cert.pem')
+        assert os.path.isfile(signatory_path)
+        signatory = check_identity_ca_cert_pem(signatory_path)
+
         for expected_file, file_validator in expected_files:
             path = os.path.join(keystore_dir, 'test_node', expected_file)
             assert os.path.isfile(path)
             if file_validator:
-                file_validator(path)
+                file_validator(path, signatory)
