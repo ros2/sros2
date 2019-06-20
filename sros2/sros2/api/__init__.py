@@ -331,7 +331,6 @@ def create_keystore(keystore_path):
 
 def is_valid_keystore(path):
     res = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
-    res &= os.path.isfile(os.path.join(path, 'ecdsaparam'))
     res &= os.path.isfile(os.path.join(path, 'index.txt'))
     res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
     res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
