@@ -445,12 +445,21 @@ def get_policy_from_tree(name, policy_tree):
 
 def create_signed_permissions_file(
         permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
+    # Load the CA cert and key from disk
+    with open(ca_cert_path, 'rb') as cert_file:
+        cert = x509.load_pem_x509_certificate(
+            cert_file.read(), cryptography_backend())
 
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (openssl_executable, permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
+    with open(ca_key_path, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(), None, cryptography_backend())
+
+    # Get the contents of the permissions file (which we're about to sign)
+    with open(permissions_path, 'rb') as f:
+        content = f.read()
+
+    with open(signed_permissions_path, 'wb') as f:
+        f.write(_sign_bytes(cert, private_key, content))
 
 
 def create_permission(keystore_path, identity, policy_file_path):
