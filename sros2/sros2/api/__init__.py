@@ -129,13 +129,13 @@ def _write_key(
     key_path,
     *,
     encoding=serialization.Encoding.PEM,
-    format=serialization.PrivateFormat.PKCS8,
+    serialization_format=serialization.PrivateFormat.PKCS8,
     encryption_algorithm=serialization.NoEncryption()
 ):
     with open(key_path, 'wb') as f:
         f.write(key.private_bytes(
             encoding=encoding,
-            format=format,
+            format=serialization_format,
             encryption_algorithm=encryption_algorithm))
 
 
