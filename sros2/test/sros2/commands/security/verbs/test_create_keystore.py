@@ -63,10 +63,17 @@ def test_create_keystore():
             public = key.public_key()
             assert public.curve.name == 'secp256r1'
 
+    def check_governance_p7s(path):
+        # Would really like to verify the signature, but ffi just can't use
+        # that part of the OpenSSL API
+        with open(path, 'r') as f:
+            lines = f.readlines()
+            assert lines[0] == 'MIME-Version: 1.0\n'
+
     with tempfile.TemporaryDirectory() as keystore_dir:
         assert cli.main(argv=['security', 'create_keystore', keystore_dir]) == 0
         expected_files = (
-            ('governance.p7s', None),
+            ('governance.p7s', check_governance_p7s),
             ('index.txt', check_index_txt),
             ('ca.cert.pem', check_ca_cert_pem),
             ('ca_conf.cnf', check_ca_conf),
