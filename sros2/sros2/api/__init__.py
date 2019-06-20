@@ -46,7 +46,7 @@ from sros2.policy import (
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 
-DEFAULT_COMMON_NAME = 'sros2testCA'
+_DEFAULT_COMMON_NAME = 'sros2testCA'
 
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
@@ -204,7 +204,7 @@ def create_ca_conf_file(path):
 
         [ root_ca_extensions ]
         basicConstraints = CA:true
-        """.format(common_name=DEFAULT_COMMON_NAME))
+        """.format(common_name=_DEFAULT_COMMON_NAME))
     with open(path, 'w') as f:
         f.write(conf_string)
 
@@ -225,7 +225,7 @@ def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
     _write_key(private_key, ca_key_out_path)
 
-    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, DEFAULT_COMMON_NAME)
+    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)
     builder = x509.CertificateBuilder(
         ).issuer_name(
             x509.Name([common_name])
