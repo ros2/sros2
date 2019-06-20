@@ -53,13 +53,6 @@ def test_create_keystore():
             ' root_ca_extensions ',
         ]
 
-    def check_ecdsaparam(path):
-        with open(path, 'r') as f:
-            # cryptography does not seem to know how to load ecparams
-            lines = f.readlines()
-            assert lines[0] == '-----BEGIN EC PARAMETERS-----\n'
-            assert lines[-1] == '-----END EC PARAMETERS-----\n'
-
     def check_governance_xml(path):
         # validates valid XML
         ElementTree.parse(path)
@@ -84,7 +77,6 @@ def test_create_keystore():
             ('index.txt', check_index_txt),
             ('ca.cert.pem', check_ca_cert_pem),
             ('ca_conf.cnf', check_ca_conf),
-            ('ecdsaparam', check_ecdsaparam),
             ('governance.xml', check_governance_xml),
             ('ca.key.pem', check_ca_key_pem),
             ('serial', None),

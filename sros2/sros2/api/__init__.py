@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import namedtuple
+import datetime
 import itertools
 import os
 import platform
@@ -21,9 +22,11 @@ import subprocess
 import sys
 
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
@@ -120,6 +123,26 @@ def check_openssl_version(openssl_executable):
         raise RuntimeError('need openssl 1.0.2 minimum')
 
 
+def _write_key(
+    key,
+    key_path,
+    *,
+    encoding=serialization.Encoding.PEM,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption()
+):
+    with open(key_path, 'wb') as f:
+        f.write(key.private_bytes(
+            encoding=encoding,
+            format=format,
+            encryption_algorithm=encryption_algorithm))
+
+
+def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
+    with open(cert_path, 'wb') as f:
+        f.write(cert.public_bytes(encoding=encoding))
+
+
 def create_ca_conf_file(path):
     with open(path, 'w') as f:
         f.write("""\
@@ -193,12 +216,30 @@ def create_ecdsa_param_file(path):
     run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
 
 
-def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s' %
-        (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
+    # DDS-Security 9.3.1 calls for prime256v1 - SECP256R1 is another alias for that
+    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    _write_key(private_key, ca_key_out_path)
+
+    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
+    builder = x509.CertificateBuilder(
+        ).issuer_name(
+            x509.Name([common_name])
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            datetime.datetime.today() - datetime.timedelta(days=1)
+        ).not_valid_after(
+            datetime.datetime.today() + datetime.timedelta(days=3650)
+        ).public_key(
+            private_key.public_key()
+        ).subject_name(
+            x509.Name([common_name])
+        ).add_extension(
+            x509.BasicConstraints(ca=True, path_length=1), critical=True
+        )
+    cert = builder.sign(private_key, hashes.SHA256(), cryptography_backend())
+    _write_cert(cert, ca_cert_out_path)
 
 
 def create_governance_file(path, domain_id):
@@ -224,54 +265,15 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
-def _sign_bytes(cert, key, byte_string):
-    # Using two flags here to get the output required:
-    #   - PKCS7_DETACHED: Use cleartext signing
-    #   - PKCS7_TEXT: Set the MIME headers for text/plain
-    flags = SSLBinding.lib.PKCS7_DETACHED
-    flags |= SSLBinding.lib.PKCS7_TEXT
-
-    # Convert the byte string into a buffer for SSL
-    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
-    try:
-        pkcs7 = SSLBinding.lib.PKCS7_sign(
-            cert._x509, key._evp_pkey, SSLBinding.ffi.NULL, bio_in, flags)
-    finally:
-        # Free the memory allocated for the buffer
-        SSLBinding.lib.BIO_free(bio_in)
-
-    # PKCS7_sign consumes the buffer; allocate a new one again to get it into the final document
-    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
-    try:
-        # Allocate a buffer for the output document
-        bio_out = SSLBinding.lib.BIO_new(SSLBinding.lib.BIO_s_mem())
-        try:
-            # Write the final document out to the buffer
-            SSLBinding.lib.SMIME_write_PKCS7(bio_out, pkcs7, bio_in, flags)
-
-            # Copy the output document back to python-managed memory
-            result_buffer = SSLBinding.ffi.new('char**')
-            buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
-            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
-        finally:
-            # Free the memory required for the output buffer
-            SSLBinding.lib.BIO_free(bio_out)
-    finally:
-        # Free the memory allocated for the input buffer
-        SSLBinding.lib.BIO_free(bio_in)
-
-    return output
-
-
 def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
     # Load the CA cert and key from disk
     with open(ca_cert_path, 'rb') as cert_file:
         cert = x509.load_pem_x509_certificate(
-            cert_file.read(), default_backend())
+            cert_file.read(), cryptography_backend())
 
     with open(ca_key_path, 'rb') as key_file:
         private_key = serialization.load_pem_private_key(
-            key_file.read(), None, default_backend())
+            key_file.read(), None, cryptography_backend())
 
     # Get the contents of the governance file (which we're about to sign)
     with open(gov_path, 'rb') as f:
@@ -289,24 +291,18 @@ def create_keystore(keystore_path):
         print('directory already exists: %s' % keystore_path)
 
     ca_conf_path = os.path.join(keystore_path, 'ca_conf.cnf')
+    ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
+    ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+
     if not os.path.isfile(ca_conf_path):
         print('creating CA file: %s' % ca_conf_path)
         create_ca_conf_file(ca_conf_path)
     else:
         print('found CA conf file, not writing a new one!')
 
-    ecdsa_param_path = os.path.join(keystore_path, 'ecdsaparam')
-    if not os.path.isfile(ecdsa_param_path):
-        print('creating ECDSA param file: %s' % ecdsa_param_path)
-        create_ecdsa_param_file(ecdsa_param_path)
-    else:
-        print('found ECDSA param file, not writing a new one!')
-
-    ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     if not (os.path.isfile(ca_key_path) and os.path.isfile(ca_cert_path)):
         print('creating new CA key/cert pair')
-        create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path)
+        create_ca_key_cert(ca_key_path, ca_cert_path)
     else:
         print('found CA key and cert, not creating new ones!')
 
@@ -346,7 +342,6 @@ def create_keystore(keystore_path):
 
 def is_valid_keystore(path):
     res = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
-    res &= os.path.isfile(os.path.join(path, 'ecdsaparam'))
     res &= os.path.isfile(os.path.join(path, 'index.txt'))
     res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
     res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
@@ -405,7 +400,6 @@ def create_cert(root_path, relative_path):
 
 
 def create_permission_file(path, domain_id, policy_element):
-
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
@@ -451,6 +445,7 @@ def get_policy_from_tree(name, policy_tree):
 
 def create_signed_permissions_file(
         permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
+
     openssl_executable = find_openssl_executable()
     check_openssl_version(openssl_executable)
     run_shell_command(
@@ -603,3 +598,42 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
             create_permissions_from_policy_element(
                 keystore_path, identity_name, policy_element)
     return True
+
+
+def _sign_bytes(cert, key, byte_string):
+    # Using two flags here to get the output required:
+    #   - PKCS7_DETACHED: Use cleartext signing
+    #   - PKCS7_TEXT: Set the MIME headers for text/plain
+    flags = SSLBinding.lib.PKCS7_DETACHED
+    flags |= SSLBinding.lib.PKCS7_TEXT
+
+    # Convert the byte string into a buffer for SSL
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        pkcs7 = SSLBinding.lib.PKCS7_sign(
+            cert._x509, key._evp_pkey, SSLBinding.ffi.NULL, bio_in, flags)
+    finally:
+        # Free the memory allocated for the buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    # PKCS7_sign consumes the buffer; allocate a new one again to get it into the final document
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        # Allocate a buffer for the output document
+        bio_out = SSLBinding.lib.BIO_new(SSLBinding.lib.BIO_s_mem())
+        try:
+            # Write the final document out to the buffer
+            SSLBinding.lib.SMIME_write_PKCS7(bio_out, pkcs7, bio_in, flags)
+
+            # Copy the output document back to python-managed memory
+            result_buffer = SSLBinding.ffi.new('char**')
+            buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
+            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
+        finally:
+            # Free the memory required for the output buffer
+            SSLBinding.lib.BIO_free(bio_out)
+    finally:
+        # Free the memory allocated for the input buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    return output
