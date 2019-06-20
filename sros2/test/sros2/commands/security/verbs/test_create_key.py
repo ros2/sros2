@@ -102,8 +102,6 @@ def test_cert_pem(node_keys_dir):
 
 
 def test_ecdsaparam(node_keys_dir):
-    # Would really like to verify the signature, but ffi just can't use
-    # that part of the OpenSSL API
     with open(os.path.join(node_keys_dir, 'ecdsaparam')) as f:
         assert f.read() == textwrap.dedent("""\
             -----BEGIN EC PARAMETERS-----
