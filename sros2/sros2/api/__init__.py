@@ -20,11 +20,11 @@ import shutil
 import subprocess
 import sys
 
-from lxml import etree
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
+from cryptography.hazmat.primitives import serialization
+from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
 from rclpy.exceptions import InvalidNodeNameException
