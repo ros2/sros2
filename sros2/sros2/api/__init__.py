@@ -20,12 +20,14 @@ import platform
 import shutil
 import subprocess
 import sys
+import textwrap
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
@@ -44,10 +46,10 @@ from sros2.policy import (
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 
+DEFAULT_COMMON_NAME = 'sros2testCA'
+
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
-
-DEFAULT_COMMON_NAME = 'sros2testCA'
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
@@ -145,64 +147,64 @@ def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
 
 
 def create_ca_conf_file(path):
-    conf_string = """\
-[ ca ]
-default_ca = CA_default
+    conf_string = textwrap.dedent("""\
+        [ ca ]
+        default_ca = CA_default
 
-[ CA_default ]
-dir = .
-certs = $dir/certs
-crl_dir = $dir/crl
-database = $dir/index.txt
-unique_subject = no
-new_certs_dir = $dir
-certificate = $dir/ca.cert.pem
-private_key = $dir/ca.key.pem
-serial = $dir/serial
-crlnumber = $dir/crlnumber
-crl = $dir/crl.pem
-RANDFILE = $dir/private/.rand
-name_opt = ca_default
-cert_opt = ca_default
-default_days = 1825
-default_crl_days = 30
-default_md = sha256
-preserve = no
-policy = policy_match
-x509_extensions = local_ca_extensions
-#
-#
-# Copy extensions specified in the certificate request
-#
-copy_extensions = copy
+        [ CA_default ]
+        dir = .
+        certs = $dir/certs
+        crl_dir = $dir/crl
+        database = $dir/index.txt
+        unique_subject = no
+        new_certs_dir = $dir
+        certificate = $dir/ca.cert.pem
+        private_key = $dir/ca.key.pem
+        serial = $dir/serial
+        crlnumber = $dir/crlnumber
+        crl = $dir/crl.pem
+        RANDFILE = $dir/private/.rand
+        name_opt = ca_default
+        cert_opt = ca_default
+        default_days = 1825
+        default_crl_days = 30
+        default_md = sha256
+        preserve = no
+        policy = policy_match
+        x509_extensions = local_ca_extensions
+        #
+        #
+        # Copy extensions specified in the certificate request
+        #
+        copy_extensions = copy
 
-[ policy_match ]
-countryName = optional
-stateOrProvinceName = optional
-organizationName = optional
-organizationalUnitName = optional
-commonName = supplied
-emailAddress = optional
+        [ policy_match ]
+        countryName = optional
+        stateOrProvinceName = optional
+        organizationName = optional
+        organizationalUnitName = optional
+        commonName = supplied
+        emailAddress = optional
 
-#
-#
-# x509 extensions to use when generating server certificates.
-#
-[ local_ca_extensions ]
-basicConstraints = CA:false
+        #
+        #
+        # x509 extensions to use when generating server certificates.
+        #
+        [ local_ca_extensions ]
+        basicConstraints = CA:false
 
-[ req ]
-prompt = no
-distinguished_name = req_distinguished_name
-string_mask = utf8only
-x509_extensions = root_ca_extensions
+        [ req ]
+        prompt = no
+        distinguished_name = req_distinguished_name
+        string_mask = utf8only
+        x509_extensions = root_ca_extensions
 
-[ req_distinguished_name ]
-commonName = {common_name}
+        [ req_distinguished_name ]
+        commonName = {common_name}
 
-[ root_ca_extensions ]
-basicConstraints = CA:true
-""".format(common_name=DEFAULT_COMMON_NAME)
+        [ root_ca_extensions ]
+        basicConstraints = CA:true
+        """.format(common_name=DEFAULT_COMMON_NAME))
     with open(path, 'w') as f:
         f.write(conf_string)
 
