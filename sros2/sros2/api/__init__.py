@@ -47,6 +47,8 @@ DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 NODE_NAME = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TOPIC_INFO = namedtuple('Topic', ('fqn', 'type'))
 
+DEFAULT_COMMON_NAME = 'sros2testCA'
+
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
@@ -143,8 +145,7 @@ def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
 
 
 def create_ca_conf_file(path):
-    with open(path, 'w') as f:
-        f.write("""\
+    conf_string = """\
 [ ca ]
 default_ca = CA_default
 
@@ -197,11 +198,13 @@ string_mask = utf8only
 x509_extensions = root_ca_extensions
 
 [ req_distinguished_name ]
-commonName = sros2testCA
+commonName = {common_name}
 
 [ root_ca_extensions ]
 basicConstraints = CA:true
-""")
+""".format(common_name=DEFAULT_COMMON_NAME)
+    with open(path, 'w') as f:
+        f.write(conf_string)
 
 
 def run_shell_command(cmd, in_path=None):
@@ -220,7 +223,7 @@ def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
     _write_key(private_key, ca_key_out_path)
 
-    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
+    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, DEFAULT_COMMON_NAME)
     builder = x509.CertificateBuilder(
         ).issuer_name(
             x509.Name([common_name])
