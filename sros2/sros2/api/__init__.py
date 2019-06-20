@@ -44,14 +44,14 @@ from sros2.policy import (
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 
-NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
-TopicInfo = namedtuple('Topic', ('fqn', 'type'))
+NODE_NAME = namedtuple('NodeName', ('node', 'ns', 'fqn'))
+TOPIC_INFO = namedtuple('Topic', ('fqn', 'type'))
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
     return [
-        NodeName(
+        NODE_NAME(
             node=t[0],
             ns=t[1],
             fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
@@ -66,7 +66,7 @@ def get_node_names(*, node, include_hidden_nodes=False):
 def get_topics(node_name, func):
     names_and_types = func(node_name.node, node_name.ns)
     return [
-        TopicInfo(
+        TOPIC_INFO(
             fqn=t[0],
             type=t[1])
         for t in names_and_types]
