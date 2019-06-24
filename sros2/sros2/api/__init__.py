@@ -14,13 +14,9 @@
 
 from collections import namedtuple
 import datetime
-import itertools
 import os
-import platform
 import shutil
-import subprocess
 import sys
-import textwrap
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -89,44 +85,6 @@ def get_service_info(node, node_name):
     return get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
-def find_openssl_executable():
-    if platform.system() != 'Darwin':
-        return 'openssl'
-
-    brew_openssl_prefix_result = subprocess.run(
-        ['brew', '--prefix', 'openssl'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if brew_openssl_prefix_result.returncode:
-        raise RuntimeError('unable to find openssl from brew')
-    basepath = brew_openssl_prefix_result.stdout.decode().rstrip()
-    return os.path.join(basepath, 'bin', 'openssl')
-
-
-def check_openssl_version(openssl_executable):
-    openssl_version_string_result = subprocess.run(
-        [openssl_executable, 'version'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if openssl_version_string_result.returncode:
-        raise RuntimeError('unable to invoke command: "%s"' % openssl_executable)
-    version = openssl_version_string_result.stdout.decode().rstrip()
-    openssl_version_string_list = version.split(' ')
-    if openssl_version_string_list[0].lower() != 'openssl':
-        raise RuntimeError(
-            "expected version of the format 'OpenSSL "
-            "<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>'")
-    (major, minor, patch) = openssl_version_string_list[1].split('.')
-    major = int(major)
-    minor = int(minor)
-    if major < 1:
-        raise RuntimeError('need openssl 1.0.2 minimum')
-    if major == 1 and minor < 0:
-        raise RuntimeError('need openssl 1.0.2 minimum')
-    if major == 1 and minor == 0 and int(''.join(itertools.takewhile(str.isdigit, patch))) < 2:
-        raise RuntimeError('need openssl 1.0.2 minimum')
-
-
 def _write_key(
     key,
     key_path,
@@ -147,103 +105,12 @@ def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
         f.write(cert.public_bytes(encoding=encoding))
 
 
-def create_ca_conf_file(path):
-    conf_string = textwrap.dedent("""\
-        [ ca ]
-        default_ca = CA_default
-
-        [ CA_default ]
-        dir = .
-        certs = $dir/certs
-        crl_dir = $dir/crl
-        database = $dir/index.txt
-        unique_subject = no
-        new_certs_dir = $dir
-        certificate = $dir/ca.cert.pem
-        private_key = $dir/ca.key.pem
-        serial = $dir/serial
-        crlnumber = $dir/crlnumber
-        crl = $dir/crl.pem
-        RANDFILE = $dir/private/.rand
-        name_opt = ca_default
-        cert_opt = ca_default
-        default_days = 1825
-        default_crl_days = 30
-        default_md = sha256
-        preserve = no
-        policy = policy_match
-        x509_extensions = local_ca_extensions
-        #
-        #
-        # Copy extensions specified in the certificate request
-        #
-        copy_extensions = copy
-
-        [ policy_match ]
-        countryName = optional
-        stateOrProvinceName = optional
-        organizationName = optional
-        organizationalUnitName = optional
-        commonName = supplied
-        emailAddress = optional
-
-        #
-        #
-        # x509 extensions to use when generating server certificates.
-        #
-        [ local_ca_extensions ]
-        basicConstraints = CA:false
-
-        [ req ]
-        prompt = no
-        distinguished_name = req_distinguished_name
-        string_mask = utf8only
-        x509_extensions = root_ca_extensions
-
-        [ req_distinguished_name ]
-        commonName = {common_name}
-
-        [ root_ca_extensions ]
-        basicConstraints = CA:true
-        """.format(common_name=_DEFAULT_COMMON_NAME))
-    with open(path, 'w') as f:
-        f.write(conf_string)
-
-
-def run_shell_command(cmd, in_path=None):
-    print('running command in path [%s]: %s' % (in_path, cmd))
-    subprocess.call(cmd, shell=True, cwd=in_path)
-
-
-def create_ecdsa_param_file(path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
-
-
 def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
-    # DDS-Security 9.3.1 calls for prime256v1 - SECP256R1 is another alias for that
-    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
-    _write_key(private_key, ca_key_out_path)
+    cert, private_key = _build_key_and_cert(
+        x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)]),
+        ca=True)
 
-    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)
-    builder = x509.CertificateBuilder(
-        ).issuer_name(
-            x509.Name([common_name])
-        ).serial_number(
-            x509.random_serial_number()
-        ).not_valid_before(
-            datetime.datetime.today() - datetime.timedelta(days=1)
-        ).not_valid_after(
-            datetime.datetime.today() + datetime.timedelta(days=3650)
-        ).public_key(
-            private_key.public_key()
-        ).subject_name(
-            x509.Name([common_name])
-        ).add_extension(
-            x509.BasicConstraints(ca=True, path_length=1), critical=True
-        )
-    cert = builder.sign(private_key, hashes.SHA256(), cryptography_backend())
+    _write_key(private_key, ca_key_out_path)
     _write_cert(cert, ca_cert_out_path)
 
 
@@ -277,15 +144,8 @@ def create_keystore(keystore_path):
     else:
         print('directory already exists: %s' % keystore_path)
 
-    ca_conf_path = os.path.join(keystore_path, 'ca_conf.cnf')
     ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
-
-    if not os.path.isfile(ca_conf_path):
-        print('creating CA file: %s' % ca_conf_path)
-        create_ca_conf_file(ca_conf_path)
-    else:
-        print('found CA conf file, not writing a new one!')
 
     if not (os.path.isfile(ca_key_path) and os.path.isfile(ca_cert_path)):
         print('creating new CA key/cert pair')
@@ -310,30 +170,17 @@ def create_keystore(keystore_path):
     else:
         print('found signed governance file, not creating a new one!')
 
-    # create index file
-    index_path = os.path.join(keystore_path, 'index.txt')
-    if not os.path.isfile(index_path):
-        with open(index_path, 'a'):
-            pass
-
-    # create serial file
-    serial_path = os.path.join(keystore_path, 'serial')
-    if not os.path.isfile(serial_path):
-        with open(serial_path, 'w') as f:
-            f.write('1000')
-
     print('all done! enjoy your keystore in %s' % keystore_path)
     print('cheers!')
     return True
 
 
 def is_valid_keystore(path):
-    res = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
-    res &= os.path.isfile(os.path.join(path, 'index.txt'))
-    res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
-    res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
-    res &= os.path.isfile(os.path.join(path, 'governance.p7s'))
-    return res
+    return (
+        os.path.isfile(os.path.join(path, 'ca.key.pem')) and
+        os.path.isfile(os.path.join(path, 'ca.cert.pem')) and
+        os.path.isfile(os.path.join(path, 'governance.p7s'))
+    )
 
 
 def is_key_name_valid(name):
@@ -349,41 +196,6 @@ def is_key_name_valid(name):
     except (InvalidNamespaceException, InvalidNodeNameException) as e:
         print('{}'.format(e))
         return False
-
-
-def create_request_file(path, name):
-    with open(path, 'w') as f:
-        f.write("""\
-prompt = no
-string_mask = utf8only
-distinguished_name = req_distinguished_name
-
-[ req_distinguished_name ]
-commonName = %s
-""" % name)
-
-
-def create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path):
-    key_relpath = os.path.join(relative_path, 'key.pem')
-    ecdsa_param_relpath = os.path.join(relative_path, 'ecdsaparam')
-    cnf_relpath = os.path.join(relative_path, 'request.cnf')
-    key_relpath = os.path.join(relative_path, 'key.pem')
-    req_relpath = os.path.join(relative_path, 'req.pem')
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s' %
-        (openssl_executable, ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
-
-
-def create_cert(root_path, relative_path):
-    req_relpath = os.path.join(relative_path, 'req.pem')
-    cert_relpath = os.path.join(relative_path, 'cert.pem')
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s ca -batch -create_serial -config ca_conf.cnf -days 3650 -in %s -out %s' %
-        (openssl_executable, req_relpath, cert_relpath), root_path)
 
 
 def create_permission_file(path, domain_id, policy_element):
@@ -464,6 +276,7 @@ def create_key(keystore_path, identity):
     os.makedirs(key_dir, exist_ok=True)
 
     # copy the CA cert in there
+    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     dest_identity_ca_cert_path = os.path.join(key_dir, 'identity_ca.cert.pem')
     dest_permissions_ca_cert_path = os.path.join(key_dir, 'permissions_ca.cert.pem')
@@ -475,38 +288,14 @@ def create_key(keystore_path, identity):
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     shutil.copyfile(keystore_governance_path, dest_governance_path)
 
-    ecdsa_param_path = os.path.join(key_dir, 'ecdsaparam')
-    if not os.path.isfile(ecdsa_param_path):
-        print('creating ECDSA param file: %s' % ecdsa_param_path)
-        create_ecdsa_param_file(ecdsa_param_path)
-    else:
-        print('found ECDSA param file, not writing a new one!')
-
-    cnf_path = os.path.join(key_dir, 'request.cnf')
-    if not os.path.isfile(cnf_path):
-        create_request_file(cnf_path, identity)
-    else:
-        print('config file exists, not creating a new one: %s' % cnf_path)
-
-    key_path = os.path.join(key_dir, 'key.pem')
-    req_path = os.path.join(key_dir, 'req.pem')
-    if not os.path.isfile(key_path) or not os.path.isfile(req_path):
-        print('creating key and cert request')
-        create_key_and_cert_req(
-            keystore_path,
-            relative_path,
-            cnf_path,
-            ecdsa_param_path,
-            key_path, req_path)
-    else:
-        print('found key and cert req; not creating new ones!')
-
     cert_path = os.path.join(key_dir, 'cert.pem')
-    if not os.path.isfile(cert_path):
-        print('creating cert')
-        create_cert(keystore_path, relative_path)
+    key_path = os.path.join(key_dir, 'key.pem')
+    if not os.path.isfile(cert_path) or not os.path.isfile(key_path):
+        print('creating cert and key')
+        _create_key_and_cert(
+            keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path)
     else:
-        print('found cert; not creating a new one!')
+        print('found cert and key; not creating new ones!')
 
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
@@ -631,3 +420,58 @@ def _create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_fi
     # Sign the contents, and write the result to the appropriate place
     with open(signed_file_path, 'wb') as f:
         f.write(_sign_bytes(cert, private_key, content))
+
+
+def _build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
+    if not issuer_name:
+        issuer_name = subject_name
+
+    # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
+    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    if not ca_key:
+        ca_key = private_key
+
+    if ca:
+        extension = x509.BasicConstraints(ca=True, path_length=1)
+    else:
+        extension = x509.BasicConstraints(ca=False, path_length=None)
+
+    now = datetime.datetime.now()
+    builder = x509.CertificateBuilder(
+        ).issuer_name(
+            issuer_name
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            now
+        ).not_valid_after(
+            # TODO: This should not be hard-coded
+            now + datetime.timedelta(days=3650)
+        ).public_key(
+            private_key.public_key()
+        ).subject_name(
+            subject_name
+        ).add_extension(
+            extension, critical=ca
+        )
+    cert = builder.sign(ca_key, hashes.SHA256(), cryptography_backend())
+
+    return (cert, private_key)
+
+
+def _create_key_and_cert(
+        keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path):
+    # Load the CA cert and key from disk
+    with open(keystore_ca_cert_path, 'rb') as f:
+        ca_cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
+
+    with open(keystore_ca_key_path, 'rb') as f:
+        ca_key = serialization.load_pem_private_key(f.read(), None, cryptography_backend())
+
+    cert, private_key = _build_key_and_cert(
+        x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, identity)]),
+        issuer_name=ca_cert.subject,
+        ca_key=ca_key)
+
+    _write_key(private_key, key_path)
+    _write_cert(cert, cert_path)

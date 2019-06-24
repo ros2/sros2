@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import configparser
+import datetime
 import os
-import textwrap
 from xml.etree import ElementTree
 
 import cryptography
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 import pytest
@@ -70,6 +69,11 @@ def check_common_name(entity, expected_value):
     assert names[0].value == expected_value
 
 
+def _datetimes_are_close(actual, expected):
+    # We can't check exact times, but an hour's resolution is fine for testing purposes
+    return actual <= expected and actual >= (expected - datetime.timedelta(hours=1))
+
+
 def verify_signature(cert, signatory):
     try:
         signatory.public_key().verify(
@@ -83,8 +87,8 @@ def verify_signature(cert, signatory):
 
 def test_create_key(node_keys_dir):
     expected_files = (
-        'cert.pem', 'ecdsaparam', 'governance.p7s', 'identity_ca.cert.pem', 'key.pem',
-        'permissions.p7s', 'permissions.xml', 'permissions_ca.cert.pem', 'req.pem', 'request.cnf'
+        'cert.pem', 'governance.p7s', 'identity_ca.cert.pem', 'key.pem', 'permissions.p7s',
+        'permissions.xml', 'permissions_ca.cert.pem'
     )
     assert len(os.listdir(node_keys_dir)) == len(expected_files)
 
@@ -97,17 +101,26 @@ def test_cert_pem(node_keys_dir):
     check_common_name(cert.subject, u'/test_node')
     check_common_name(cert.issuer, u'sros2testCA')
 
+    # Verify that the hash algorithm is as expected
+    assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
+
+    # Verify the cert is valid for the expected timespan
+    now = datetime.datetime.now()
+    assert _datetimes_are_close(cert.not_valid_before, now)
+    assert _datetimes_are_close(cert.not_valid_after, now + datetime.timedelta(days=3650))
+
+    # Verify that the cert ensures this key cannot be used to sign others as a CA
+    assert len(cert.extensions) == 1
+    extension = cert.extensions[0]
+    assert extension.critical is False
+    value = extension.value
+    assert isinstance(value, x509.BasicConstraints)
+    assert value.ca is False
+    assert value.path_length is None
+
+    # Verify this cert is indeed signed by the keystore CA
     signatory = load_cert(os.path.join(node_keys_dir, 'identity_ca.cert.pem'))
     assert verify_signature(cert, signatory)
-
-
-def test_ecdsaparam(node_keys_dir):
-    with open(os.path.join(node_keys_dir, 'ecdsaparam')) as f:
-        assert f.read() == textwrap.dedent("""\
-            -----BEGIN EC PARAMETERS-----
-            BggqhkjOPQMBBw==
-            -----END EC PARAMETERS-----
-            """)
 
 
 def test_governance_p7s(node_keys_dir):
@@ -128,8 +141,12 @@ def test_identity_ca_cert_pem(node_keys_dir):
 
 def test_key_pem(node_keys_dir):
     private_key = load_private_key(os.path.join(node_keys_dir, 'key.pem'))
+    assert isinstance(private_key, ec.EllipticCurvePrivateKey)
+    assert private_key.key_size == 256
+
     public_key = private_key.public_key()
     assert isinstance(public_key.curve, ec.SECP256R1)
+    assert public_key.key_size == 256
 
 
 def test_permissions_p7s(node_keys_dir):
@@ -153,32 +170,3 @@ def test_permissions_ca_cert_pem(node_keys_dir):
 
     signatory = load_cert(os.path.join(node_keys_dir, 'identity_ca.cert.pem'))
     assert verify_signature(cert, signatory)
-
-
-def test_req_pem(node_keys_dir):
-    csr = load_csr(os.path.join(node_keys_dir, 'req.pem'))
-    check_common_name(csr.subject, u'/test_node')
-
-
-def test_request_cnf(node_keys_dir):
-    config = configparser.ConfigParser()
-
-    # ConfigParser doesn't support INI files without section headers, so pretend one
-    # is there
-    with open(os.path.join(node_keys_dir, 'request.cnf')) as f:
-        config.read_string('[root]\n' + f.read())
-
-    for expected_section in ('root', ' req_distinguished_name '):
-        assert expected_section in config.sections()
-
-    root_config = config['root']
-    for expected_root_key in ('prompt', 'string_mask', 'distinguished_name'):
-        assert expected_root_key in root_config
-
-    assert root_config['prompt'] == 'no'
-    assert root_config['string_mask'] == 'utf8only'
-    assert root_config['distinguished_name'] == 'req_distinguished_name'
-
-    req_config = config[' req_distinguished_name ']
-    assert 'commonName' in req_config
-    assert req_config['commonName'] == '/test_node'

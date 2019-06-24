@@ -12,78 +12,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import configparser
 import os
-import tempfile
 from xml.etree import ElementTree
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
+import pytest
+
 from ros2cli import cli
+from sros2.api import _DEFAULT_COMMON_NAME
 
 
-def test_create_keystore():
-    def check_index_txt(path):
-        with open(path, 'r') as f:
-            lines = f.readlines()
-            assert len(lines) == 0
+# This fixture will run once for the entire module (as opposed to once per test)
+@pytest.fixture(scope='module')
+def keystore_dir(tmp_path_factory):
+    keystore_dir = str(tmp_path_factory.mktemp('keystore'))
 
-    def check_ca_cert_pem(path):
-        with open(path, 'rb') as f:
-            cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
-            names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
-            assert len(names) == 1
-            assert names[0].value == u'sros2testCA'
-            names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.ORGANIZATION_NAME)
-            assert len(names) == 0
+    # Create the keystore
+    assert cli.main(argv=['security', 'create_keystore', keystore_dir]) == 0
 
-    def check_ca_conf(path):
-        config = configparser.ConfigParser()
-        successful_reads = config.read(path)
-        assert len(successful_reads) == 1
-        assert config.sections() == [
-            ' ca ',
-            ' CA_default ',
-            ' policy_match ',
-            ' local_ca_extensions ',
-            ' req ',
-            ' req_distinguished_name ',
-            ' root_ca_extensions ',
-        ]
+    # Return path to keystore directory
+    return keystore_dir
 
-    def check_governance_xml(path):
-        # validates valid XML
-        ElementTree.parse(path)
 
-    def check_ca_key_pem(path):
-        with open(path, 'rb') as f:
-            key = load_pem_private_key(f.read(), password=None, backend=cryptography_backend())
-            public = key.public_key()
-            assert public.curve.name == 'secp256r1'
+def test_create_keystore(keystore_dir):
+    expected_files = (
+        'ca.cert.pem', 'ca.key.pem', 'governance.p7s', 'governance.xml'
+    )
+    assert len(os.listdir(keystore_dir)) == len(expected_files)
 
-    def check_governance_p7s(path):
-        # Would really like to verify the signature, but ffi just can't use
-        # that part of the OpenSSL API
-        with open(path, 'r') as f:
-            lines = f.readlines()
-            assert lines[0] == 'MIME-Version: 1.0\n'
+    for expected_file in expected_files:
+        assert os.path.isfile(os.path.join(keystore_dir, expected_file))
 
-    with tempfile.TemporaryDirectory() as keystore_dir:
-        assert cli.main(argv=['security', 'create_keystore', keystore_dir]) == 0
-        expected_files = (
-            ('governance.p7s', check_governance_p7s),
-            ('index.txt', check_index_txt),
-            ('ca.cert.pem', check_ca_cert_pem),
-            ('ca_conf.cnf', check_ca_conf),
-            ('governance.xml', check_governance_xml),
-            ('ca.key.pem', check_ca_key_pem),
-            ('serial', None),
-        )
 
-        for expected_file, file_validator in expected_files:
-            path = os.path.join(keystore_dir, expected_file)
-            assert os.path.isfile(path), 'Expected output file %s was not found.' % expected_file
-            if file_validator:
-                file_validator(path)
+def test_ca_cert(keystore_dir):
+    with open(os.path.join(keystore_dir, 'ca.cert.pem'), 'rb') as f:
+        cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
+        names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+        assert len(names) == 1
+        assert names[0].value == _DEFAULT_COMMON_NAME
+        names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.ORGANIZATION_NAME)
+        assert len(names) == 0
+
+
+def test_ca_key(keystore_dir):
+    with open(os.path.join(keystore_dir, 'ca.key.pem'), 'rb') as f:
+        key = load_pem_private_key(f.read(), password=None, backend=cryptography_backend())
+        public = key.public_key()
+        assert public.curve.name == 'secp256r1'
+
+
+def test_governance_p7s(keystore_dir):
+    # Would really like to verify the signature, but ffi just can't use
+    # that part of the OpenSSL API
+    with open(os.path.join(keystore_dir, 'governance.p7s')) as f:
+        lines = f.readlines()
+        assert lines[0] == 'MIME-Version: 1.0\n'
+        assert lines[1].startswith(
+            'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
+
+
+def test_governance_xml(keystore_dir):
+    # Validates valid XML
+    ElementTree.parse(os.path.join(keystore_dir, 'governance.xml'))
