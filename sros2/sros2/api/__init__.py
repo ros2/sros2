@@ -270,24 +270,6 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
-def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
-    # Load the CA cert and key from disk
-    with open(ca_cert_path, 'rb') as cert_file:
-        cert = x509.load_pem_x509_certificate(
-            cert_file.read(), cryptography_backend())
-
-    with open(ca_key_path, 'rb') as key_file:
-        private_key = serialization.load_pem_private_key(
-            key_file.read(), None, cryptography_backend())
-
-    # Get the contents of the governance file (which we're about to sign)
-    with open(gov_path, 'rb') as f:
-        content = f.read()
-
-    with open(signed_gov_path, 'wb') as f:
-        f.write(_sign_bytes(cert, private_key, content))
-
-
 def create_keystore(keystore_path):
     if not os.path.exists(keystore_path):
         print('creating directory: %s' % keystore_path)
@@ -324,7 +306,7 @@ def create_keystore(keystore_path):
     signed_gov_path = os.path.join(keystore_path, 'governance.p7s')
     if not os.path.isfile(signed_gov_path):
         print('creating signed governance file: %s' % signed_gov_path)
-        create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path)
+        _create_smime_signed_file(ca_cert_path, ca_key_path, gov_path, signed_gov_path)
     else:
         print('found signed governance file, not creating a new one!')
 
@@ -448,16 +430,6 @@ def get_policy_from_tree(name, policy_tree):
     return policy_element
 
 
-def create_signed_permissions_file(
-        permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
-
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (openssl_executable, permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
-
-
 def create_permission(keystore_path, identity, policy_file_path):
     policy_element = get_policy(identity, policy_file_path)
     create_permissions_from_policy_element(keystore_path, identity, policy_element)
@@ -475,9 +447,8 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    create_signed_permissions_file(
-        permissions_path, signed_permissions_path,
-        keystore_ca_cert_path, keystore_ca_key_path)
+    _create_smime_signed_file(
+        keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
 
 def create_key(keystore_path, identity):
@@ -553,9 +524,8 @@ def create_key(keystore_path, identity):
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    create_signed_permissions_file(
-        permissions_path, signed_permissions_path,
-        keystore_ca_cert_path, keystore_ca_key_path)
+    _create_smime_signed_file(
+        keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
     return True
 
@@ -642,3 +612,22 @@ def _sign_bytes(cert, key, byte_string):
         SSLBinding.lib.BIO_free(bio_in)
 
     return output
+
+
+def _create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
+    # Load the CA cert and key from disk
+    with open(cert_path, 'rb') as cert_file:
+        cert = x509.load_pem_x509_certificate(
+            cert_file.read(), cryptography_backend())
+
+    with open(key_path, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(), None, cryptography_backend())
+
+    # Get the contents of the unsigned file, which we're about to sign
+    with open(unsigned_file_path, 'rb') as f:
+        content = f.read()
+
+    # Sign the contents, and write the result to the appropriate place
+    with open(signed_file_path, 'wb') as f:
+        f.write(_sign_bytes(cert, private_key, content))
