@@ -20,6 +20,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import textwrap
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -27,6 +28,7 @@ from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
@@ -44,6 +46,8 @@ from sros2.policy import (
 
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
+
+_DEFAULT_COMMON_NAME = 'sros2testCA'
 
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
@@ -128,13 +132,13 @@ def _write_key(
     key_path,
     *,
     encoding=serialization.Encoding.PEM,
-    format=serialization.PrivateFormat.PKCS8,
+    serialization_format=serialization.PrivateFormat.PKCS8,
     encryption_algorithm=serialization.NoEncryption()
 ):
     with open(key_path, 'wb') as f:
         f.write(key.private_bytes(
             encoding=encoding,
-            format=format,
+            format=serialization_format,
             encryption_algorithm=encryption_algorithm))
 
 
@@ -144,65 +148,66 @@ def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
 
 
 def create_ca_conf_file(path):
+    conf_string = textwrap.dedent("""\
+        [ ca ]
+        default_ca = CA_default
+
+        [ CA_default ]
+        dir = .
+        certs = $dir/certs
+        crl_dir = $dir/crl
+        database = $dir/index.txt
+        unique_subject = no
+        new_certs_dir = $dir
+        certificate = $dir/ca.cert.pem
+        private_key = $dir/ca.key.pem
+        serial = $dir/serial
+        crlnumber = $dir/crlnumber
+        crl = $dir/crl.pem
+        RANDFILE = $dir/private/.rand
+        name_opt = ca_default
+        cert_opt = ca_default
+        default_days = 1825
+        default_crl_days = 30
+        default_md = sha256
+        preserve = no
+        policy = policy_match
+        x509_extensions = local_ca_extensions
+        #
+        #
+        # Copy extensions specified in the certificate request
+        #
+        copy_extensions = copy
+
+        [ policy_match ]
+        countryName = optional
+        stateOrProvinceName = optional
+        organizationName = optional
+        organizationalUnitName = optional
+        commonName = supplied
+        emailAddress = optional
+
+        #
+        #
+        # x509 extensions to use when generating server certificates.
+        #
+        [ local_ca_extensions ]
+        basicConstraints = CA:false
+
+        [ req ]
+        prompt = no
+        distinguished_name = req_distinguished_name
+        string_mask = utf8only
+        x509_extensions = root_ca_extensions
+
+        [ req_distinguished_name ]
+        commonName = {common_name}
+
+        [ root_ca_extensions ]
+        basicConstraints = CA:true
+        """.format(common_name=_DEFAULT_COMMON_NAME))
     with open(path, 'w') as f:
-        f.write("""\
-[ ca ]
-default_ca = CA_default
-
-[ CA_default ]
-dir = .
-certs = $dir/certs
-crl_dir = $dir/crl
-database = $dir/index.txt
-unique_subject = no
-new_certs_dir = $dir
-certificate = $dir/ca.cert.pem
-private_key = $dir/ca.key.pem
-serial = $dir/serial
-crlnumber = $dir/crlnumber
-crl = $dir/crl.pem
-RANDFILE = $dir/private/.rand
-name_opt = ca_default
-cert_opt = ca_default
-default_days = 1825
-default_crl_days = 30
-default_md = sha256
-preserve = no
-policy = policy_match
-x509_extensions = local_ca_extensions
-#
-#
-# Copy extensions specified in the certificate request
-#
-copy_extensions = copy
-
-[ policy_match ]
-countryName = optional
-stateOrProvinceName = optional
-organizationName = optional
-organizationalUnitName = optional
-commonName = supplied
-emailAddress = optional
-
-#
-#
-# x509 extensions to use when generating server certificates.
-#
-[ local_ca_extensions ]
-basicConstraints = CA:false
-
-[ req ]
-prompt = no
-distinguished_name = req_distinguished_name
-string_mask = utf8only
-x509_extensions = root_ca_extensions
-
-[ req_distinguished_name ]
-commonName = sros2testCA
-
-[ root_ca_extensions ]
-basicConstraints = CA:true
-""")
+        f.write(conf_string)
 
 
 def run_shell_command(cmd, in_path=None):
@@ -221,7 +226,7 @@ def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
     _write_key(private_key, ca_key_out_path)
 
-    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, u'sros2testCA')
+    common_name = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)
     builder = x509.CertificateBuilder(
         ).issuer_name(
             x509.Name([common_name])
