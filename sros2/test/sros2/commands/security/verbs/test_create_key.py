@@ -27,6 +27,7 @@ import pytest
 
 from ros2cli import cli
 
+from sros2.api import _DEFAULT_COMMON_NAME
 from sros2.api import create_keystore
 from sros2.policy import get_transport_schema
 
@@ -102,7 +103,7 @@ def test_create_key(node_keys_dir):
 def test_cert_pem(node_keys_dir):
     cert = load_cert(os.path.join(node_keys_dir, 'cert.pem'))
     check_common_name(cert.subject, u'/test_node')
-    check_common_name(cert.issuer, u'sros2testCA')
+    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
 
     # Verify that the hash algorithm is as expected
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
@@ -138,8 +139,8 @@ def test_governance_p7s(node_keys_dir):
 
 def test_identity_ca_cert_pem(node_keys_dir):
     cert = load_cert(os.path.join(node_keys_dir, 'identity_ca.cert.pem'))
-    check_common_name(cert.subject, u'sros2testCA')
-    check_common_name(cert.issuer, u'sros2testCA')
+    check_common_name(cert.subject, _DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
 
 
 def test_key_pem(node_keys_dir):
@@ -171,8 +172,8 @@ def test_permissions_xml(node_keys_dir):
 
 def test_permissions_ca_cert_pem(node_keys_dir):
     cert = load_cert(os.path.join(node_keys_dir, 'permissions_ca.cert.pem'))
-    check_common_name(cert.subject, u'sros2testCA')
-    check_common_name(cert.issuer, u'sros2testCA')
+    check_common_name(cert.subject, _DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
 
     signatory = load_cert(os.path.join(node_keys_dir, 'identity_ca.cert.pem'))
     assert verify_signature(cert, signatory)
