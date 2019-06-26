@@ -14,7 +14,6 @@
 
 import datetime
 import os
-from xml.etree import ElementTree
 
 import cryptography
 from cryptography import x509
@@ -22,10 +21,14 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from lxml import etree
+
 import pytest
 
 from ros2cli import cli
+
 from sros2.api import create_keystore
+from sros2.policy import get_transport_schema
 
 
 # This fixture will run once for the entire module (as opposed to once per test)
@@ -160,7 +163,10 @@ def test_permissions_p7s(node_keys_dir):
 
 
 def test_permissions_xml(node_keys_dir):
-    ElementTree.parse(os.path.join(node_keys_dir, 'permissions.xml'))
+    permissions_xml = etree.parse(os.path.join(node_keys_dir, 'permissions.xml'))
+    permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
+    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+    permissions_xsd.assertValid(permissions_xml)
 
 
 def test_permissions_ca_cert_pem(node_keys_dir):
