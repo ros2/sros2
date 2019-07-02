@@ -85,6 +85,10 @@ def get_service_info(node, node_name):
     return get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
+def get_client_info(node, node_name):
+    return get_topics(node_name, node.get_client_names_and_types_by_node)
+
+
 def _write_key(
     key,
     key_path,

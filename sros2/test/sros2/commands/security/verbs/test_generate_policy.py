@@ -17,13 +17,15 @@ import tempfile
 
 import pytest
 
+from rcl_interfaces.srv import GetParameters
+
 import rclpy
 from ros2cli import cli
 from sros2.policy import load_policy
 from std_msgs.msg import String
 
 
-def test_generate_policy():
+def test_generate_policy_topics():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific context so that generate_policy can still init
         context = rclpy.Context()
@@ -60,6 +62,36 @@ def test_generate_policy():
         topics = topics_subscribe_allowed.findall('topic')
         assert len([t for t in topics if t.text == 'topic_sub']) == 1
         assert len([t for t in topics if t.text == 'topic_pub']) == 0
+
+
+def test_generate_policy_services():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create a test-specific context so that generate_policy can still init
+        context = rclpy.Context()
+        rclpy.init(context=context)
+        node = rclpy.create_node('test_node', context=context)
+
+        try:
+            # Create a server and client
+            node.create_client(GetParameters, 'get/parameters')
+            node.create_service(GetParameters, 'get/parameters', lambda request,
+                                response: response)
+
+            # Generate the policy for the running node
+            assert cli.main(
+                argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
+        finally:
+            node.destroy_node()
+            rclpy.shutdown(context=context)
+
+        # Load the policy and pull out services client/servers
+        policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
+        profile = policy.find(path='profiles/profile[@ns="/"][@node="test_node"]')
+        assert profile is not None
+        service_reply_allowed = profile.find(path='services[@reply="ALLOW"]')
+        assert service_reply_allowed is not None
+        service_request_allowed = profile.find(path='services[@request="ALLOW"]')
+        assert service_request_allowed is not None
 
 
 def test_generate_policy_no_nodes(capsys):
