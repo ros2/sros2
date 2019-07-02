@@ -13,12 +13,17 @@
 # limitations under the License.
 
 from collections import namedtuple
-import itertools
+import datetime
 import os
-import platform
 import shutil
-import subprocess
 import sys
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend as cryptography_backend
+from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 
 from lxml import etree
 
@@ -38,6 +43,8 @@ from sros2.policy import (
 
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
+
+_DEFAULT_COMMON_NAME = 'sros2testCA'
 
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
@@ -79,123 +86,33 @@ def get_service_info(node, node_name):
     return get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
-def find_openssl_executable():
-    if platform.system() != 'Darwin':
-        return 'openssl'
-
-    brew_openssl_prefix_result = subprocess.run(
-        ['brew', '--prefix', 'openssl'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if brew_openssl_prefix_result.returncode:
-        raise RuntimeError('unable to find openssl from brew')
-    basepath = brew_openssl_prefix_result.stdout.decode().rstrip()
-    return os.path.join(basepath, 'bin', 'openssl')
-
-
-def check_openssl_version(openssl_executable):
-    openssl_version_string_result = subprocess.run(
-        [openssl_executable, 'version'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if openssl_version_string_result.returncode:
-        raise RuntimeError('unable to invoke command: "%s"' % openssl_executable)
-    version = openssl_version_string_result.stdout.decode().rstrip()
-    openssl_version_string_list = version.split(' ')
-    if openssl_version_string_list[0].lower() != 'openssl':
-        raise RuntimeError(
-            "expected version of the format 'OpenSSL "
-            "<MAJOR>.<MINOR>.<PATCH_number><PATCH_letter>  <DATE>'")
-    (major, minor, patch) = openssl_version_string_list[1].split('.')
-    major = int(major)
-    minor = int(minor)
-    if major < 1:
-        raise RuntimeError('need openssl 1.0.2 minimum')
-    if major == 1 and minor < 0:
-        raise RuntimeError('need openssl 1.0.2 minimum')
-    if major == 1 and minor == 0 and int(''.join(itertools.takewhile(str.isdigit, patch))) < 2:
-        raise RuntimeError('need openssl 1.0.2 minimum')
+def _write_key(
+    key,
+    key_path,
+    *,
+    encoding=serialization.Encoding.PEM,
+    serialization_format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption()
+):
+    with open(key_path, 'wb') as f:
+        f.write(key.private_bytes(
+            encoding=encoding,
+            format=serialization_format,
+            encryption_algorithm=encryption_algorithm))
 
 
-def create_ca_conf_file(path):
-    with open(path, 'w') as f:
-        f.write("""\
-[ ca ]
-default_ca = CA_default
-
-[ CA_default ]
-dir = .
-certs = $dir/certs
-crl_dir = $dir/crl
-database = $dir/index.txt
-unique_subject = no
-new_certs_dir = $dir
-certificate = $dir/ca.cert.pem
-private_key = $dir/ca.key.pem
-serial = $dir/serial
-crlnumber = $dir/crlnumber
-crl = $dir/crl.pem
-RANDFILE = $dir/private/.rand
-name_opt = ca_default
-cert_opt = ca_default
-default_days = 1825
-default_crl_days = 30
-default_md = sha256
-preserve = no
-policy = policy_match
-x509_extensions = local_ca_extensions
-#
-#
-# Copy extensions specified in the certificate request
-#
-copy_extensions = copy
-
-[ policy_match ]
-countryName = optional
-stateOrProvinceName = optional
-organizationName = optional
-organizationalUnitName = optional
-commonName = supplied
-emailAddress = optional
-
-#
-#
-# x509 extensions to use when generating server certificates.
-#
-[ local_ca_extensions ]
-basicConstraints = CA:false
-
-[ req ]
-prompt = no
-distinguished_name = req_distinguished_name
-string_mask = utf8only
-x509_extensions = root_ca_extensions
-
-[ req_distinguished_name ]
-commonName = sros2testCA
-
-[ root_ca_extensions ]
-basicConstraints = CA:true
-""")
+def _write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
+    with open(cert_path, 'wb') as f:
+        f.write(cert.public_bytes(encoding=encoding))
 
 
-def run_shell_command(cmd, in_path=None):
-    print('running command in path [%s]: %s' % (in_path, cmd))
-    subprocess.call(cmd, shell=True, cwd=in_path)
+def create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
+    cert, private_key = _build_key_and_cert(
+        x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)]),
+        ca=True)
 
-
-def create_ecdsa_param_file(path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command('%s ecparam -name prime256v1 > %s' % (openssl_executable, path))
-
-
-def create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s req -nodes -x509 -days 3650 -newkey ec:%s -keyout %s -out %s -config %s' %
-        (openssl_executable, ecdsa_param_path, ca_key_path, ca_cert_path, ca_conf_path))
+    _write_key(private_key, ca_key_out_path)
+    _write_cert(cert, ca_cert_out_path)
 
 
 def create_governance_file(path, domain_id):
@@ -221,14 +138,6 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
-def create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path):
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (openssl_executable, gov_path, signed_gov_path, ca_cert_path, ca_key_path))
-
-
 def create_keystore(keystore_path):
     if not os.path.exists(keystore_path):
         print('creating directory: %s' % keystore_path)
@@ -236,25 +145,12 @@ def create_keystore(keystore_path):
     else:
         print('directory already exists: %s' % keystore_path)
 
-    ca_conf_path = os.path.join(keystore_path, 'ca_conf.cnf')
-    if not os.path.isfile(ca_conf_path):
-        print('creating CA file: %s' % ca_conf_path)
-        create_ca_conf_file(ca_conf_path)
-    else:
-        print('found CA conf file, not writing a new one!')
-
-    ecdsa_param_path = os.path.join(keystore_path, 'ecdsaparam')
-    if not os.path.isfile(ecdsa_param_path):
-        print('creating ECDSA param file: %s' % ecdsa_param_path)
-        create_ecdsa_param_file(ecdsa_param_path)
-    else:
-        print('found ECDSA param file, not writing a new one!')
-
     ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+
     if not (os.path.isfile(ca_key_path) and os.path.isfile(ca_cert_path)):
         print('creating new CA key/cert pair')
-        create_ca_key_cert(ecdsa_param_path, ca_conf_path, ca_key_path, ca_cert_path)
+        create_ca_key_cert(ca_key_path, ca_cert_path)
     else:
         print('found CA key and cert, not creating new ones!')
 
@@ -271,21 +167,9 @@ def create_keystore(keystore_path):
     signed_gov_path = os.path.join(keystore_path, 'governance.p7s')
     if not os.path.isfile(signed_gov_path):
         print('creating signed governance file: %s' % signed_gov_path)
-        create_signed_governance_file(signed_gov_path, gov_path, ca_cert_path, ca_key_path)
+        _create_smime_signed_file(ca_cert_path, ca_key_path, gov_path, signed_gov_path)
     else:
         print('found signed governance file, not creating a new one!')
-
-    # create index file
-    index_path = os.path.join(keystore_path, 'index.txt')
-    if not os.path.isfile(index_path):
-        with open(index_path, 'a'):
-            pass
-
-    # create serial file
-    serial_path = os.path.join(keystore_path, 'serial')
-    if not os.path.isfile(serial_path):
-        with open(serial_path, 'w') as f:
-            f.write('1000')
 
     print('all done! enjoy your keystore in %s' % keystore_path)
     print('cheers!')
@@ -293,13 +177,11 @@ def create_keystore(keystore_path):
 
 
 def is_valid_keystore(path):
-    res = os.path.isfile(os.path.join(path, 'ca_conf.cnf'))
-    res &= os.path.isfile(os.path.join(path, 'ecdsaparam'))
-    res &= os.path.isfile(os.path.join(path, 'index.txt'))
-    res &= os.path.isfile(os.path.join(path, 'ca.key.pem'))
-    res &= os.path.isfile(os.path.join(path, 'ca.cert.pem'))
-    res &= os.path.isfile(os.path.join(path, 'governance.p7s'))
-    return res
+    return (
+        os.path.isfile(os.path.join(path, 'ca.key.pem')) and
+        os.path.isfile(os.path.join(path, 'ca.cert.pem')) and
+        os.path.isfile(os.path.join(path, 'governance.p7s'))
+    )
 
 
 def is_key_name_valid(name):
@@ -317,43 +199,7 @@ def is_key_name_valid(name):
         return False
 
 
-def create_request_file(path, name):
-    with open(path, 'w') as f:
-        f.write("""\
-prompt = no
-string_mask = utf8only
-distinguished_name = req_distinguished_name
-
-[ req_distinguished_name ]
-commonName = %s
-""" % name)
-
-
-def create_key_and_cert_req(root, relative_path, cnf_path, ecdsa_param_path, key_path, req_path):
-    key_relpath = os.path.join(relative_path, 'key.pem')
-    ecdsa_param_relpath = os.path.join(relative_path, 'ecdsaparam')
-    cnf_relpath = os.path.join(relative_path, 'request.cnf')
-    key_relpath = os.path.join(relative_path, 'key.pem')
-    req_relpath = os.path.join(relative_path, 'req.pem')
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s req -nodes -new -newkey ec:%s -config %s -keyout %s -out %s' %
-        (openssl_executable, ecdsa_param_relpath, cnf_relpath, key_relpath, req_relpath), root)
-
-
-def create_cert(root_path, relative_path):
-    req_relpath = os.path.join(relative_path, 'req.pem')
-    cert_relpath = os.path.join(relative_path, 'cert.pem')
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s ca -batch -create_serial -config ca_conf.cnf -days 3650 -in %s -out %s' %
-        (openssl_executable, req_relpath, cert_relpath), root_path)
-
-
 def create_permission_file(path, domain_id, policy_element):
-
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
@@ -397,16 +243,6 @@ def get_policy_from_tree(name, policy_tree):
     return policy_element
 
 
-def create_signed_permissions_file(
-        permissions_path, signed_permissions_path, ca_cert_path, ca_key_path):
-
-    openssl_executable = find_openssl_executable()
-    check_openssl_version(openssl_executable)
-    run_shell_command(
-        '%s smime -sign -in %s -text -out %s -signer %s -inkey %s' %
-        (openssl_executable, permissions_path, signed_permissions_path, ca_cert_path, ca_key_path))
-
-
 def create_permission(keystore_path, identity, policy_file_path):
     policy_element = get_policy(identity, policy_file_path)
     create_permissions_from_policy_element(keystore_path, identity, policy_element)
@@ -424,9 +260,8 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    create_signed_permissions_file(
-        permissions_path, signed_permissions_path,
-        keystore_ca_cert_path, keystore_ca_key_path)
+    _create_smime_signed_file(
+        keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
 
 def create_key(keystore_path, identity):
@@ -442,6 +277,7 @@ def create_key(keystore_path, identity):
     os.makedirs(key_dir, exist_ok=True)
 
     # copy the CA cert in there
+    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
     dest_identity_ca_cert_path = os.path.join(key_dir, 'identity_ca.cert.pem')
     dest_permissions_ca_cert_path = os.path.join(key_dir, 'permissions_ca.cert.pem')
@@ -453,38 +289,14 @@ def create_key(keystore_path, identity):
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     shutil.copyfile(keystore_governance_path, dest_governance_path)
 
-    ecdsa_param_path = os.path.join(key_dir, 'ecdsaparam')
-    if not os.path.isfile(ecdsa_param_path):
-        print('creating ECDSA param file: %s' % ecdsa_param_path)
-        create_ecdsa_param_file(ecdsa_param_path)
-    else:
-        print('found ECDSA param file, not writing a new one!')
-
-    cnf_path = os.path.join(key_dir, 'request.cnf')
-    if not os.path.isfile(cnf_path):
-        create_request_file(cnf_path, identity)
-    else:
-        print('config file exists, not creating a new one: %s' % cnf_path)
-
-    key_path = os.path.join(key_dir, 'key.pem')
-    req_path = os.path.join(key_dir, 'req.pem')
-    if not os.path.isfile(key_path) or not os.path.isfile(req_path):
-        print('creating key and cert request')
-        create_key_and_cert_req(
-            keystore_path,
-            relative_path,
-            cnf_path,
-            ecdsa_param_path,
-            key_path, req_path)
-    else:
-        print('found key and cert req; not creating new ones!')
-
     cert_path = os.path.join(key_dir, 'cert.pem')
-    if not os.path.isfile(cert_path):
-        print('creating cert')
-        create_cert(keystore_path, relative_path)
+    key_path = os.path.join(key_dir, 'key.pem')
+    if not os.path.isfile(cert_path) or not os.path.isfile(key_path):
+        print('creating cert and key')
+        _create_key_and_cert(
+            keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path)
     else:
-        print('found cert; not creating a new one!')
+        print('found cert and key; not creating new ones!')
 
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
@@ -502,9 +314,8 @@ def create_key(keystore_path, identity):
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    create_signed_permissions_file(
-        permissions_path, signed_permissions_path,
-        keystore_ca_cert_path, keystore_ca_key_path)
+    _create_smime_signed_file(
+        keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
     return True
 
@@ -552,6 +363,119 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
             create_permissions_from_policy_element(
                 keystore_path, identity_name, policy_element)
     return True
+
+
+def _sign_bytes(cert, key, byte_string):
+    # Using two flags here to get the output required:
+    #   - PKCS7_DETACHED: Use cleartext signing
+    #   - PKCS7_TEXT: Set the MIME headers for text/plain
+    flags = SSLBinding.lib.PKCS7_DETACHED
+    flags |= SSLBinding.lib.PKCS7_TEXT
+
+    # Convert the byte string into a buffer for SSL
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        pkcs7 = SSLBinding.lib.PKCS7_sign(
+            cert._x509, key._evp_pkey, SSLBinding.ffi.NULL, bio_in, flags)
+    finally:
+        # Free the memory allocated for the buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    # PKCS7_sign consumes the buffer; allocate a new one again to get it into the final document
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        # Allocate a buffer for the output document
+        bio_out = SSLBinding.lib.BIO_new(SSLBinding.lib.BIO_s_mem())
+        try:
+            # Write the final document out to the buffer
+            SSLBinding.lib.SMIME_write_PKCS7(bio_out, pkcs7, bio_in, flags)
+
+            # Copy the output document back to python-managed memory
+            result_buffer = SSLBinding.ffi.new('char**')
+            buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
+            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
+        finally:
+            # Free the memory required for the output buffer
+            SSLBinding.lib.BIO_free(bio_out)
+    finally:
+        # Free the memory allocated for the input buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    return output
+
+
+def _create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
+    # Load the CA cert and key from disk
+    with open(cert_path, 'rb') as cert_file:
+        cert = x509.load_pem_x509_certificate(
+            cert_file.read(), cryptography_backend())
+
+    with open(key_path, 'rb') as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(), None, cryptography_backend())
+
+    # Get the contents of the unsigned file, which we're about to sign
+    with open(unsigned_file_path, 'rb') as f:
+        content = f.read()
+
+    # Sign the contents, and write the result to the appropriate place
+    with open(signed_file_path, 'wb') as f:
+        f.write(_sign_bytes(cert, private_key, content))
+
+
+def _build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
+    if not issuer_name:
+        issuer_name = subject_name
+
+    # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
+    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    if not ca_key:
+        ca_key = private_key
+
+    if ca:
+        extension = x509.BasicConstraints(ca=True, path_length=1)
+    else:
+        extension = x509.BasicConstraints(ca=False, path_length=None)
+
+    now = datetime.datetime.now()
+    builder = x509.CertificateBuilder(
+        ).issuer_name(
+            issuer_name
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            now
+        ).not_valid_after(
+            # TODO: This should not be hard-coded
+            now + datetime.timedelta(days=3650)
+        ).public_key(
+            private_key.public_key()
+        ).subject_name(
+            subject_name
+        ).add_extension(
+            extension, critical=ca
+        )
+    cert = builder.sign(ca_key, hashes.SHA256(), cryptography_backend())
+
+    return (cert, private_key)
+
+
+def _create_key_and_cert(
+        keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path):
+    # Load the CA cert and key from disk
+    with open(keystore_ca_cert_path, 'rb') as f:
+        ca_cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
+
+    with open(keystore_ca_key_path, 'rb') as f:
+        ca_key = serialization.load_pem_private_key(f.read(), None, cryptography_backend())
+
+    cert, private_key = _build_key_and_cert(
+        x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, identity)]),
+        issuer_name=ca_cert.subject,
+        ca_key=ca_key)
+
+    _write_key(private_key, key_path)
+    _write_cert(cert, cert_path)
 
 
 class PolicyBuilder(object):
