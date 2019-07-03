@@ -94,7 +94,7 @@ def test_generate_policy_services():
         assert service_request_allowed is not None
 
         services = service_reply_allowed.findall('service')
-        assert len([s for s in services if s.text == '~get_parameters']) == 1
+        assert len([s for s in services if s.text == '/get/parameters']) == 1
 
 
 def test_generate_policy_no_nodes(capsys):
