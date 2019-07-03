@@ -15,10 +15,21 @@
 import os
 
 from lxml import etree
-
 import pkg_resources
 
+from sros2 import SROS2Error
+
 POLICY_VERSION = '0.1.0'
+
+
+class PolicyError(SROS2Error):
+    pass
+
+
+class InvalidPolicyError(PolicyError):
+
+    def __init__(self, why):
+        super().__init__('Invalid SROS 2 policy: {}'.format(why))
 
 
 def get_policy_default(name):
@@ -57,17 +68,15 @@ def get_transport_template(transport, name):
         resource_name=os.path.join('policy', 'templates', transport, name))
 
 
-def load_policy(policy_file_path):
-    if not os.path.isfile(policy_file_path):
-        raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
-    policy = etree.parse(policy_file_path)
+def load_policy(source):
+    policy = etree.parse(source)
     policy.xinclude()
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')
         policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
         policy_xsd.assertValid(policy)
     except etree.DocumentInvalid as e:
-        raise RuntimeError(str(e))
+        raise InvalidPolicyError(str(e)) from e
     return policy
 
 
@@ -80,5 +89,5 @@ def dump_policy(policy, stream):
         policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
         policy_xsd.assertValid(policy)
     except etree.DocumentInvalid as e:
-        raise RuntimeError(str(e))
+        raise InvalidPolicyError(str(e)) from e
     stream.write(etree.tostring(policy, pretty_print=True).decode())

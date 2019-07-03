@@ -27,16 +27,13 @@ except ImportError:
 
 from ros2cli.node.direct import DirectNode
 from ros2cli.node.strategy import NodeStrategy
-
 from sros2.api import (
     get_node_names,
     get_publisher_info,
     get_service_info,
     get_subscriber_info,
-    PolicyBuilder,
 )
-
-from sros2.policy import dump_policy
+from sros2.policy import _expression, _permission, _policy
 
 from sros2.verb import VerbExtension
 
@@ -56,7 +53,7 @@ class GeneratePolicyVerb(VerbExtension):
             allowednames=('xml'), directories=False)
 
     def main(self, *, args):
-        builder = PolicyBuilder(args.POLICY_FILE_PATH)
+        policy = _policy.Policy(source=args.POLICY_FILE_PATH)
         node_names = []
         with NodeStrategy(args) as node:
             node_names = get_node_names(node=node, include_hidden_nodes=False)
@@ -68,20 +65,53 @@ class GeneratePolicyVerb(VerbExtension):
 
         with DirectNode(args) as node:
             for node_name in node_names:
-                profile = builder.get_profile(node_name)
+                profile = policy.get_or_create_profile(node_name.node, node_name.ns)
+
                 subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
-                if subscribe_topics:
-                    builder.add_permission(
-                        profile, 'topic', 'subscribe', 'ALLOW', subscribe_topics, node_name)
+                for topic in subscribe_topics:
+                    _add_subscribe_topic_expression(profile, node_name, topic)
+
                 publish_topics = get_publisher_info(node=node, node_name=node_name)
-                if publish_topics:
-                    builder.add_permission(
-                        profile, 'topic', 'publish', 'ALLOW', publish_topics, node_name)
+                for topic in publish_topics:
+                    _add_publish_topic_expression(profile, node_name, topic)
+
                 reply_services = get_service_info(node=node, node_name=node_name)
-                if reply_services:
-                    builder.add_permission(
-                        profile, 'service', 'reply', 'ALLOW', reply_services, node_name)
+                for service in reply_services:
+                    _add_reply_service_expression(profile, node_name, service)
 
         with open(args.POLICY_FILE_PATH, 'w') as stream:
-            dump_policy(builder.policy, stream)
+            policy.dump(stream)
         return 0
+
+
+def _add_subscribe_topic_expression(profile, node_name, topic) -> None:
+    profile.get_or_create_permission(
+        _permission.PermissionType.TOPIC, _permission.PermissionRuleType.SUBSCRIBE,
+        _permission.PermissionRuleQualifier.ALLOW
+    ).add_expression(
+        _expression.Expression.from_fields(
+            node_name.fqn, node_name.ns, _expression.ExpressionType.TOPIC, topic.fqn
+        )
+    )
+
+
+def _add_publish_topic_expression(profile, node_name, topic) -> None:
+    profile.get_or_create_permission(
+        _permission.PermissionType.TOPIC, _permission.PermissionRuleType.PUBLISH,
+        _permission.PermissionRuleQualifier.ALLOW
+    ).add_expression(
+        _expression.Expression.from_fields(
+            node_name.fqn, node_name.ns, _expression.ExpressionType.TOPIC, topic.fqn
+        )
+    )
+
+
+def _add_reply_service_expression(profile, node_name, service) -> None:
+    profile.get_or_create_permission(
+        _permission.PermissionType.SERVICE, _permission.PermissionRuleType.REPLY,
+        _permission.PermissionRuleQualifier.ALLOW
+    ).add_expression(
+        _expression.Expression.from_fields(
+            node_name.fqn, node_name.ns, _expression.ExpressionType.SERVICE, service.fqn
+        )
+    )

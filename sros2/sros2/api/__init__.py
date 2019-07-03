@@ -38,7 +38,6 @@ from sros2.policy import (
     get_transport_schema,
     get_transport_template,
     load_policy,
-    POLICY_VERSION,
 )
 
 HIDDEN_NODE_PREFIX = '_'
@@ -476,55 +475,3 @@ def _create_key_and_cert(
 
     _write_key(private_key, key_path)
     _write_cert(cert, cert_path)
-
-
-class PolicyBuilder(object):
-    """Load and modify an XML security policy."""
-    def __init__(self, policy_file_path):
-        if os.path.isfile(policy_file_path):
-            self.policy = load_policy(policy_file_path)
-        else:
-            profiles = etree.Element('profiles')
-            self.policy = etree.Element('policy')
-            self.policy.attrib['version'] = POLICY_VERSION
-            self.policy.append(profiles)
-
-    def get_profile(self, node_name):
-        profile = self.policy.find(
-            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
-                ns=node_name.ns,
-                node=node_name.node))
-        if profile is None:
-            profile = etree.Element('profile')
-            profile.attrib['ns'] = node_name.ns
-            profile.attrib['node'] = node_name.node
-            profiles = self.policy.find('profiles')
-            profiles.append(profile)
-        return profile
-
-    def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
-        permissions = profile.find(
-            path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
-                permission_type=permission_type,
-                rule_type=rule_type,
-                rule_qualifier=rule_qualifier))
-        if permissions is None:
-            permissions = etree.Element(permission_type + 's')
-            permissions.attrib[rule_type] = rule_qualifier
-            profile.append(permissions)
-        return permissions
-
-    def add_permission(
-            self, profile, permission_type, rule_type, rule_qualifier, expressions, node_name):
-        permissions = self.get_permissions(profile, permission_type, rule_type, rule_qualifier)
-        for expression in expressions:
-            permission = etree.Element(permission_type)
-            if expression.fqn.startswith(node_name.fqn + '/'):
-                permission.text = '~' + expression.fqn[len(node_name.fqn + '/'):]
-            elif expression.fqn.startswith(node_name.ns + '/'):
-                permission.text = expression.fqn[len(node_name.ns + '/'):]
-            elif expression.fqn.count('/') == 1 and node_name.ns == '/':
-                permission.text = expression.fqn[len('/'):]
-            else:
-                permission.text = expression.fqn
-            permissions.append(permission)
