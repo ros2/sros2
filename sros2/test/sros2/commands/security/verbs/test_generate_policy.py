@@ -73,8 +73,8 @@ def test_generate_policy_services():
 
         try:
             # Create a server and client
-            node.create_client(GetParameters, 'get/parameters')
-            node.create_service(GetParameters, 'get/parameters', lambda request,
+            node.create_client(GetParameters, 'service_client')
+            node.create_service(GetParameters, 'service_server', lambda request,
                                 response: response)
 
             # Generate the policy for the running node
@@ -84,7 +84,7 @@ def test_generate_policy_services():
             node.destroy_node()
             rclpy.shutdown(context=context)
 
-        # Load the policy and pull out services client/servers
+        # Load the policy and pull out allowed replies and requests
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
         profile = policy.find(path='profiles/profile[@ns="/"][@node="test_node"]')
         assert profile is not None
@@ -93,8 +93,15 @@ def test_generate_policy_services():
         service_request_allowed = profile.find(path='services[@request="ALLOW"]')
         assert service_request_allowed is not None
 
+        # Verify that the allowed replies include service_server and not service_client
         services = service_reply_allowed.findall('service')
-        assert len([s for s in services if s.text == '/get/parameters']) == 1
+        assert len([s for s in services if s.text == 'service_server']) == 1
+        assert len([s for s in services if s.text == 'service_client']) == 0
+
+        # Verify that the allowed requests include service_client and not service_server
+        services = service_request_allowed.findall('service')
+        assert len([s for s in services if s.text == 'service_client']) == 1
+        assert len([s for s in services if s.text == 'service_server']) == 0
 
 
 def test_generate_policy_no_nodes(capsys):
