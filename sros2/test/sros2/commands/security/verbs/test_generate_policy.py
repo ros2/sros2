@@ -93,6 +93,9 @@ def test_generate_policy_services():
         service_request_allowed = profile.find(path='services[@request="ALLOW"]')
         assert service_request_allowed is not None
 
+        services = service_reply_allowed.findall('service')
+        assert len([s for s in services if s.text == '~get_parameters']) == 1
+
 
 def test_generate_policy_no_nodes(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
