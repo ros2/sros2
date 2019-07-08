@@ -17,12 +17,11 @@ import tempfile
 
 import pytest
 
-from rcl_interfaces.srv import GetParameters
-
 import rclpy
 from ros2cli import cli
 from sros2.policy import load_policy
 from std_msgs.msg import String
+from std_srvs.srv import Trigger
 
 
 def test_generate_policy_topics():
@@ -73,8 +72,8 @@ def test_generate_policy_services():
 
         try:
             # Create a server and client
-            node.create_client(GetParameters, 'service_client')
-            node.create_service(GetParameters, 'service_server', lambda request,
+            node.create_client(Trigger, 'service_client')
+            node.create_service(Trigger, 'service_server', lambda request,
                                 response: response)
 
             # Generate the policy for the running node
