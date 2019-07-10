@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import random
 import tempfile
 
 import pytest
@@ -103,7 +104,15 @@ def test_generate_policy_services():
         assert len([s for s in services if s.text == 'service_server']) == 0
 
 
-def test_generate_policy_no_nodes(capsys):
+def test_generate_policy_no_nodes(capsys, monkeypatch):
+    # Make sure the domain contains no nodes by using a random domain. 54024 is a bit magical;
+    # the ROS_DOMAIN_ID is used to determine the daemon port using the following formula:
+    #
+    #   port = 11511 + ROS_DOMAIN_ID
+    #
+    # As the maximum port value is 65535, the maximum ROS_DOMAIN_ID is 54024.
+    monkeypatch.setenv('ROS_DOMAIN_ID', random.randint(1, 54024))
+
     with tempfile.TemporaryDirectory() as tmpdir:
         assert cli.main(argv=[
             'security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) != 0
