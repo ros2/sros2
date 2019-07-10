@@ -27,12 +27,15 @@ except ImportError:
 
 from ros2cli.node.direct import DirectNode
 from ros2cli.node.strategy import NodeStrategy
+
 from sros2.api import (
+    get_client_info,
     get_node_names,
     get_publisher_info,
     get_service_info,
-    get_subscriber_info,
+    get_subscriber_info
 )
+
 from sros2.policy import _expression, _permission, _policy
 
 from sros2.verb import VerbExtension
@@ -79,6 +82,10 @@ class GeneratePolicyVerb(VerbExtension):
                 for service in reply_services:
                     _add_reply_service_expression(profile, node_name, service)
 
+                request_services = get_client_info(node=node, node_name=node_name)
+                for service in request_services:
+                    _add_request_service_expression(profile, node_name, service)
+
         with open(args.POLICY_FILE_PATH, 'w') as stream:
             policy.dump(stream)
         return 0
@@ -109,6 +116,17 @@ def _add_publish_topic_expression(profile, node_name, topic) -> None:
 def _add_reply_service_expression(profile, node_name, service) -> None:
     profile.get_or_create_permission(
         _permission.PermissionType.SERVICE, _permission.PermissionRuleType.REPLY,
+        _permission.PermissionRuleQualifier.ALLOW
+    ).add_expression(
+        _expression.Expression.from_fields(
+            node_name.fqn, node_name.ns, _expression.ExpressionType.SERVICE, service.fqn
+        )
+    )
+
+
+def _add_request_service_expression(profile, node_name, service) -> None:
+    profile.get_or_create_permission(
+        _permission.PermissionType.SERVICE, _permission.PermissionRuleType.REQUEST,
         _permission.PermissionRuleQualifier.ALLOW
     ).add_expression(
         _expression.Expression.from_fields(

@@ -41,6 +41,7 @@ class PermissionRuleType(enum.Enum):
     SUBSCRIBE = 'subscribe'
     PUBLISH = 'publish'
     REPLY = 'reply'
+    REQUEST = 'request'
 
 
 @enum.unique
