@@ -31,6 +31,7 @@ class ExpressionType(enum.Enum):
     # Enum values should map to their XML values
     TOPIC = 'topic'
     SERVICE = 'service'
+    ACTION = 'action'
 
 
 class Expression:

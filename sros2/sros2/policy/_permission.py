@@ -33,6 +33,7 @@ class PermissionType(enum.Enum):
     # Enum values should map to their XML values
     TOPIC = 'topics'
     SERVICE = 'services'
+    ACTION = 'actions'
 
 
 @enum.unique
@@ -42,12 +43,15 @@ class PermissionRuleType(enum.Enum):
     PUBLISH = 'publish'
     REPLY = 'reply'
     REQUEST = 'request'
+    CALL = 'call'
+    EXECUTE = 'execute'
 
 
 @enum.unique
 class PermissionRuleQualifier(enum.Enum):
     # Enum values should map to their XML values
     ALLOW = 'ALLOW'
+    DENY = 'DENY'
 
 
 class Permission:
