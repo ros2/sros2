@@ -34,8 +34,8 @@ from sros2.policy import get_transport_schema
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def node_keys_dir(tmp_path_factory):
-    keystore_dir = str(tmp_path_factory.mktemp('keystore'))
+def node_keys_dir(tmpdir_factory):
+    keystore_dir = str(tmpdir_factory.mktemp('keystore'))
 
     # First, create the keystore
     assert create_keystore(keystore_dir)
