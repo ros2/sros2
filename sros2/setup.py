@@ -12,11 +12,11 @@ def package_files(directory):
     return paths
 
 
-extra_files = []
-extra_files.extend(package_files('sros2/policy/defaults'))
-extra_files.extend(package_files('sros2/policy/schemas'))
-extra_files.extend(package_files('sros2/policy/templates'))
-
+extra_files = (
+    package_files('sros2/policy/defaults') +
+    package_files('sros2/policy/schemas') +
+    package_files('sros2/policy/templates')
+)
 
 setup(
     name='sros2',
