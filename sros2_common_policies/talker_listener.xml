@@ -3,13 +3,15 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
   <profiles>
     <profile ns="/" node="talker">
-      <sros2_policy package="sros2_common_policies" policy="node.xml" />
+      <xi:include href="common/node.xml"
+        xpointer="xpointer(/profile/*)"/>
       <topics publish="ALLOW" >
         <topic>chatter</topic>
       </topics>
     </profile>
     <profile ns="/" node="listener">
-      <sros2_policy package="sros2_common_policies" policy="node.xml" />
+      <xi:include href="common/node.xml"
+        xpointer="xpointer(/profile/*)"/>
       <topics subscribe="ALLOW" >
         <topic>chatter</topic>
       </topics>
