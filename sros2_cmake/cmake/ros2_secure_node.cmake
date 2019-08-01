@@ -53,7 +53,6 @@ macro(ros2_secure_node)
     COMMAND ${generate_artifacts_command}
     RESULT_VARIABLE POLICY_RESULT
     ERROR_VARIABLE POLICY_ERROR
-    OUTPUT_QUIET
   )
   if(NOT ${POLICY_RESULT} EQUAL 0)
     message("Failed to generate security artifacts")
