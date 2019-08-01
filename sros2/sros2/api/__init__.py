@@ -256,7 +256,7 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     domain_id = os.getenv(DOMAIN_ID_ENV, '0')
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = os.path.join(keystore_path, relative_path)
-    print('key_dir %s' % key_dir)
+    print("creating permission file for identity: '%s'" % identity)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, domain_id, policy_element)
 
