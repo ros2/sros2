@@ -360,8 +360,9 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
         profiles_element = policy_tree.find('profiles')
         for profile in profiles_element:
             identity_name = profile.get('ns').rstrip('/') + '/' + profile.get('node')
-            if not create_key(keystore_path, identity_name):
-                return False
+            if identity_name not in identity_names:
+                if not create_key(keystore_path, identity_name):
+                    return False
             policy_element = get_policy_from_tree(identity_name, policy_tree)
             create_permissions_from_policy_element(
                 keystore_path, identity_name, policy_element)
