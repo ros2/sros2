@@ -1,5 +1,4 @@
 # Include python abstractions needed for ros with python
-#include <ros/node>
 #include <abstractions/python>
 
 # CHECKME: Which are general for other languages?
