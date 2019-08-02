@@ -1,0 +1,3 @@
+# The following is a space-separated list of where additional ros install
+# directories are stored. Directories added here are appended to @{ROS_INSTALL}.
+@{ROS_INSTALL}=/opt/ros/*
