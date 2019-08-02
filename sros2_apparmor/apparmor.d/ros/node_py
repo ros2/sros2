@@ -1,0 +1,3 @@
+# Include most abstractions needed for ros nodes
+#include <ros/node.d>
+#include <ros/python.d>

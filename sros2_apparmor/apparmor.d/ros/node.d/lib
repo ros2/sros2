@@ -1,0 +1,2 @@
+# Include most libraries needed for ros nodes
+@{ROS_INSTALL_LIB}/lib*.so* mr,

@@ -1,0 +1,2 @@
+# Include networking abstractions needed for ros nodes
+#include <abstractions/nameservice>

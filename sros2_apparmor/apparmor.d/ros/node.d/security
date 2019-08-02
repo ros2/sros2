@@ -1,0 +1,4 @@
+# Include security abstractions needed for ros
+
+# Allow OpenSSL
+/etc/ssl/openssl.cnf r,
