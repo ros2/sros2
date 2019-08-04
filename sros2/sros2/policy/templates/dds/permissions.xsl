@@ -235,7 +235,7 @@
         </xsl:call-template>
       </xsl:variable>
       <xsl:variable name="_name" select="substring($name, 2)"/>
-      <xsl:value-of select="concat($_ns, $node, '/', $_name)"/>
+      <xsl:value-of select="concat($_ns, $node, $_name)"/>
     </xsl:when>
     <xsl:otherwise>
       <xsl:variable name="_ns">

@@ -104,7 +104,7 @@ class GeneratePolicyVerb(VerbExtension):
         for expression in expressions:
             permission = etree.Element(permission_type)
             if expression.fqn.startswith(node_name.fqn + '/'):
-                permission.text = '~' + expression.fqn[len(node_name.fqn + '/'):]
+                permission.text = '~' + expression.fqn[len(node_name.fqn):]
             elif expression.fqn.startswith(node_name.ns + '/'):
                 permission.text = expression.fqn[len(node_name.ns + '/'):]
             elif expression.fqn.count('/') == 1 and node_name.ns == '/':
