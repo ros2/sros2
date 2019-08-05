@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
+  extension-element-prefixes="func"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:func="http://exslt.org/functions"
+  xmlns:local="http://example.com/nss/dummy"
   xmlns:ros="http://www.ros.org/"
-  xmlns:ext="http://exslt.org/common" exclude-result-prefixes="ext ros">
+  xmlns:ext="http://exslt.org/common" exclude-result-prefixes="ext ros xs xsl local">
 <xsl:output omit-xml-declaration="yes" indent="yes"/>
 <xsl:strip-space elements="*"/>
 
@@ -50,6 +54,56 @@
   </permissions>
 </ros:topic>
 
+
+<xsl:template match="@* | node()" mode="deduplicate">
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()" mode="deduplicate"/>
+  </xsl:copy>
+</xsl:template>
+
+
+<xsl:key name="actions_equal" match="profile/actions" use=" concat(
+    generate-id(..), '|',
+    @call, '|',
+    @excute, '|',
+    .)"/>
+<xsl:template mode="deduplicate" match="
+  profile/actions[not(generate-id() =
+  generate-id(key('actions_equal', concat(
+    generate-id(..), '|',
+    @call, '|',
+    @excute, '|',
+    .))[1]))]"/>
+
+
+<xsl:key name="services_equal" match="profile/services" use=" concat(
+    generate-id(..), '|',
+    @reply, '|',
+    @request, '|',
+    .)"/>
+<xsl:template mode="deduplicate" match="
+  profile/services[not(generate-id() =
+  generate-id(key('services_equal', concat(
+    generate-id(..), '|',
+    @reply, '|',
+    @request, '|',
+    .))[1]))]"/>
+
+
+<xsl:key name="topics_equal" match="profile/topics" use=" concat(
+    generate-id(..), '|',
+    @publish, '|',
+    @subscribe, '|',
+    .)"/>
+<xsl:template mode="deduplicate" match="
+  profile/topics[not(generate-id() =
+  generate-id(key('topics_equal', concat(
+    generate-id(..), '|',
+    @publish, '|',
+    @subscribe, '|',
+    .))[1]))]"/>
+
+
 <xsl:variable name="policy_version" select="'0.1.0'"/>
 <xsl:template match="/polciy/profiles">
   <xsl:variable name="policy">
@@ -86,10 +140,15 @@
     </policy>
   </xsl:variable>
 
- <xsl:apply-templates mode="sort"
-   select="ext:node-set($policy)"/>
-</xsl:template>
+  <xsl:variable name="policy_deduplicated">
+    <xsl:apply-templates mode="deduplicate"
+      select="ext:node-set($policy)"/>
+  </xsl:variable>
 
+
+ <xsl:apply-templates mode="sort"
+   select="ext:node-set($policy_deduplicated)"/>
+</xsl:template>
 
 <xsl:template name="TranslatePermissions">
   <xsl:param name="qualifier"/>
@@ -308,11 +367,11 @@
 </xsl:template>
 
 
-<xsl:template match="@*|node()" mode="sort">
+<!-- <xsl:template match="@*|node()" mode="sort">
   <xsl:copy>
     <xsl:apply-templates select="@*|node()" mode="sort"/>
   </xsl:copy>
-</xsl:template>
+</xsl:template> -->
 
 
 <!-- <xsl:key name="actions_by_permissions" match="actions" use="
@@ -337,5 +396,43 @@
       </xsl:copy>
   </xsl:if>
 </xsl:template> -->
+
+<xsl:template match="@*|node()" mode="sort">
+  <xsl:copy>
+    <xsl:apply-templates select="@*" mode="sort">
+      <xsl:sort select="local-name()"/>
+      <xsl:sort select="."/>
+    </xsl:apply-templates>
+    <xsl:apply-templates select="node()" mode="sort">
+      <xsl:sort select="local-name()"/>
+      <xsl:sort select="local:key2(.)"/>
+      <xsl:sort select="local:key3(.)"/>
+      <xsl:sort select="." data-type="number"/>
+    </xsl:apply-templates>
+  </xsl:copy>
+</xsl:template>
+
+<func:function name="local:key2" mode="sort">
+  <xsl:param name="e" select="."/>
+
+  <func:result>
+    <xsl:for-each select="$e/@*">
+      <xsl:sort select="local-name()"/>
+      <xsl:sort select="string()"/>
+      <xsl:value-of select="concat(local-name(), ' ')"/>
+    </xsl:for-each>
+  </func:result>
+</func:function>
+
+<func:function name="local:key3" mode="sort">
+  <xsl:param name="e" select="."/>
+  <func:result>
+    <xsl:for-each select="$e/@*">
+      <xsl:sort select="local-name()"/>
+      <xsl:sort select="string()"/>
+      <xsl:value-of select="concat(string(), ' ')"/>
+    </xsl:for-each>
+  </func:result>
+</func:function>
 
 </xsl:stylesheet>
