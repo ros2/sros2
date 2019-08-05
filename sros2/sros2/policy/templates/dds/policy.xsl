@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:ros="http://www.ros.org/"
+  xmlns:ext="http://exslt.org/common" exclude-result-prefixes="ext ros">
+<xsl:output omit-xml-declaration="yes" indent="yes"/>
+<xsl:strip-space elements="*"/>
+
+<ros:action>
+  <mappings>
+    <mapping type="reply"    prefix="rr"  suffix="/_action/cancel_goalReply"/>
+    <mapping type="reply"    prefix="rr"  suffix="/_action/get_resultReply"/>
+    <mapping type="reply"    prefix="rr"  suffix="/_action/send_goalReply"/>
+    <mapping type="request"  prefix="rq"  suffix="/_action/cancel_goalRequest"/>
+    <mapping type="request"  prefix="rq"  suffix="/_action/get_resultRequest"/>
+    <mapping type="request"  prefix="rq"  suffix="/_action/send_goalRequest"/>
+    <mapping type="feedback" prefix="rt"  suffix="/_action/feedback"/>
+    <mapping type="status"   prefix="rt"  suffix="/_action/status"/>
+  </mappings>
+  <permissions>
+    <permission kind="publish"   type="feedback" rule="excute"/>
+    <permission kind="subscribe" type="feedback" rule="call"/>
+    <permission kind="publish"   type="reply"    rule="excute"/>
+    <permission kind="subscribe" type="reply"    rule="call"/>
+    <permission kind="publish"   type="request"  rule="call"/>
+    <permission kind="subscribe" type="request"  rule="excute"/>
+    <permission kind="publish"   type="status"   rule="excute"/>
+    <permission kind="subscribe" type="status"   rule="call"/>
+  </permissions>
+</ros:action>
+<ros:service>
+  <mappings>
+    <mapping type="reply"    prefix="rr"  suffix="Reply"/>
+    <mapping type="request"  prefix="rq"  suffix="Request"/>
+  </mappings>
+  <permissions>
+    <permission kind="publish"   type="reply"    rule="reply"/>
+    <permission kind="subscribe" type="reply"    rule="request"/>
+    <permission kind="publish"   type="request"  rule="request"/>
+    <permission kind="subscribe" type="request"  rule="reply"/>
+  </permissions>
+</ros:service>
+<ros:topic>
+  <mappings>
+    <mapping type="topic"    prefix="rt"  suffix=""/>
+  </mappings>
+  <permissions>
+    <permission kind="publish"   type="topic"    rule="publish"/>
+    <permission kind="subscribe" type="topic"    rule="subscribe"/>
+  </permissions>
+</ros:topic>
+
+<xsl:variable name="policy_version" select="'0.1.0'"/>
+<xsl:template match="/polciy/profiles">
+  <xsl:variable name="policy">
+    <policy version="{$policy_version}">
+      <profiles>
+        <xsl:for-each select="profile">
+          <xsl:sort select="profile"/>
+          <profile ns="{@ns}" node="{@node}">
+            <xsl:variable name="_ns">
+              <xsl:call-template name="DelimitNamespace">
+                <xsl:with-param name="ns" select="@ns"/>
+              </xsl:call-template>
+            </xsl:variable>
+            <xsl:variable name="_fqn">
+            <xsl:value-of select="concat($_ns, @node)"/>
+            </xsl:variable>
+            <xsl:if test="./*[@* = 'DENY']">
+              <xsl:for-each select="./*[@* = 'DENY']">
+                <xsl:call-template name="TranslatePermissions">
+                <xsl:with-param name="qualifier" select="'DENY'"/>
+                </xsl:call-template>
+              </xsl:for-each>
+            </xsl:if>
+            <xsl:if test="./*[@* = 'ALLOW']">
+              <xsl:for-each select="./*[@* = 'ALLOW']">
+                <xsl:call-template name="TranslatePermissions">
+                <xsl:with-param name="qualifier" select="'ALLOW'"/>
+                </xsl:call-template>
+              </xsl:for-each>
+            </xsl:if>
+          </profile>
+        </xsl:for-each>
+      </profiles>
+    </policy>
+  </xsl:variable>
+
+ <xsl:apply-templates mode="sort"
+   select="ext:node-set($policy)"/>
+</xsl:template>
+
+
+<xsl:template name="TranslatePermissions">
+  <xsl:param name="qualifier"/>
+
+  <xsl:if test="@publish = $qualifier">
+    <xsl:call-template name="dds_topics">
+      <xsl:with-param name="kind" select="'publish'"/>
+      <xsl:with-param name="qualifier" select="$qualifier"/>
+    </xsl:call-template>
+  </xsl:if>
+  <xsl:if test="@subscribe = $qualifier">
+    <xsl:call-template name="dds_topics">
+      <xsl:with-param name="kind" select="'subscribe'"/>
+      <xsl:with-param name="qualifier" select="$qualifier"/>
+    </xsl:call-template>
+  </xsl:if>
+</xsl:template>
+
+
+<xsl:template name="dds_topics">
+  <xsl:param name="kind"/>
+  <xsl:param name="qualifier"/>
+
+  <xsl:for-each select="dds_topic">
+    <xsl:variable name="dds_topic_" select="text()" />
+    <xsl:variable name="prefix" select="substring-before($dds_topic_, '/')" />
+    <xsl:variable name="_dds_topic" select="substring-after($dds_topic_, $prefix)" />
+
+    <xsl:variable name="actions_"
+      select="document('')/xsl:stylesheet/
+        ros:action/mappings/mapping[@prefix=$prefix]" />
+    <xsl:variable name="services_"
+      select="document('')/xsl:stylesheet/
+        ros:service/mappings/mapping[@prefix=$prefix]" />
+    <xsl:variable name="topics_"
+      select="document('')/xsl:stylesheet/
+        ros:topic/mappings/mapping[@prefix=$prefix]" />
+
+      <xsl:variable name="action_match">      
+        <xsl:for-each select="$actions_">
+          <xsl:variable name="suffix" select="
+            substring($_dds_topic,
+            string-length($_dds_topic) - string-length(@suffix) +1)" />
+          <xsl:if test="$suffix = @suffix">
+            <xsl:variable name="object" select="substring($_dds_topic, 1, 
+                  string-length($_dds_topic) - string-length($suffix))" />
+            <xsl:call-template name="actions">
+              <xsl:with-param name="action" select="$object"/>
+              <xsl:with-param name="kind" select="$kind"/>
+              <xsl:with-param name="type" select="
+              $actions_[@prefix=$prefix and @suffix=$suffix]/@type"/>
+              <xsl:with-param name="qualifier" select="$qualifier"/>
+            </xsl:call-template>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:variable>
+      
+      <xsl:variable name="service_match">      
+        <xsl:for-each select="$services_">
+          <xsl:variable name="suffix" select="
+            substring($_dds_topic,
+            string-length($_dds_topic) - string-length(@suffix) +1)" />
+          <xsl:if test="$suffix = @suffix">
+            <xsl:variable name="object" select="substring($_dds_topic, 1, 
+                  string-length($_dds_topic) - string-length($suffix))" />
+            <xsl:call-template name="services">
+              <xsl:with-param name="service" select="$object"/>
+              <xsl:with-param name="kind" select="$kind"/>
+              <xsl:with-param name="type" select="
+              $services_[@prefix=$prefix and @suffix=$suffix]/@type"/>
+              <xsl:with-param name="qualifier" select="$qualifier"/>
+            </xsl:call-template>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:variable>
+      
+      <xsl:variable name="topic_match">      
+        <xsl:for-each select="$topics_">
+          <xsl:call-template name="topics">
+            <xsl:with-param name="topic" select="$_dds_topic"/>
+            <xsl:with-param name="kind" select="$kind"/>
+            <xsl:with-param name="type" select="
+            $topics_[@prefix=$prefix and @suffix='']/@type"/>
+            <xsl:with-param name="qualifier" select="$qualifier"/>
+          </xsl:call-template>
+        </xsl:for-each>
+      </xsl:variable>
+
+    <xsl:choose>
+      <xsl:when test="$action_match != ''">
+        <xsl:apply-templates mode="sort"
+          select="ext:node-set($action_match)"/>
+      </xsl:when>
+      <xsl:when test="$service_match != ''">
+        <xsl:apply-templates mode="sort"
+          select="ext:node-set($service_match)"/>
+      </xsl:when>
+      <xsl:when test="$topic_match != ''">
+        <xsl:apply-templates mode="sort"
+          select="ext:node-set($topic_match)"/>
+      </xsl:when>
+    </xsl:choose>
+  </xsl:for-each>
+</xsl:template>
+
+
+<xsl:template name="actions">
+  <xsl:param name="action"/>
+  <xsl:param name="kind"/>
+  <xsl:param name="type"/>
+  <xsl:param name="qualifier"/>
+
+  <xsl:variable name="action_permissions"
+  select="document('')/xsl:stylesheet/
+    ros:action/permissions/permission" />
+  <xsl:variable name="rule" select="
+    document('')/xsl:stylesheet/
+    ros:action/permissions/permission[@kind=$kind and @type=$type]/@rule"/>
+
+  <actions>
+    <xsl:attribute name="{$rule}">
+      <xsl:value-of select="$qualifier"/>
+    </xsl:attribute>
+    <action>
+      <xsl:value-of select="$action"/>
+    </action>
+  </actions>
+</xsl:template>
+
+
+<xsl:template name="services">
+  <xsl:param name="service"/>
+  <xsl:param name="kind"/>
+  <xsl:param name="type"/>
+  <xsl:param name="qualifier"/>
+
+  <xsl:variable name="service_permissions"
+  select="document('')/xsl:stylesheet/
+    ros:service/permissions/permission" />
+  <xsl:variable name="rule" select="
+    document('')/xsl:stylesheet/
+    ros:service/permissions/permission[@kind=$kind and @type=$type]/@rule"/>
+
+  <services>
+    <xsl:attribute name="{$rule}">
+      <xsl:value-of select="$qualifier"/>
+    </xsl:attribute>
+    <service>
+      <xsl:value-of select="$service"/>
+    </service>
+  </services>
+</xsl:template>
+
+
+<xsl:template name="topics">
+  <xsl:param name="topic"/>
+  <xsl:param name="kind"/>
+  <xsl:param name="type"/>
+  <xsl:param name="qualifier"/>
+
+  <xsl:variable name="topic_permissions"
+  select="document('')/xsl:stylesheet/
+    ros:topic/permissions/permission" />
+  <xsl:variable name="rule" select="
+    document('')/xsl:stylesheet/
+    ros:topic/permissions/permission[@kind=$kind and @type=$type]/@rule"/>
+
+  <topics>
+    <xsl:attribute name="{$rule}">
+      <xsl:value-of select="$qualifier"/>
+    </xsl:attribute>
+    <topic>
+      <xsl:value-of select="$topic"/>
+    </topic>
+  </topics>
+</xsl:template>
+
+
+<xsl:template match="topic | service | action" mode="sort">
+  <xsl:variable name="ns" select="../../@ns"/>
+  <xsl:variable name="node" select="../../@node"/>
+  <xsl:variable name="name" select="."/>
+  <xsl:variable name="_ns">
+    <xsl:call-template name="DelimitNamespace">
+      <xsl:with-param name="ns" select="$ns"/>
+    </xsl:call-template>
+  </xsl:variable>
+  <xsl:variable name="_fqn" select="concat($_ns, $node, '/')"/>
+
+  <xsl:copy>
+    <xsl:choose>
+      <xsl:when test="starts-with($name, $_fqn)">
+        <xsl:value-of select="concat('~/', substring-after($name, $_fqn))"/>
+      </xsl:when>
+      <xsl:when test="starts-with($name, $_ns)">
+        <xsl:value-of select="substring-after($name, $_ns)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$name"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:copy>
+</xsl:template>
+
+
+<xsl:template name="DelimitNamespace">
+  <xsl:param name="ns"/>
+  <xsl:choose>
+    <xsl:when test="substring($ns, string-length($ns), 1) = '/'">
+      <xsl:value-of select="$ns"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="concat($ns, '/')"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+
+<xsl:template match="@*|node()" mode="sort">
+  <xsl:copy>
+    <xsl:apply-templates select="@*|node()" mode="sort"/>
+  </xsl:copy>
+</xsl:template>
+
+
+<!-- <xsl:key name="actions_by_permissions" match="actions" use="
+  concat(generate-id(parent::*), '+', @call, '+', @excute)"/>
+<xsl:template match="actions" mode="sort">
+  <xsl:if test="generate-id()=generate-id(key('actions_by_permissions',
+    concat(generate-id(parent::*), '+', @call, '+', @excute))[1])">
+      <xsl:copy>
+        <xsl:apply-templates select="@*|node()" mode="sort"/>
+      </xsl:copy>
+  </xsl:if>
+</xsl:template> -->
+
+
+<!-- <xsl:key name="topics_by_permissions" match="topics" use="
+  concat(generate-id(parent::*), '+', @publish, '+', @subscribe)"/>
+<xsl:template match="topics" mode="sort">
+  <xsl:if test="generate-id()=generate-id(key('topics_by_permissions',
+    concat(generate-id(parent::*), '+', @publish, '+', @subscribe))[1])">
+      <xsl:copy>
+        <xsl:apply-templates select="@*|node()" mode="sort"/>
+      </xsl:copy>
+  </xsl:if>
+</xsl:template> -->
+
+</xsl:stylesheet>
