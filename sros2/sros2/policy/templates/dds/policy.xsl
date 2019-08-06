@@ -239,19 +239,25 @@
 
     <xsl:choose>
       <xsl:when test="$action_match != ''">
-        <xsl:apply-templates mode="sort"
+        <xsl:apply-templates mode="substitute"
           select="ext:node-set($action_match)"/>
       </xsl:when>
       <xsl:when test="$service_match != ''">
-        <xsl:apply-templates mode="sort"
+        <xsl:apply-templates mode="substitute"
           select="ext:node-set($service_match)"/>
       </xsl:when>
       <xsl:when test="$topic_match != ''">
-        <xsl:apply-templates mode="sort"
+        <xsl:apply-templates mode="substitute"
           select="ext:node-set($topic_match)"/>
       </xsl:when>
     </xsl:choose>
   </xsl:for-each>
+</xsl:template>
+
+<xsl:template match="@*|node()" mode="substitute">
+  <xsl:copy>
+    <xsl:apply-templates select="@*|node()" mode="substitute"/>
+  </xsl:copy>
 </xsl:template>
 
 
@@ -324,6 +330,13 @@
       <xsl:value-of select="$topic"/>
     </topic>
   </topics>
+</xsl:template>
+
+
+<xsl:template match="@* | node()" mode="namespace">
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()" mode="namespace"/>
+  </xsl:copy>
 </xsl:template>
 
 
