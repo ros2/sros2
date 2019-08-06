@@ -104,6 +104,69 @@
     .))[1]))]"/>
 
 
+<xsl:template match="@* | node()" mode="compress">
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()" mode="compress"/>
+  </xsl:copy>
+</xsl:template>
+
+<xsl:key name="actions_compatible" match="actions" use="concat(
+  @call, '|',
+  @excute)"/>
+<xsl:key name="services_compatible" match="services" use="concat(
+  @reply, '|',
+  @request)"/>
+<xsl:key name="topics_compatible" match="topics" use="concat(
+  @puplish, '|',
+  @subscribe)"/>
+
+<xsl:template mode="compress" match="profile">
+  <xsl:copy>
+    <xsl:copy-of select="@*" />
+    <xsl:apply-templates mode="sibling-recurse" select="
+      actions[generate-id(.) = generate-id(key('actions_compatible', concat(
+      @call, '|',
+      @excute)))]"/>
+    <xsl:apply-templates mode="sibling-recurse" select="
+      services[generate-id(.) = generate-id(key('services_compatible', concat(
+      @reply, '|',
+      @request)))]"/>
+    <xsl:apply-templates mode="sibling-recurse" select="
+      topics[generate-id(.) = generate-id(key('topics_compatible', concat(
+      @puplish, '|',
+      @subscribe)))]"/>
+  </xsl:copy>
+</xsl:template>
+
+<xsl:template match="actions" mode="sibling-recurse">
+  <xsl:copy>
+    <xsl:apply-templates mode="compress" select="node() | @*" />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@call = current()/@call]/node() " />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@excute = current()/@excute]/node() " />
+  </xsl:copy>
+</xsl:template>
+<xsl:template match="services" mode="sibling-recurse">
+  <xsl:copy>
+    <xsl:apply-templates mode="compress" select="node() | @*" />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@reply = current()/@reply]/node() " />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@request = current()/@request]/node() " />
+  </xsl:copy>
+</xsl:template>
+<xsl:template match="topics" mode="sibling-recurse">
+  <xsl:copy>
+    <xsl:apply-templates mode="compress" select="node() | @*" />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@puplish = current()/@puplish]/node() " />
+    <xsl:apply-templates mode="compress" select="
+      following-sibling::services[@subscribe = current()/@subscribe]/node() " />
+  </xsl:copy>
+</xsl:template>
+
+
 <xsl:variable name="policy_version" select="'0.1.0'"/>
 <xsl:template match="/polciy/profiles">
   <xsl:variable name="policy">
@@ -111,43 +174,53 @@
       <profiles>
         <xsl:for-each select="profile">
           <xsl:sort select="profile"/>
-          <profile ns="{@ns}" node="{@node}">
-            <xsl:variable name="_ns">
-              <xsl:call-template name="DelimitNamespace">
-                <xsl:with-param name="ns" select="@ns"/>
-              </xsl:call-template>
-            </xsl:variable>
-            <xsl:variable name="_fqn">
-            <xsl:value-of select="concat($_ns, @node)"/>
-            </xsl:variable>
-            <xsl:if test="./*[@* = 'DENY']">
-              <xsl:for-each select="./*[@* = 'DENY']">
-                <xsl:call-template name="TranslatePermissions">
-                <xsl:with-param name="qualifier" select="'DENY'"/>
+          <xsl:variable name="profile">
+            <profile ns="{@ns}" node="{@node}">
+              <xsl:variable name="_ns">
+                <xsl:call-template name="DelimitNamespace">
+                  <xsl:with-param name="ns" select="@ns"/>
                 </xsl:call-template>
-              </xsl:for-each>
-            </xsl:if>
-            <xsl:if test="./*[@* = 'ALLOW']">
-              <xsl:for-each select="./*[@* = 'ALLOW']">
-                <xsl:call-template name="TranslatePermissions">
-                <xsl:with-param name="qualifier" select="'ALLOW'"/>
-                </xsl:call-template>
-              </xsl:for-each>
-            </xsl:if>
-          </profile>
+              </xsl:variable>
+              <xsl:variable name="_fqn">
+                <xsl:value-of select="concat($_ns, @node)"/>
+              </xsl:variable>
+              <xsl:if test="./*[@* = 'DENY']">
+                <xsl:for-each select="./*[@* = 'DENY']">
+                  <xsl:call-template name="TranslatePermissions">
+                  <xsl:with-param name="qualifier" select="'DENY'"/>
+                  </xsl:call-template>
+                </xsl:for-each>
+              </xsl:if>
+              <xsl:if test="./*[@* = 'ALLOW']">
+                <xsl:for-each select="./*[@* = 'ALLOW']">
+                  <xsl:call-template name="TranslatePermissions">
+                  <xsl:with-param name="qualifier" select="'ALLOW'"/>
+                  </xsl:call-template>
+                </xsl:for-each>
+              </xsl:if>
+            </profile>
+          </xsl:variable>
+
+          <xsl:variable name="profile_deduplicated">
+            <xsl:apply-templates mode="deduplicate"
+              select="ext:node-set($profile)"/>
+          </xsl:variable>
+
+          <xsl:variable name="profile_namespaced">
+            <xsl:apply-templates mode="namespace"
+              select="ext:node-set($profile_deduplicated)"/>
+          </xsl:variable>
+
+          <xsl:apply-templates mode="compress"
+            select="ext:node-set($profile_namespaced)"/>
+
         </xsl:for-each>
       </profiles>
     </policy>
   </xsl:variable>
 
-  <xsl:variable name="policy_deduplicated">
-    <xsl:apply-templates mode="deduplicate"
-      select="ext:node-set($policy)"/>
-  </xsl:variable>
-
-
  <xsl:apply-templates mode="sort"
-   select="ext:node-set($policy_deduplicated)"/>
+   select="ext:node-set($policy)"/>
 </xsl:template>
 
 <xsl:template name="TranslatePermissions">
@@ -340,7 +413,7 @@
 </xsl:template>
 
 
-<xsl:template match="topic | service | action" mode="sort">
+<xsl:template match="topic | service | action" mode="namespace">
   <xsl:variable name="ns" select="../../@ns"/>
   <xsl:variable name="node" select="../../@node"/>
   <xsl:variable name="name" select="."/>
