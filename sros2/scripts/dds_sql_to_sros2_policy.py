@@ -1,22 +1,19 @@
+#! /usr/bin/env python3
 
-# coding: utf-8
-
-# In[ ]:
-
-
+import argparse
+import os
 import pandas as pd
 import sqlite3
+import sys
 
 from lxml import etree
 
-
-# In[ ]:
-
-
-db_path = "../tb3_demo_dds_discovery.db"
-
-
-# In[ ]:
+from sros2.policy import (
+    get_policy_schema,
+    get_transport_schema,
+    get_transport_template,
+    POLICY_VERSION,
+)
 
 
 node_pub_query = """
@@ -42,9 +39,6 @@ AND DCPSParticipant.ParticipantData_user_data IS NOT NULL;
 """
 
 
-# In[ ]:
-
-
 def user_bytes_to_dict(user_bytes):
     user_string = user_bytes.decode('utf8')
     key_value_list = user_string[:-2].split(';')
@@ -55,118 +49,95 @@ def user_bytes_to_dict(user_bytes):
     return key_value_dict
 
 
-# In[ ]:
-
-
 def translate_df(df):
-    _df = df['ParticipantData_user_data'].apply(user_bytes_to_dict).apply(pd.Series)
+    _df = df['ParticipantData_user_data'] \
+        .apply(user_bytes_to_dict) \
+        .apply(pd.Series)
     df = pd.concat([df, _df], axis=1)
     return df
 
 
-# In[ ]:
-
-
-db_uri = 'file:{}?mode=ro'.format(db_path)
-with sqlite3.connect(db_uri, uri=True) as db:
+def db_to_df(db):
     pub_df = translate_df(pd.read_sql_query(node_pub_query, db))
     sub_df = translate_df(pd.read_sql_query(node_sub_query, db))
 
-pub_df = pub_df.assign(mode='publish')
-pub_df = pub_df.rename(columns={"PublicationData_topic_name": "dds_topic"})
-sub_df = sub_df.assign(mode='subscribe')
-sub_df = sub_df.rename(columns={"SubscriptionData_topic_name": "dds_topic"})
+    pub_df = pub_df.assign(mode='publish')
+    pub_df = pub_df.rename(columns={"PublicationData_topic_name": "dds_topic"})
+    sub_df = sub_df.assign(mode='subscribe')
+    sub_df = sub_df.rename(columns={"SubscriptionData_topic_name": "dds_topic"})
 
-df = pd.concat([pub_df, sub_df])
-df.set_index(['namespace', 'name', 'mode'], inplace=True)
-
-
-# In[ ]:
+    df = pd.concat([pub_df, sub_df])
+    df.set_index(['namespace', 'name', 'mode'], inplace=True)
+    return df
 
 
-foo = df.index[0]
-foo
+def df_to_dds_policy(df):
+    dds_policy = etree.Element('policy')
+    dds_policy.set("version", POLICY_VERSION,)
+    profiles = etree.SubElement(dds_policy, 'profiles')
+
+    for namespace in df.index.get_level_values('namespace').unique():
+        for name in df.index.get_level_values('name').unique():
+            profile = etree.SubElement(profiles, 'profile')
+            profile.set("ns", namespace)
+            profile.set("node", name)
+            _df = df['dds_topic'].loc[namespace, name, :]
+            for mode in _df.index.get_level_values('mode').unique():
+                topics = etree.SubElement(profile, 'dds_topics')
+                topics.set(mode, "ALLOW")
+                for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
+                    topic = etree.SubElement(topics, 'dds_topic')
+                    topic.text = dds_topic
+    return dds_policy
 
 
-# In[ ]:
+def dds_policy_to_sros2_policy(dds_policy):
+
+    # Parse files
+    policy_xsd = etree.XMLSchema(
+        etree.parse(
+            get_policy_schema('policy.xsd')))
+    demangle_xsl = etree.XSLT(
+        etree.parse(
+            get_transport_template('dds', 'demangle.xsl')))
+
+    # TODO: update schema for dds_topics?
+    # Validate policy schema
+    # policy_xsd.assertValid(dds_policy)
+
+    # Transform policy
+    sros2_policy = demangle_xsl(dds_policy)
+
+    # Validate policy schema
+    policy_xsd.assertValid(sros2_policy)
+
+    return sros2_policy
 
 
-# with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-#     display(df)
+def main(argv=sys.argv[1:]):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '-i', '--input-db', required=True,
+        help='path to SQLite3 database with discovery data')
+    parser.add_argument(
+        '-o', '--output-policy',
+        help='path to XML policy file with generated output')
+    args = parser.parse_args(argv)
+
+    db_uri = 'file:{}?mode=ro'.format(args.input_db)
+    with sqlite3.connect(db_uri, uri=True) as db:
+        df = db_to_df(db)
+    
+    dds_policy = df_to_dds_policy(df)
+    sros2_policy = dds_policy_to_sros2_policy(dds_policy)
+
+    if args.output_policy is not None:
+        with open(args.policy_file, 'wb') as f:
+            f.write(etree.tostring(sros2_policy, pretty_print=True))
+    else:
+        print(etree.tostring(sros2_policy, pretty_print=True).decode())
 
 
-# In[ ]:
-
-
-policy = etree.Element('policy')
-profiles = etree.SubElement(policy, 'profiles')
-
-for namespace in df.index.get_level_values('namespace').unique():
-    for name in df.index.get_level_values('name').unique():
-        profile = etree.SubElement(profiles, 'profile')
-        profile.set("ns", namespace)
-        profile.set("node", name)
-        _df = df['dds_topic'].loc[namespace, name, :]
-        for mode in _df.index.get_level_values('mode').unique():
-            topics = etree.SubElement(profile, 'dds_topics')
-            topics.set(mode, "ALLOW")
-            for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
-                topic = etree.SubElement(topics, 'dds_topic')
-                topic.text = dds_topic
-
-
-# In[ ]:
-
-
-print(etree.tostring(policy, pretty_print=True).decode())
-
-
-# In[ ]:
-
-
-import os
-
-from lxml import etree
-
-from sros2.policy import (
-    get_policy_schema,
-    get_transport_schema,
-    get_transport_template,
-)
-
-
-# In[ ]:
-
-
-# Get paths
-policy_xsd_path = get_policy_schema('policy.xsd')
-permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
-permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
-policy_xsl_path = 'sros2/sros2/policy/templates/dds/policy.xsl'
-
-# Parse files
-policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
-policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
-permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
-permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
-
-# Get policy
-dds_policy_xml_path = 'tb3_raw_dds_policy.xml'
-dds_policy_xml = etree.parse(dds_policy_xml_path)
-dds_policy_xml.xinclude()
-
-# Validate policy schema
-# policy_xsd.assertValid(policy_xml)
-
-# Transform policy
-policy_xml = policy_xsl(dds_policy_xml)
-
-# Validate permissions schema
-# policy_xsd.assertValid(policy_xml)
-
-# Output policy
-# policy_xml_path = os.path.join('policy.xml')
-# with open(policy_xml_path, 'w') as f:
-#     f.write(etree.tostring(policy_xml, pretty_print=True).decode())
-print(etree.tostring(policy_xml, pretty_print=True).decode())
-
+if __name__ == '__main__':
+    main()
