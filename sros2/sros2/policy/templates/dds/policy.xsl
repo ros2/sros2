@@ -22,13 +22,13 @@
     <mapping type="status"   prefix="rt"  suffix="/_action/status"/>
   </mappings>
   <permissions>
-    <permission kind="publish"   type="feedback" rule="excute"/>
+    <permission kind="publish"   type="feedback" rule="execute"/>
     <permission kind="subscribe" type="feedback" rule="call"/>
-    <permission kind="publish"   type="reply"    rule="excute"/>
+    <permission kind="publish"   type="reply"    rule="execute"/>
     <permission kind="subscribe" type="reply"    rule="call"/>
     <permission kind="publish"   type="request"  rule="call"/>
-    <permission kind="subscribe" type="request"  rule="excute"/>
-    <permission kind="publish"   type="status"   rule="excute"/>
+    <permission kind="subscribe" type="request"  rule="execute"/>
+    <permission kind="publish"   type="status"   rule="execute"/>
     <permission kind="subscribe" type="status"   rule="call"/>
   </permissions>
 </ros:action>
@@ -65,14 +65,14 @@
 <xsl:key name="actions_equal" match="profile/actions" use=" concat(
     generate-id(..), '|',
     @call, '|',
-    @excute, '|',
+    @execute, '|',
     .)"/>
 <xsl:template mode="deduplicate" match="
   profile/actions[not(generate-id() =
   generate-id(key('actions_equal', concat(
     generate-id(..), '|',
     @call, '|',
-    @excute, '|',
+    @execute, '|',
     .))[1]))]"/>
 
 
@@ -112,7 +112,7 @@
 
 <xsl:key name="actions_compatible" match="actions" use="concat(
   @call, '|',
-  @excute)"/>
+  @execute)"/>
 <xsl:key name="services_compatible" match="services" use="concat(
   @reply, '|',
   @request)"/>
@@ -126,7 +126,7 @@
     <xsl:apply-templates mode="sibling-recurse" select="
       actions[generate-id(.) = generate-id(key('actions_compatible', concat(
       @call, '|',
-      @excute)))]"/>
+      @execute)))]"/>
     <xsl:apply-templates mode="sibling-recurse" select="
       services[generate-id(.) = generate-id(key('services_compatible', concat(
       @reply, '|',
@@ -144,7 +144,7 @@
     <xsl:apply-templates mode="compress" select="
       following-sibling::services[@call = current()/@call]/node() " />
     <xsl:apply-templates mode="compress" select="
-      following-sibling::services[@excute = current()/@excute]/node() " />
+      following-sibling::services[@execute = current()/@execute]/node() " />
   </xsl:copy>
 </xsl:template>
 <xsl:template match="services" mode="sibling-recurse">
