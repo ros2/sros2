@@ -77,12 +77,13 @@ def df_to_dds_policy(df):
     profiles = etree.SubElement(dds_policy, 'profiles')
 
     for namespace in df.index.get_level_values('namespace').unique():
-        for name in df.index.get_level_values('name').unique():
+        _df = df.loc[namespace, :, :]
+        for name in _df.index.get_level_values('name').unique():
             profile = etree.SubElement(profiles, 'profile')
             profile.set("ns", namespace)
             profile.set("node", name)
-            _df = df['dds_topic'].loc[namespace, name, :]
-            for mode in _df.index.get_level_values('mode').unique():
+            __df = df.loc[namespace, name, :]
+            for mode in __df.index.get_level_values('mode').unique():
                 topics = etree.SubElement(profile, 'dds_topics')
                 topics.set(mode, "ALLOW")
                 for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
