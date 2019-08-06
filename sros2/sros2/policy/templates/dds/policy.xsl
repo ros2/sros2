@@ -367,36 +367,6 @@
 </xsl:template>
 
 
-<!-- <xsl:template match="@*|node()" mode="sort">
-  <xsl:copy>
-    <xsl:apply-templates select="@*|node()" mode="sort"/>
-  </xsl:copy>
-</xsl:template> -->
-
-
-<!-- <xsl:key name="actions_by_permissions" match="actions" use="
-  concat(generate-id(parent::*), '+', @call, '+', @excute)"/>
-<xsl:template match="actions" mode="sort">
-  <xsl:if test="generate-id()=generate-id(key('actions_by_permissions',
-    concat(generate-id(parent::*), '+', @call, '+', @excute))[1])">
-      <xsl:copy>
-        <xsl:apply-templates select="@*|node()" mode="sort"/>
-      </xsl:copy>
-  </xsl:if>
-</xsl:template> -->
-
-
-<!-- <xsl:key name="topics_by_permissions" match="topics" use="
-  concat(generate-id(parent::*), '+', @publish, '+', @subscribe)"/>
-<xsl:template match="topics" mode="sort">
-  <xsl:if test="generate-id()=generate-id(key('topics_by_permissions',
-    concat(generate-id(parent::*), '+', @publish, '+', @subscribe))[1])">
-      <xsl:copy>
-        <xsl:apply-templates select="@*|node()" mode="sort"/>
-      </xsl:copy>
-  </xsl:if>
-</xsl:template> -->
-
 <xsl:template match="@*|node()" mode="sort">
   <xsl:copy>
     <xsl:apply-templates select="@*" mode="sort">
