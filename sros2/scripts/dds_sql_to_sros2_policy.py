@@ -98,8 +98,8 @@ foo
 # In[ ]:
 
 
-polciy = etree.Element('polciy')
-profiles = etree.SubElement(polciy, 'profiles')
+policy = etree.Element('policy')
+profiles = etree.SubElement(policy, 'profiles')
 
 for namespace in df.index.get_level_values('namespace').unique():
     for name in df.index.get_level_values('name').unique():
@@ -118,7 +118,7 @@ for namespace in df.index.get_level_values('namespace').unique():
 # In[ ]:
 
 
-print(etree.tostring(polciy, pretty_print=True).decode())
+print(etree.tostring(policy, pretty_print=True).decode())
 
 
 # In[ ]:

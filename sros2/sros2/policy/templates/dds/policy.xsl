@@ -168,7 +168,7 @@
 
 
 <xsl:variable name="policy_version" select="'0.1.0'"/>
-<xsl:template match="/polciy/profiles">
+<xsl:template match="/policy/profiles">
   <xsl:variable name="policy">
     <policy version="{$policy_version}">
       <profiles>
