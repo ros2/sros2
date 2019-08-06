@@ -110,7 +110,7 @@ for namespace in df.index.get_level_values('namespace').unique():
         for mode in _df.index.get_level_values('mode').unique():
             topics = etree.SubElement(profile, 'dds_topics')
             topics.set(mode, "ALLOW")
-            for dds_topic in df['dds_topic'].loc[namespace, name, :]:
+            for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
                 topic = etree.SubElement(topics, 'dds_topic')
                 topic.text = dds_topic
 
