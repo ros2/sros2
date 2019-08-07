@@ -117,7 +117,7 @@
   @reply, '|',
   @request)"/>
 <xsl:key name="topics_compatible" match="topics" use="concat(
-  @puplish, '|',
+  @publish, '|',
   @subscribe)"/>
 
 <xsl:template mode="compress" match="profile">
@@ -133,7 +133,7 @@
       @request)))]"/>
     <xsl:apply-templates mode="sibling-recurse" select="
       topics[generate-id(.) = generate-id(key('topics_compatible', concat(
-      @puplish, '|',
+      @publish, '|',
       @subscribe)))]"/>
   </xsl:copy>
 </xsl:template>
@@ -142,9 +142,9 @@
   <xsl:copy>
     <xsl:apply-templates mode="compress" select="node() | @*" />
     <xsl:apply-templates mode="compress" select="
-      following-sibling::services[@call = current()/@call]/node() " />
+      following-sibling::actions[@call = current()/@call]/node() " />
     <xsl:apply-templates mode="compress" select="
-      following-sibling::services[@execute = current()/@execute]/node() " />
+      following-sibling::actions[@execute = current()/@execute]/node() " />
   </xsl:copy>
 </xsl:template>
 <xsl:template match="services" mode="sibling-recurse">
@@ -160,9 +160,9 @@
   <xsl:copy>
     <xsl:apply-templates mode="compress" select="node() | @*" />
     <xsl:apply-templates mode="compress" select="
-      following-sibling::services[@puplish = current()/@puplish]/node() " />
+      following-sibling::topics[@publish = current()/@publish]/node() " />
     <xsl:apply-templates mode="compress" select="
-      following-sibling::services[@subscribe = current()/@subscribe]/node() " />
+      following-sibling::topics[@subscribe = current()/@subscribe]/node() " />
   </xsl:copy>
 </xsl:template>
 
