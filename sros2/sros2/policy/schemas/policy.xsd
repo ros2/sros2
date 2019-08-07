@@ -24,6 +24,7 @@
     <xs:complexType name="Profile">
         <xs:sequence minOccurs="0" maxOccurs="unbounded">
             <xs:choice minOccurs="1" maxOccurs="1">
+                <xs:element name="raws" minOccurs="1" type="RawExpressionList" />
                 <xs:element name="topics" minOccurs="1" type="TopicExpressionList" />
                 <xs:element name="services" minOccurs="1" type="ServicesExpressionList" />
                 <xs:element name="actions" minOccurs="1" type="ActionsExpressionList" />
@@ -31,6 +32,16 @@
         </xs:sequence>
         <xs:attribute name="ns" type="xs:string" use="required" />
         <xs:attribute name="node" type="xs:string" use="required" />
+        <xs:attribute ref="xml:base" />
+    </xs:complexType>
+
+    <xs:complexType name="RawExpressionList">
+        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="raw" type="Expression" />
+        </xs:sequence>
+        <xs:attribute name="publish" type="RuleQualifier" use="optional" />
+        <xs:attribute name="relay" type="RuleQualifier" use="optional" />
+        <xs:attribute name="subscribe" type="RuleQualifier" use="optional" />
         <xs:attribute ref="xml:base" />
     </xs:complexType>
 

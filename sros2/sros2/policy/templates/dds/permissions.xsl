@@ -73,6 +73,9 @@
   <xsl:if test="@publish = $qualifier">
     <xsl:apply-templates select="." mode="publish"/>
   </xsl:if>
+  <xsl:if test="@relay = $qualifier">
+    <xsl:apply-templates select="." mode="relay"/>
+  </xsl:if>
   <xsl:if test="@subscribe = $qualifier">
     <xsl:apply-templates select="." mode="subscribe"/>
   </xsl:if>
@@ -88,6 +91,36 @@
   <xsl:if test="@execute = $qualifier">
     <xsl:apply-templates select="." mode="execute"/>
   </xsl:if>
+</xsl:template>
+
+<xsl:template match="raws" mode="publish">
+  <publish>
+    <topics>
+      <xsl:for-each select="raw">
+        <topic><xsl:value-of select="text()"/></topic>
+      </xsl:for-each>
+    </topics>
+  </publish>
+</xsl:template>
+
+<xsl:template match="raws" mode="relay">
+  <relay>
+    <topics>
+      <xsl:for-each select="raw">
+        <topic><xsl:value-of select="text()"/></topic>
+      </xsl:for-each>
+    </topics>
+  </relay>
+</xsl:template>
+
+<xsl:template match="raws" mode="subscribe">
+  <subscribe>
+    <topics>
+      <xsl:for-each select="raw">
+        <topic><xsl:value-of select="text()"/></topic>
+      </xsl:for-each>
+    </topics>
+  </subscribe>
 </xsl:template>
 
 <xsl:template match="topics" mode="publish">

@@ -227,13 +227,13 @@
   <xsl:param name="qualifier"/>
 
   <xsl:if test="@publish = $qualifier">
-    <xsl:call-template name="dds_topics">
+    <xsl:call-template name="raws">
       <xsl:with-param name="kind" select="'publish'"/>
       <xsl:with-param name="qualifier" select="$qualifier"/>
     </xsl:call-template>
   </xsl:if>
   <xsl:if test="@subscribe = $qualifier">
-    <xsl:call-template name="dds_topics">
+    <xsl:call-template name="raws">
       <xsl:with-param name="kind" select="'subscribe'"/>
       <xsl:with-param name="qualifier" select="$qualifier"/>
     </xsl:call-template>
@@ -241,14 +241,14 @@
 </xsl:template>
 
 
-<xsl:template name="dds_topics">
+<xsl:template name="raws">
   <xsl:param name="kind"/>
   <xsl:param name="qualifier"/>
 
-  <xsl:for-each select="dds_topic">
-    <xsl:variable name="dds_topic_" select="text()" />
-    <xsl:variable name="prefix" select="substring-before($dds_topic_, '/')" />
-    <xsl:variable name="_dds_topic" select="substring-after($dds_topic_, $prefix)" />
+  <xsl:for-each select="raw">
+    <xsl:variable name="raw_" select="text()" />
+    <xsl:variable name="prefix" select="substring-before($raw_, '/')" />
+    <xsl:variable name="_raw" select="substring-after($raw_, $prefix)" />
 
     <xsl:variable name="actions_"
       select="document('')/xsl:stylesheet/
@@ -263,11 +263,11 @@
       <xsl:variable name="action_match">      
         <xsl:for-each select="$actions_">
           <xsl:variable name="suffix" select="
-            substring($_dds_topic,
-            string-length($_dds_topic) - string-length(@suffix) +1)" />
+            substring($_raw,
+            string-length($_raw) - string-length(@suffix) +1)" />
           <xsl:if test="$suffix = @suffix">
-            <xsl:variable name="object" select="substring($_dds_topic, 1, 
-                  string-length($_dds_topic) - string-length($suffix))" />
+            <xsl:variable name="object" select="substring($_raw, 1, 
+                  string-length($_raw) - string-length($suffix))" />
             <xsl:call-template name="actions">
               <xsl:with-param name="action" select="$object"/>
               <xsl:with-param name="kind" select="$kind"/>
@@ -282,11 +282,11 @@
       <xsl:variable name="service_match">      
         <xsl:for-each select="$services_">
           <xsl:variable name="suffix" select="
-            substring($_dds_topic,
-            string-length($_dds_topic) - string-length(@suffix) +1)" />
+            substring($_raw,
+            string-length($_raw) - string-length(@suffix) +1)" />
           <xsl:if test="$suffix = @suffix">
-            <xsl:variable name="object" select="substring($_dds_topic, 1, 
-                  string-length($_dds_topic) - string-length($suffix))" />
+            <xsl:variable name="object" select="substring($_raw, 1, 
+                  string-length($_raw) - string-length($suffix))" />
             <xsl:call-template name="services">
               <xsl:with-param name="service" select="$object"/>
               <xsl:with-param name="kind" select="$kind"/>
@@ -301,7 +301,7 @@
       <xsl:variable name="topic_match">      
         <xsl:for-each select="$topics_">
           <xsl:call-template name="topics">
-            <xsl:with-param name="topic" select="$_dds_topic"/>
+            <xsl:with-param name="topic" select="$_raw"/>
             <xsl:with-param name="kind" select="$kind"/>
             <xsl:with-param name="type" select="
             $topics_[@prefix=$prefix and @suffix='']/@type"/>

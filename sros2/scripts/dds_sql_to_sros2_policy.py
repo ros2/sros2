@@ -89,10 +89,10 @@ def df_to_dds_policy(df):
             __df = df.loc[namespace, name, :]
             for mode in __df.index.get_level_values('mode').unique():
                 if not pd.isna(mode):
-                    topics = etree.SubElement(profile, 'dds_topics')
+                    topics = etree.SubElement(profile, 'raws')
                     topics.set(mode, "ALLOW")
                     for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
-                        topic = etree.SubElement(topics, 'dds_topic')
+                        topic = etree.SubElement(topics, 'raw')
                         topic.text = dds_topic
     return dds_policy
 
@@ -107,9 +107,8 @@ def dds_policy_to_sros2_policy(dds_policy):
         etree.parse(
             get_transport_template('dds', 'demangle.xsl')))
 
-    # TODO: update schema for dds_topics?
     # Validate policy schema
-    # policy_xsd.assertValid(dds_policy)
+    policy_xsd.assertValid(dds_policy)
 
     # Transform policy
     sros2_policy = demangle_xsl(dds_policy)
