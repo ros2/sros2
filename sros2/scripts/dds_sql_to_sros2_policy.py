@@ -139,7 +139,7 @@ def main(argv=sys.argv[1:]):
     sros2_policy = dds_policy_to_sros2_policy(dds_policy)
 
     if args.output_policy is not None:
-        with open(args.policy_file, 'wb') as f:
+        with open(args.output_policy, 'wb') as f:
             f.write(etree.tostring(sros2_policy, pretty_print=True))
     else:
         print(etree.tostring(sros2_policy, pretty_print=True).decode())
