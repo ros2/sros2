@@ -109,9 +109,9 @@ def test_cert_pem(node_keys_dir):
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
 
     # Verify the cert is valid for the expected timespan
-    now = datetime.datetime.now()
-    assert _datetimes_are_close(cert.not_valid_before, now)
-    assert _datetimes_are_close(cert.not_valid_after, now + datetime.timedelta(days=3650))
+    utcnow = datetime.datetime.utcnow()
+    assert _datetimes_are_close(cert.not_valid_before, utcnow)
+    assert _datetimes_are_close(cert.not_valid_after, utcnow + datetime.timedelta(days=3650))
 
     # Verify that the cert ensures this key cannot be used to sign others as a CA
     assert len(cert.extensions) == 1
