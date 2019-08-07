@@ -15,38 +15,40 @@ from sros2.policy import (
     POLICY_VERSION,
 )
 
+node_query = """
+SELECT DISTINCT
+    DCPSParticipant.ParticipantData_key,
+    DCPSParticipant.ParticipantData_user_data
+FROM DCPSParticipant
+WHERE DCPSParticipant.ParticipantData_user_data IS NOT NULL;
+"""
 
-node_pub_query = """
+_query = """
 SELECT DISTINCT
     DCPSParticipant.ParticipantData_key,
     DCPSParticipant.ParticipantData_user_data,
-    DCPSPublication.PublicationData_topic_name
+    DCPS{mode}.{mode}Data_topic_name
 FROM DCPSParticipant 
-INNER JOIN DCPSPublication ON
-    DCPSParticipant.ParticipantData_key = DCPSPublication.PublicationData_participant_key
+INNER JOIN DCPS{mode} ON
+    DCPSParticipant.ParticipantData_key = DCPS{mode}.{mode}Data_participant_key
 AND DCPSParticipant.ParticipantData_user_data IS NOT NULL;
 """
 
-node_sub_query = """
-SELECT DISTINCT
-    DCPSParticipant.ParticipantData_key,
-    DCPSParticipant.ParticipantData_user_data,
-    DCPSSubscription.SubscriptionData_topic_name
-FROM DCPSParticipant 
-INNER JOIN DCPSSubscription ON
-    DCPSParticipant.ParticipantData_key=DCPSSubscription.SubscriptionData_participant_key
-AND DCPSParticipant.ParticipantData_user_data IS NOT NULL;
-"""
+node_pub_query = _query.format(mode="Publication")
+node_sub_query = _query.format(mode="Subscription")
 
 
 def user_bytes_to_dict(user_bytes):
-    user_string = user_bytes.decode('utf8')
-    key_value_list = user_string[:-2].split(';')
-    key_value_dict = dict()
-    for key_values in key_value_list:
-        key, value = key_values.split('=', 1)
-        key_value_dict[key] = value
-    return key_value_dict
+    try:
+        user_string = user_bytes.decode('utf8')
+        key_value_list = user_string[:-2].split(';')
+        key_value_dict = dict()
+        for key_values in key_value_list:
+            key, value = key_values.split('=', 1)
+            key_value_dict[key] = value
+        return key_value_dict
+    except:
+        return None
 
 
 def translate_df(df):
@@ -58,6 +60,7 @@ def translate_df(df):
 
 
 def db_to_df(db):
+    node_df = translate_df(pd.read_sql_query(node_query, db))
     pub_df = translate_df(pd.read_sql_query(node_pub_query, db))
     sub_df = translate_df(pd.read_sql_query(node_sub_query, db))
 
@@ -66,7 +69,8 @@ def db_to_df(db):
     sub_df = sub_df.assign(mode='subscribe')
     sub_df = sub_df.rename(columns={"SubscriptionData_topic_name": "dds_topic"})
 
-    df = pd.concat([pub_df, sub_df])
+    df = pd.concat([node_df, pub_df, sub_df])
+    df = df[df['namespace'].notnull()]
     df.set_index(['namespace', 'name', 'mode'], inplace=True)
     return df
 
@@ -84,11 +88,12 @@ def df_to_dds_policy(df):
             profile.set("node", name)
             __df = df.loc[namespace, name, :]
             for mode in __df.index.get_level_values('mode').unique():
-                topics = etree.SubElement(profile, 'dds_topics')
-                topics.set(mode, "ALLOW")
-                for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
-                    topic = etree.SubElement(topics, 'dds_topic')
-                    topic.text = dds_topic
+                if not pd.isna(mode):
+                    topics = etree.SubElement(profile, 'dds_topics')
+                    topics.set(mode, "ALLOW")
+                    for dds_topic in df['dds_topic'].loc[namespace, name, mode]:
+                        topic = etree.SubElement(topics, 'dds_topic')
+                        topic.text = dds_topic
     return dds_policy
 
 
