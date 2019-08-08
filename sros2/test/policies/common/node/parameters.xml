@@ -5,11 +5,11 @@
   </topics>
 
   <services reply="ALLOW" request="ALLOW" >
-    <service>~describe_parameters</service>
-    <service>~get_parameter_types</service>
-    <service>~get_parameters</service>
-    <service>~list_parameters</service>
-    <service>~set_parameters</service>
-    <service>~set_parameters_atomically</service>
+    <service>~/describe_parameters</service>
+    <service>~/get_parameter_types</service>
+    <service>~/get_parameters</service>
+    <service>~/list_parameters</service>
+    <service>~/set_parameters</service>
+    <service>~/set_parameters_atomically</service>
   </services>
 </profile>
