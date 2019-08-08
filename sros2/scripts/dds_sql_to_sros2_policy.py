@@ -100,21 +100,24 @@ def df_to_dds_policy(df):
 def dds_policy_to_sros2_policy(dds_policy):
 
     # Parse files
-    policy_xsd = etree.XMLSchema(
+    sros2_policy_xsd = etree.XMLSchema(
         etree.parse(
             get_policy_schema('policy.xsd')))
-    demangle_xsl = etree.XSLT(
+    dds_policy_xsd = etree.XMLSchema(
+        etree.parse(
+            get_transport_schema('dds', 'policy.xsd')))
+    dds_demangle_xsl = etree.XSLT(
         etree.parse(
             get_transport_template('dds', 'demangle.xsl')))
 
-    # Validate policy schema
-    policy_xsd.assertValid(dds_policy)
+    # Validate input schema
+    dds_policy_xsd.assertValid(dds_policy)
 
     # Transform policy
-    sros2_policy = demangle_xsl(dds_policy)
+    sros2_policy = dds_demangle_xsl(dds_policy)
 
-    # Validate policy schema
-    policy_xsd.assertValid(sros2_policy)
+    # Validate output schema
+    sros2_policy_xsd.assertValid(sros2_policy)
 
     return sros2_policy
 
