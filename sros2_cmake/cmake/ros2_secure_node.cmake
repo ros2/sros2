@@ -51,13 +51,11 @@ macro(ros2_secure_node)
   message(STATUS "Executing: ${generate_artifacts_command}")
   execute_process(
     COMMAND ${generate_artifacts_command}
-    RESULT_VARIABLE POLICY_RESULT
-    ERROR_VARIABLE POLICY_ERROR
-    OUTPUT_QUIET
+    RESULT_VARIABLE GENERATE_ARTIFACTS_RESULT
+    ERROR_VARIABLE GENERATE_ARTIFACTS_ERROR
   )
-  if(NOT ${POLICY_RESULT} EQUAL 0)
-    message("Failed to generate security artifacts")
-    message("${POLICY_ERROR}")
+  if(NOT ${GENERATE_ARTIFACTS_RESULT} EQUAL 0)
+    message(WARNING "Failed to generate security artifacts: ${GENERATE_ARTIFACTS_ERROR}")
   else()
     message(STATUS "artifacts generated successfully")
   endif()
