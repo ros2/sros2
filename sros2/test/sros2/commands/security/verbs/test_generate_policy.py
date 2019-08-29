@@ -106,10 +106,13 @@ def test_generate_policy_services():
         assert len([s for s in services if s.text == 'test_generate_policy_services_server']) == 0
 
 
-# TODO(jacobperron): This test is flakey due to nodes left-over from tests in other packages.
-#                    See: https://github.com/ros2/sros2/issues/143
-@pytest.mark.skip(reason='flakey due to nodes left-over from tests in other packages')
 def test_generate_policy_no_nodes(capsys):
+    # TODO(jacobperron): On Windows, this test is flakey due to nodes left-over from tests in
+    #                    other packages.
+    #                    See: https://github.com/ros2/sros2/issues/143
+    if 'nt' == os.name:
+        pytest.skip(reason='flakey due to nodes left-over from tests in other packages')
+
     with tempfile.TemporaryDirectory() as tmpdir:
         assert cli.main(argv=[
             'security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) != 0
