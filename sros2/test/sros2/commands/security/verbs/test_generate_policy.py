@@ -29,12 +29,13 @@ def test_generate_policy_topics():
         # Create a test-specific context so that generate_policy can still init
         context = rclpy.Context()
         rclpy.init(context=context)
-        node = rclpy.create_node('test_node', context=context)
+        node = rclpy.create_node('test_generate_policy_topics_node', context=context)
 
         try:
             # Create a publisher and subscription
-            node.create_publisher(String, 'topic_pub', 1)
-            node.create_subscription(String, 'topic_sub', lambda msg: None, 1)
+            node.create_publisher(String, 'test_generate_policy_topics_pub', 1)
+            node.create_subscription(
+                String, 'test_generate_policy_topics_sub', lambda msg: None, 1)
 
             # Generate the policy for the running node
             assert cli.main(
@@ -45,7 +46,8 @@ def test_generate_policy_topics():
 
         # Load the policy and pull out the allowed publications and subscriptions
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
-        profile = policy.find(path='profiles/profile[@ns="/"][@node="test_node"]')
+        profile = policy.find(
+            path='profiles/profile[@ns="/"][@node="test_generate_policy_topics_node"]')
         assert profile is not None
         topics_publish_allowed = profile.find(path='topics[@publish="ALLOW"]')
         assert topics_publish_allowed is not None
@@ -54,13 +56,13 @@ def test_generate_policy_topics():
 
         # Verify that the allowed publications include topic_pub and not topic_sub
         topics = topics_publish_allowed.findall('topic')
-        assert len([t for t in topics if t.text == 'topic_pub']) == 1
-        assert len([t for t in topics if t.text == 'topic_sub']) == 0
+        assert len([t for t in topics if t.text == 'test_generate_policy_topics_pub']) == 1
+        assert len([t for t in topics if t.text == 'test_generate_policy_topics_sub']) == 0
 
         # Verify that the allowed subscriptions include topic_sub and not topic_pub
         topics = topics_subscribe_allowed.findall('topic')
-        assert len([t for t in topics if t.text == 'topic_sub']) == 1
-        assert len([t for t in topics if t.text == 'topic_pub']) == 0
+        assert len([t for t in topics if t.text == 'test_generate_policy_topics_sub']) == 1
+        assert len([t for t in topics if t.text == 'test_generate_policy_topics_pub']) == 0
 
 
 def test_generate_policy_services():
@@ -68,12 +70,12 @@ def test_generate_policy_services():
         # Create a test-specific context so that generate_policy can still init
         context = rclpy.Context()
         rclpy.init(context=context)
-        node = rclpy.create_node('test_node', context=context)
+        node = rclpy.create_node('test_generate_policy_services_node', context=context)
 
         try:
             # Create a server and client
-            node.create_client(Trigger, 'service_client')
-            node.create_service(Trigger, 'service_server', lambda request,
+            node.create_client(Trigger, 'test_generate_policy_services_client')
+            node.create_service(Trigger, 'test_generate_policy_services_server', lambda request,
                                 response: response)
 
             # Generate the policy for the running node
@@ -85,7 +87,8 @@ def test_generate_policy_services():
 
         # Load the policy and pull out allowed replies and requests
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
-        profile = policy.find(path='profiles/profile[@ns="/"][@node="test_node"]')
+        profile = policy.find(
+            path='profiles/profile[@ns="/"][@node="test_generate_policy_services_node"]')
         assert profile is not None
         service_reply_allowed = profile.find(path='services[@reply="ALLOW"]')
         assert service_reply_allowed is not None
@@ -94,15 +97,20 @@ def test_generate_policy_services():
 
         # Verify that the allowed replies include service_server and not service_client
         services = service_reply_allowed.findall('service')
-        assert len([s for s in services if s.text == 'service_server']) == 1
-        assert len([s for s in services if s.text == 'service_client']) == 0
+        assert len([s for s in services if s.text == 'test_generate_policy_services_server']) == 1
+        assert len([s for s in services if s.text == 'test_generate_policy_services_client']) == 0
 
         # Verify that the allowed requests include service_client and not service_server
         services = service_request_allowed.findall('service')
-        assert len([s for s in services if s.text == 'service_client']) == 1
-        assert len([s for s in services if s.text == 'service_server']) == 0
+        assert len([s for s in services if s.text == 'test_generate_policy_services_client']) == 1
+        assert len([s for s in services if s.text == 'test_generate_policy_services_server']) == 0
 
 
+# TODO(jacobperron): On Windows, this test is flakey due to nodes left-over from tests in
+#                    other packages.
+#                    See: https://github.com/ros2/sros2/issues/143
+@pytest.mark.skipif(
+    'nt' == os.name, reason='flakey due to nodes left-over from tests in other packages')
 def test_generate_policy_no_nodes(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
         assert cli.main(argv=[
