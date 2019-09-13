@@ -14,6 +14,7 @@
 
 import os
 
+import ament_index_python
 from lxml import etree
 
 from sros2.policy import (
@@ -21,6 +22,20 @@ from sros2.policy import (
     get_transport_schema,
     get_transport_template,
 )
+
+
+if 'XML_CATALOG_FILES' not in os.environ:
+    os.environ['XML_CATALOG_FILES'] = os.path.join(
+        ament_index_python.get_package_share_directory('sros2'),
+        'xml_cache',
+        'xhtml-cache.xml'
+    )
+elif 'xml_cache/xhtml-cache.xml' not in os.environ['XML_CATALOG_FILES']:
+    os.environ['XML_CATALOG_FILES'] += ' ' + os.path.join(
+        ament_index_python.get_package_share_directory('sros2'),
+        'xml_cache',
+        'xhtml-cache.xml'
+    )
 
 
 def test_policy_to_permissions():
