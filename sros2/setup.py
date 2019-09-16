@@ -18,10 +18,15 @@ extra_files = (
     package_files('sros2/policy/templates')
 )
 
+package_name = 'sros2'
+
 setup(
-    name='sros2',
+    name=package_name,
     version='0.6.2',
     packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/' + package_name, ['package.xml']),
+    ],
     install_requires=['setuptools'],
     zip_safe=True,
     author='Morgan Quigley',
