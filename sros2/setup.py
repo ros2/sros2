@@ -29,7 +29,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/sros2/xml_cache/', glob.glob('xml_cache/**')),
+        ('share/sros2/xml_cache', glob.glob('xml_cache/**')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
