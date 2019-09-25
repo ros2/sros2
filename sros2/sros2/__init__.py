@@ -19,13 +19,13 @@ import urllib.request
 import ament_index_python
 
 
-_xml_cache_path = urllib.request.pathname2url(
-    urllib.parse.urljoin(
-        'file:',
+_xml_cache_path = urllib.parse.urljoin(
+    'file:',
+    urllib.request.pathname2url(
         os.path.join(
-                ament_index_python.get_package_share_directory('sros2'),
-                'xml_cache',
-                'xhtml-cache.xml'
+            ament_index_python.get_package_share_directory('sros2'),
+            'xml_cache',
+            'xhtml-cache.xml'
         )
     )
 )
