@@ -17,11 +17,11 @@ Changelog for package sros2
 * Use older pytest compatible with Ubuntu Bionic (`#145 <https://github.com/ros2/sros2/issues/145>`_)
 * Add request service permissions in generated policies  (`#141 <https://github.com/ros2/sros2/issues/141>`_)
 * Replace openssl subprocess calls with Python cryptography library
-  * Remove use of subprocess for creating ca key and cert (`#126 <https://github.com/ros2/sros2/issues/126>`_)
-  * Obtain S/MIME signature using cryptography library (`#129 <https://github.com/ros2/sros2/issues/129>`_)
-  * Migrate permissions S/MIME to cryptography library (`#136 <https://github.com/ros2/sros2/issues/136>`_)
-  * Migrate create_key to cryptography library (`#138 <https://github.com/ros2/sros2/issues/138>`_)
-  * Remove now obsolete openssl dependency (`#140 <https://github.com/ros2/sros2/issues/140>`_)
+    * Remove use of subprocess for creating ca key and cert (`#126 <https://github.com/ros2/sros2/issues/126>`_)
+    * Obtain S/MIME signature using cryptography library (`#129 <https://github.com/ros2/sros2/issues/129>`_)
+    * Migrate permissions S/MIME to cryptography library (`#136 <https://github.com/ros2/sros2/issues/136>`_)
+    * Migrate create_key to cryptography library (`#138 <https://github.com/ros2/sros2/issues/138>`_)
+    * Remove now obsolete openssl dependency (`#140 <https://github.com/ros2/sros2/issues/140>`_)
 * Factor out the hardcoded name 'sros2testCA' into a constant DEFAULT_COMMON_NAME (`#134 <https://github.com/ros2/sros2/issues/134>`_)
 * Improve create_key tests (`#132 <https://github.com/ros2/sros2/issues/132>`_)
 * Add test for create_key verb (`#125 <https://github.com/ros2/sros2/issues/125>`_)
@@ -35,13 +35,13 @@ Changelog for package sros2
 
 0.7.0 (2019-05-08)
 ------------------
-* Merge pull request `#107 <https://github.com/ros2/sros2/issues/107>`_ from mikaelarguedas/autogenerate_artifacts
+* Add generate_artifacts verb (`#107 <https://github.com/ros2/sros2/issues/107>`_)
 * complete xml and not yaml files for create_permission (`#104 <https://github.com/ros2/sros2/issues/104>`_)
 * Fix bug preventing generate_policy verb from working with publishers and services
 * Add missing attributes to test permissions XML file
 * add reference to schema in generated permission files (`#84 <https://github.com/ros2/sros2/issues/84>`_)
 * Correct sros2 cli test folder location (`#83 <https://github.com/ros2/sros2/issues/83>`_)
-* Merge pull request `#72 <https://github.com/ros2/sros2/issues/72>`_ from ros2/xml_profile
+* Use XML and XSLT to perform permission transform (`#72 <https://github.com/ros2/sros2/issues/72>`_)
 * Contributors: Jacob Perron, Michael Carroll, Mikael Arguedas, Ruffin
 
 0.6.2 (2019-02-08)
@@ -55,12 +55,9 @@ Changelog for package sros2
 
 0.6.0 (2018-12-07)
 ------------------
-* Merge pull request `#70 <https://github.com/ros2/sros2/issues/70>`_ from ros2/update_maintainer
-  Update package maintainer for sros2
-* Update package maintainer for sros2.
+* Update package maintainer for sros2 (`#70 <https://github.com/ros2/sros2/issues/70>`_)
 * separating identity and permission CAs (`#67 <https://github.com/ros2/sros2/issues/67>`_)
-* ignore __pycache_\_ in git
-  Signed-off-by: William Woodall <william@osrfoundation.org>
+* ignore __pycache__ in git
 * raise FileNotFoundError if provided permission file doesn't exist (`#64 <https://github.com/ros2/sros2/issues/64>`_)
 * refer to new xsd now that it's available (`#62 <https://github.com/ros2/sros2/issues/62>`_)
 * fixup path of RANDFILE to match rest of tutorial (`#61 <https://github.com/ros2/sros2/issues/61>`_)
