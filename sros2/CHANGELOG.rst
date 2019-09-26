@@ -2,6 +2,37 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2019-09-26)
+------------------
+* Install an XML catalog so we can look this schema up locally (`#158 <https://github.com/ros2/sros2/issues/158>`_)
+  Fixes a failure in test_policy_to_permissions when there's no internet.
+* Fix missing resources needed for ament (`#160 <https://github.com/ros2/sros2/issues/160>`_)
+* Install package manifest (`#159 <https://github.com/ros2/sros2/issues/159>`_)
+* Disable flaky test (`#155 <https://github.com/ros2/sros2/issues/155>`_)
+* Add mypy tests to check static typing (`#154 <https://github.com/ros2/sros2/issues/154>`_)
+* Topics starting with tilde need a slash right after (`#152 <https://github.com/ros2/sros2/issues/152>`_)
+* Update message content to match create_key message
+* Create key and cert only once in generate_artifacts
+* Fix certificate start date to work regardless of the timezone (`#148 <https://github.com/ros2/sros2/issues/148>`_)
+* Use older pytest compatible with Ubuntu Bionic (`#145 <https://github.com/ros2/sros2/issues/145>`_)
+* Add request service permissions in generated policies  (`#141 <https://github.com/ros2/sros2/issues/141>`_)
+* Replace openssl subprocess calls with Python cryptography library
+  * Remove use of subprocess for creating ca key and cert (`#126 <https://github.com/ros2/sros2/issues/126>`_)
+  * Obtain S/MIME signature using cryptography library (`#129 <https://github.com/ros2/sros2/issues/129>`_)
+  * Migrate permissions S/MIME to cryptography library (`#136 <https://github.com/ros2/sros2/issues/136>`_)
+  * Migrate create_key to cryptography library (`#138 <https://github.com/ros2/sros2/issues/138>`_)
+  * Remove now obsolete openssl dependency (`#140 <https://github.com/ros2/sros2/issues/140>`_)
+* Factor out the hardcoded name 'sros2testCA' into a constant DEFAULT_COMMON_NAME (`#134 <https://github.com/ros2/sros2/issues/134>`_)
+* Improve create_key tests (`#132 <https://github.com/ros2/sros2/issues/132>`_)
+* Add test for create_key verb (`#125 <https://github.com/ros2/sros2/issues/125>`_)
+* Add basic create_keystore test. (`#124 <https://github.com/ros2/sros2/issues/124>`_)
+* Add tests for list_keys verb (`#123 <https://github.com/ros2/sros2/issues/123>`_)
+* Add tests for generate_policy verb (`#122 <https://github.com/ros2/sros2/issues/122>`_)
+* Guard against empty ROS graph when generating policy (`#118 <https://github.com/ros2/sros2/issues/118>`_)
+* Guard against invalid key names (`#117 <https://github.com/ros2/sros2/issues/117>`_)
+  In particular, guard against keys that only consist of whitespace and '/' characters.
+* Contributors: Emerson Knapp, Jacob Perron, Kyle Fazzari, Mikael Arguedas, Peter Baughman, Ruffin, Siddharth Kucheria
+
 0.7.0 (2019-05-08)
 ------------------
 * Merge pull request `#107 <https://github.com/ros2/sros2/issues/107>`_ from mikaelarguedas/autogenerate_artifacts
