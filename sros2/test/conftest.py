@@ -13,25 +13,7 @@
 # limitations under the License.
 
 import os
-import urllib.parse
-import urllib.request
 
-import ament_index_python
-
-
-_xml_cache_path = urllib.parse.urljoin(
-    'file:',
-    urllib.request.pathname2url(
-        os.path.join(
-            ament_index_python.get_package_share_directory('sros2'),
-            'xml_cache',
-            'xhtml-cache.xml'
-        )
-    )
-)
-
-
-if 'XML_CATALOG_FILES' not in os.environ:
-    os.environ['XML_CATALOG_FILES'] = _xml_cache_path
-elif _xml_cache_path not in os.environ['XML_CATALOG_FILES']:
-    os.environ['XML_CATALOG_FILES'] += ' ' + _xml_cache_path
+# Disable lxml2 lookup of resources on the internet by configuring it to use a proxy
+# that does not exist
+os.environ['HTTP_PROXY'] = 'http://example.com'
