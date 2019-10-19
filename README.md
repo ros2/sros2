@@ -7,8 +7,8 @@ Although we are designing SROS2 to work with any secure middleware, at the momen
 If you want to run the demo using RTI Connext Secure you will need a license for it and you will need to install it.
 
 
-[Try SROS2 on Linux](https://github.com/ros2/sros2/blob/master/SROS2_Linux.md)
+[Try SROS2 on Linux](SROS2_Linux.md)
 
-[Try SROS2 on MacOS](https://github.com/ros2/sros2/blob/master/SROS2_MacOS.md)
+[Try SROS2 on MacOS](SROS2_MacOS.md)
 
-[Try SROS2 on Windows](https://github.com/ros2/sros2/blob/master/SROS2_Windows.md)
+[Try SROS2 on Windows](SROS2_Windows.md)
