@@ -14,6 +14,7 @@
 
 import os
 import tempfile
+import time
 
 import pytest
 
@@ -36,7 +37,8 @@ def test_generate_policy_topics():
             node.create_publisher(String, 'test_generate_policy_topics_pub', 1)
             node.create_subscription(
                 String, 'test_generate_policy_topics_sub', lambda msg: None, 1)
-
+            # Give time to some rmw implementations to advertise the nodes
+            time.sleep(.500)
             # Generate the policy for the running node
             assert cli.main(
                 argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
@@ -77,7 +79,8 @@ def test_generate_policy_services():
             node.create_client(Trigger, 'test_generate_policy_services_client')
             node.create_service(Trigger, 'test_generate_policy_services_server', lambda request,
                                 response: response)
-
+            # Give time to some rmw implementations to advertise the nodes
+            time.sleep(.500)
             # Generate the policy for the running node
             assert cli.main(
                 argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
