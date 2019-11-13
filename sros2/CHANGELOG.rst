@@ -2,6 +2,13 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2019-11-13)
+------------------
+* add profile for lifecycle nodes (`#146 <https://github.com/ros2/sros2/issues/146>`_)
+* Cleanup changelog
+* Update version in setup.py
+* Contributors: Jacob Perron, Mikael Arguedas
+
 0.8.0 (2019-09-26)
 ------------------
 * Install an XML catalog so we can look this schema up locally (`#158 <https://github.com/ros2/sros2/issues/158>`_)

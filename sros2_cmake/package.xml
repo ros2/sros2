@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
     <package format="2">
     <name>sros2_cmake</name>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
     <description>Cmake macros to configure security for nodes</description>
     <author email="ros-contributions@amazon.com">AWS RoboMaker</author>
     <maintainer email="ros-contributions@amazon.com">AWS RoboMaker</maintainer>

@@ -2,6 +2,9 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2019-11-13)
+------------------
+
 0.8.0 (2019-09-26)
 ------------------
 * Fix author, maintainer information in sros2_cmake/package.xml (`#156 <https://github.com/ros2/sros2/issues/156>`_)
