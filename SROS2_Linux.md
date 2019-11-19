@@ -119,7 +119,7 @@ However, other nodes will not be able to communicate, e.g. the following invocat
 
 ```bash
 # This will fail because the node name does not have valid keys/certificates
-ros2 run demo_nodes_cpp talker __node:=not_talker
+ros2 run demo_nodes_cpp talker --ros-args -r __node:=not_talker
 ```
 
 
@@ -207,5 +207,5 @@ For example, the following attempt for the `listener` node to subscribe to a top
 
 ```bash
 # This will fail because the node is not permitted to subscribe to topics other than chatter.
-ros2 run demo_nodes_py listener chatter:=not_chatter
+ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter
 ```
