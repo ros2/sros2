@@ -175,10 +175,22 @@ class TestSROS2GeneratePolicyVerb(unittest.TestCase):
         with self.launch_gen_policy_command(arguments=[]) as gen_command:
             assert gen_command.wait_for_shutdown(timeout=10)
         assert gen_command.exit_code != 0
-        assert launch_testing.tools.expect_output(
-            expected_lines=[
-                'following arguments are required: POLICY_FILE_PATH'
-            ],
-            text=gen_command.output,
-            strict=False
-        )
+        if os.name is not 'nt':
+            assert launch_testing.tools.expect_output(
+                expected_lines=[
+                    'usage: ros2 security generate_policy [-h] POLICY_FILE_PATH',
+                    'ros2 security generate_policy: error: the following'
+                    ' arguments are required: POLICY_FILE_PATH'
+                ],
+                text=gen_command.output,
+                strict=False
+            )
+        else:
+            assert launch_testing.tools.expect_output(
+                expected_lines=[
+                    'usage: ros2 security generate_policy [-h] POLICY_FILE_PATH',
+                    'ros2 security generate_policy: error: too few arguments'
+                ],
+                text=gen_command.output,
+                strict=False
+            )

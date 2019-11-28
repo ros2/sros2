@@ -15,9 +15,16 @@
 import os
 import tempfile
 
+import pytest
+
 from ros2cli import cli
 
 
+# TODO(jacobperron): On Windows, this test is flakey due to nodes left-over from tests in
+#                    other packages.
+#                    See: https://github.com/ros2/sros2/issues/143
+@pytest.mark.skipif(
+    'nt' == os.name, reason='flakey due to nodes left-over from tests in other packages')
 def test_generate_policy_no_nodes(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
         assert cli.main(argv=[
