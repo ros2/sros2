@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
 import rclpy
 from rclpy.node import Node
 
@@ -43,9 +41,6 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         print('node stopped cleanly')
-    except BaseException:
-        print('exception in node:', file=sys.stderr)
-        raise
     finally:
         node.destroy_node()
         rclpy.shutdown()

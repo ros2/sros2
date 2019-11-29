@@ -174,7 +174,7 @@ class TestSROS2GeneratePolicyVerb(unittest.TestCase):
     def test_generate_policy_no_policy_file(self):
         with self.launch_gen_policy_command(arguments=[]) as gen_command:
             assert gen_command.wait_for_shutdown(timeout=10)
-        assert gen_command.exit_code != 0
+        assert gen_command.exit_code != launch_testing.asserts.EXIT_OK
         if os.name != 'nt':
             assert launch_testing.tools.expect_output(
                 expected_lines=[
