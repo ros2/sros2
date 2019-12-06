@@ -28,7 +28,7 @@ except ImportError:
 
 from lxml import etree
 
-from ros2cli.node.direct import DirectNode
+from ros2cli.node.strategy import add_arguments as add_strategy_node_arguments
 from ros2cli.node.strategy import NodeStrategy
 
 from sros2.api import (
@@ -57,11 +57,11 @@ class GeneratePolicyVerb(VerbExtension):
     """Generate XML policy file from ROS graph data."""
 
     def add_arguments(self, parser, cli_name):
-
         arg = parser.add_argument(
             'POLICY_FILE_PATH', help='path of the policy xml file')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
+        add_strategy_node_arguments(parser)
 
     def get_policy(self, policy_file_path):
         if os.path.isfile(policy_file_path):
@@ -115,16 +115,14 @@ class GeneratePolicyVerb(VerbExtension):
 
     def main(self, *, args):
         policy = self.get_policy(args.POLICY_FILE_PATH)
-        node_names = []
         with NodeStrategy(args) as node:
             node_names = get_node_names(node=node, include_hidden_nodes=False)
 
-        if not len(node_names):
-            print('No nodes detected in the ROS graph. No policy file was generated.',
-                  file=sys.stderr)
-            return 1
+            if not len(node_names):
+                print('No nodes detected in the ROS graph. No policy file was generated.',
+                      file=sys.stderr)
+                return 1
 
-        with DirectNode(args) as node:
             for node_name in node_names:
                 profile = self.get_profile(policy, node_name)
                 subscribe_topics = get_subscriber_info(node=node, node_name=node_name)
