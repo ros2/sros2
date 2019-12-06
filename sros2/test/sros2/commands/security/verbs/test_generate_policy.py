@@ -177,7 +177,6 @@ class TestSROS2GeneratePolicyVerb(unittest.TestCase):
         assert gen_command.exit_code != launch_testing.asserts.EXIT_OK
         assert launch_testing.tools.expect_output(
             expected_lines=[
-                'usage: ros2 security generate_policy [-h] POLICY_FILE_PATH',
                 'ros2 security generate_policy: error: the following'
                 ' arguments are required: POLICY_FILE_PATH'
             ],
