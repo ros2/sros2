@@ -285,9 +285,9 @@ def create_key(keystore_path, identity):
     # symlink the CA cert in there
     public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
     for public_cert in public_certs:
-            dst = os.path.join(key_dir, public_cert)
-            relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
-            os.symlink(src=relativepath, dst=dst)
+        dst = os.path.join(key_dir, public_cert)
+        relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
+        os.symlink(src=relativepath, dst=dst)
 
     # copy the governance file in there
     keystore_governance_path = os.path.join(keystore_path, 'governance.p7s')
