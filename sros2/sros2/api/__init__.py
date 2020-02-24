@@ -287,7 +287,12 @@ def create_key(keystore_path, identity):
     for public_cert in public_certs:
         dst = os.path.join(key_dir, public_cert)
         relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
-        os.symlink(src=relativepath, dst=dst)
+        try:
+            os.symlink(src=relativepath, dst=dst)
+        except FileExistsError as e:
+            if not os.path.samefile(keystore_ca_cert_path, dst):
+                print('Existing symlink does not mach!')
+                raise RuntimeError(str(e))
 
     # copy the governance file in there
     keystore_governance_path = os.path.join(keystore_path, 'governance.p7s')
