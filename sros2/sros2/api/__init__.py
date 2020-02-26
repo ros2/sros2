@@ -291,7 +291,7 @@ def create_key(keystore_path, identity):
             os.symlink(src=relativepath, dst=dst)
         except FileExistsError as e:
             if not os.path.samefile(keystore_ca_cert_path, dst):
-                print('Existing symlink does not mach!')
+                print('Existing symlink does not match!')
                 raise RuntimeError(str(e))
 
     # copy the governance file in there
