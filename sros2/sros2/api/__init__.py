@@ -279,13 +279,20 @@ def create_key(keystore_path, identity):
     key_dir = os.path.join(keystore_path, relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
-    # copy the CA cert in there
     keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
     keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
-    dest_identity_ca_cert_path = os.path.join(key_dir, 'identity_ca.cert.pem')
-    dest_permissions_ca_cert_path = os.path.join(key_dir, 'permissions_ca.cert.pem')
-    shutil.copyfile(keystore_ca_cert_path, dest_identity_ca_cert_path)
-    shutil.copyfile(keystore_ca_cert_path, dest_permissions_ca_cert_path)
+
+    # symlink the CA cert in there
+    public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
+    for public_cert in public_certs:
+        dst = os.path.join(key_dir, public_cert)
+        relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
+        try:
+            os.symlink(src=relativepath, dst=dst)
+        except FileExistsError as e:
+            if not os.path.samefile(keystore_ca_cert_path, dst):
+                print('Existing symlink does not match!')
+                raise RuntimeError(str(e))
 
     # copy the governance file in there
     keystore_governance_path = os.path.join(keystore_path, 'governance.p7s')
