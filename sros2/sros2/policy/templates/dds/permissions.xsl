@@ -57,6 +57,19 @@
                 </xsl:for-each>
               </allow_rule>
             </xsl:if>
+            <allow_rule>
+              <xsl:copy-of select="$template_domains"/>
+              <publish>
+                <topics>
+                  <topic>ros_discovery_info</topic>
+                </topics>
+              </publish>
+              <subscribe>
+                <topics>
+                  <topic>ros_discovery_info</topic>
+                </topics>
+              </subscribe>
+            </allow_rule>
             <default>DENY</default>
           </grant>
         </xsl:for-each>

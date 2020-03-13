@@ -203,6 +203,7 @@ def is_key_name_valid(name):
 
 
 def create_permission_file(path, domain_id, policy_element):
+    print('creating permission file')
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
@@ -217,10 +218,12 @@ def create_permission_file(path, domain_id, policy_element):
     try:
         permissions_xsd.assertValid(permissions_xml)
     except etree.DocumentInvalid as e:
+        print('haha')
         raise RuntimeError(str(e))
 
     with open(path, 'wb') as f:
         f.write(etree.tostring(permissions_xml, pretty_print=True))
+    print('done')
 
 
 def get_policy(name, policy_file_path):
