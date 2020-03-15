@@ -229,20 +229,16 @@ def get_policy(name, policy_file_path):
 
 
 def get_policy_from_tree(name, policy_tree):
-    ns, node = name.rsplit('/', 1)
-    ns = '/' if not ns else ns
-    profile_element = policy_tree.find(
-        path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
-            ns=ns,
-            node=node))
-    if profile_element is None:
-        raise RuntimeError('unable to find profile "{name}"'.format(
+    context_element = policy_tree.find(
+        path='contexts/context[@path="{path}"]'.format(path=name))
+    if context_element is None:
+        raise RuntimeError('unable to find context "{name}"'.format(
             name=name
         ))
-    profiles_element = etree.Element('profiles')
-    profiles_element.append(profile_element)
+    contexts_element = etree.Element('contexts')
+    contexts_element.append(context_element)
     policy_element = etree.Element('policy')
-    policy_element.append(profiles_element)
+    policy_element.append(contexts_element)
     return policy_element
 
 
@@ -312,11 +308,8 @@ def create_key(keystore_path, identity):
     # later using a policy if desired
     policy_file_path = get_policy_default('policy.xml')
     policy_element = get_policy('/default', policy_file_path)
-    profile_element = policy_element.find('profiles/profile')
-    ns, node = identity.rsplit('/', 1)
-    ns = '/' if not ns else ns
-    profile_element.attrib['ns'] = ns
-    profile_element.attrib['node'] = node
+    context_element = policy_element.find('contexts/context')
+    context_element.attrib['path'] = identity
 
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     domain_id = os.getenv(DOMAIN_ID_ENV, '0')
@@ -364,9 +357,9 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
             return False
     for policy_file in policy_files:
         policy_tree = load_policy(policy_file)
-        profiles_element = policy_tree.find('profiles')
-        for profile in profiles_element:
-            identity_name = profile.get('ns').rstrip('/') + '/' + profile.get('node')
+        contexts_element = policy_tree.find('contexts')
+        for context in contexts_element:
+            identity_name = context.get('path')
             if identity_name not in identity_names:
                 if not create_key(keystore_path, identity_name):
                     return False
