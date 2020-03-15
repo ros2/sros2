@@ -2,11 +2,11 @@
 <policy version="0.1.0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
   <contexts>
-    <xi:include href="talker_listener.xml"
+    <xi:include href="talker_listener.policy.xml"
       xpointer="xpointer(/policy/contexts/*)"/>
-    <xi:include href="add_two_ints.xml"
+    <xi:include href="add_two_ints.policy.xml"
       xpointer="xpointer(/policy/contexts/*)"/>
-    <xi:include href="minimal_action.xml"
+    <xi:include href="minimal_action.policy.xml"
       xpointer="xpointer(/policy/contexts/*)"/>
     <context path="/sample_policy/admin">
       <profiles>
