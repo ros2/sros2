@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy version="0.1.0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+  <contexts>
+    <context path="single_context">
+      <profiles>
+        <xi:include href="talker_listener.policy.xml"
+          xpointer="xpointer(/policy/contexts/context/profiles/*)"/>
+        <xi:include href="add_two_ints.policy.xml"
+          xpointer="xpointer(/policy/contexts/context/profiles/*)"/>
+        <xi:include href="minimal_action.policy.xml"
+          xpointer="xpointer(/policy/contexts/context/profiles/*)"/>
+      </profiles>
+    </context>
+  </contexts>
+</policy>

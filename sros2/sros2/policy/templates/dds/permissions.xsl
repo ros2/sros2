@@ -29,33 +29,37 @@
           <xsl:variable name="common_name">
             <xsl:value-of select="@path"/>
           </xsl:variable>
-          <grant name="{$common_name}">
-            <subject_name>CN=<xsl:value-of select="$common_name"/></subject_name>
-            <xsl:copy-of select="$template_validity"/>
-            <xsl:for-each select="profiles/profile">
-              <xsl:if test="./*[@*='DENY']">
+          <xsl:for-each select="profiles">
+            <grant name="{$common_name}">
+              <subject_name>CN=<xsl:value-of select="$common_name"/></subject_name>
+              <xsl:copy-of select="$template_validity"/>
+              <xsl:if test="./profile/*[@*='DENY']">
                 <deny_rule>
                   <xsl:copy-of select="$template_domains"/>
-                  <xsl:for-each select="./*[@* = 'DENY']">
-                    <xsl:call-template name="TranslatePermissions">
-                      <xsl:with-param name="qualifier" select="'DENY'"/>
-                    </xsl:call-template>
+                  <xsl:for-each select="./profile">
+                    <xsl:for-each select="./*[@* = 'DENY']">
+                      <xsl:call-template name="TranslatePermissions">
+                        <xsl:with-param name="qualifier" select="'DENY'"/>
+                      </xsl:call-template>
+                    </xsl:for-each>
                   </xsl:for-each>
                 </deny_rule>
               </xsl:if>
-              <xsl:if test="./*[@* = 'ALLOW']">
+              <xsl:if test="./profile/*[@* = 'ALLOW']">
                 <allow_rule>
                   <xsl:copy-of select="$template_domains"/>
-                  <xsl:for-each select="./*[@* = 'ALLOW']">
-                    <xsl:call-template name="TranslatePermissions">
-                      <xsl:with-param name="qualifier" select="'ALLOW'"/>
-                    </xsl:call-template>
+                  <xsl:for-each select="./profile">
+                    <xsl:for-each select="./*[@* = 'ALLOW']">
+                      <xsl:call-template name="TranslatePermissions">
+                        <xsl:with-param name="qualifier" select="'ALLOW'"/>
+                      </xsl:call-template>
+                    </xsl:for-each>
                   </xsl:for-each>
                 </allow_rule>
               </xsl:if>
               <default>DENY</default>
-            </xsl:for-each>
-          </grant>
+            </grant>
+          </xsl:for-each>
         </xsl:for-each>
       </permissions>
     </dds>
