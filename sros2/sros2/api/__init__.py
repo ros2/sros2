@@ -143,17 +143,20 @@ def create_governance_file(path, domain_id):
 
 def create_keystore(keystore_path):
     if not os.path.exists(keystore_path):
-        print('creating directory: %s' % keystore_path)
+        print('creating keystore: %s' % keystore_path)
         os.makedirs(keystore_path, exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, 'public'), exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, 'private'), exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, 'contexts'), exist_ok=True)
     else:
-        print('directory already exists: %s' % keystore_path)
+        print('keystore already exists: %s' % keystore_path)
 
-    ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+    keystore_ca_cert_path = os.path.join(keystore_path, 'public', 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, 'private', 'ca.key.pem')
 
-    if not (os.path.isfile(ca_key_path) and os.path.isfile(ca_cert_path)):
+    if not (os.path.isfile(keystore_ca_key_path) and os.path.isfile(keystore_ca_cert_path)):
         print('creating new CA key/cert pair')
-        create_ca_key_cert(ca_key_path, ca_cert_path)
+        create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
     else:
         print('found CA key and cert, not creating new ones!')
 
@@ -170,7 +173,7 @@ def create_keystore(keystore_path):
     signed_gov_path = os.path.join(keystore_path, 'governance.p7s')
     if not os.path.isfile(signed_gov_path):
         print('creating signed governance file: %s' % signed_gov_path)
-        _create_smime_signed_file(ca_cert_path, ca_key_path, gov_path, signed_gov_path)
+        _create_smime_signed_file(keystore_ca_cert_path, keystore_ca_key_path, gov_path, signed_gov_path)
     else:
         print('found signed governance file, not creating a new one!')
 
@@ -257,8 +260,8 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
+    keystore_ca_cert_path = os.path.join(keystore_path, 'public', 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, 'private', 'ca.key.pem')
     _create_smime_signed_file(
         keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
@@ -275,8 +278,8 @@ def create_key(keystore_path, identity):
     key_dir = os.path.join(keystore_path, relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
-    keystore_ca_key_path = os.path.join(keystore_path, 'ca.key.pem')
-    keystore_ca_cert_path = os.path.join(keystore_path, 'ca.cert.pem')
+    keystore_ca_cert_path = os.path.join(keystore_path, 'public', 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, 'private', 'ca.key.pem')
 
     # symlink the CA cert in there
     public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
