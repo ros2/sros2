@@ -96,16 +96,6 @@
             <topic>rr/talker/set_parameters_atomicallyReply</topic>
             <topic>rt/chatter</topic>
             <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/rosout</topic>
-            <topic>rt/rosout</topic>
-            <topic>rt/rosout</topic>
-            <topic>rt/rosout</topic>
-            <topic>rt/rosout</topic>
             <topic>rt/rosout</topic>
           </topics>
         </publish>
@@ -195,16 +185,6 @@
             <topic>rr/talker/set_parameters_atomicallyReply</topic>
             <topic>rt/chatter</topic>
             <topic>rt/clock</topic>
-            <topic>rt/clock</topic>
-            <topic>rt/clock</topic>
-            <topic>rt/clock</topic>
-            <topic>rt/clock</topic>
-            <topic>rt/clock</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
-            <topic>rt/parameter_events</topic>
             <topic>rt/parameter_events</topic>
           </topics>
         </subscribe>

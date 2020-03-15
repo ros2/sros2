@@ -65,8 +65,13 @@
     </dds>
   </xsl:variable>
 
- <xsl:apply-templates mode="sort"
-   select="ext:node-set($dds)"/>
+  <xsl:variable name="dds_sorted">
+    <xsl:apply-templates mode="sort"
+      select="ext:node-set($dds)"/>
+  </xsl:variable>
+   
+ <xsl:apply-templates mode="prune"
+   select="ext:node-set($dds_sorted)"/>
 </xsl:template>
 
 <xsl:template name="TranslatePermissions">
@@ -290,6 +295,14 @@
 <xsl:template match="@*|node()" mode="sort">
   <xsl:copy>
     <xsl:apply-templates select="@*|node()" mode="sort"/>
+  </xsl:copy>
+</xsl:template>
+
+<xsl:template match="topic[. = preceding-sibling::topic]" mode="prune"/>
+
+<xsl:template match="@*|node()" mode="prune">
+  <xsl:copy>
+    <xsl:apply-templates select="@* | node()" mode="prune"/>
   </xsl:copy>
 </xsl:template>
 
