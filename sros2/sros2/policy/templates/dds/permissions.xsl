@@ -20,6 +20,8 @@
   </domains>
 </xsl:variable>
 
+<xsl:param name="allow_ros_discovery_topic" select="0"/>
+
 <xsl:template match="/policy/contexts">
   <xsl:variable name="dds">
     <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -55,6 +57,21 @@
                       </xsl:call-template>
                     </xsl:for-each>
                   </xsl:for-each>
+                </allow_rule>
+              </xsl:if>
+              <xsl:if test="$allow_ros_discovery_topic">
+                <allow_rule>
+                  <xsl:copy-of select="$template_domains"/>
+                  <publish>
+                    <topics>
+                      <topic>ros_discovery_info</topic>
+                    </topics>
+                  </publish>
+                  <subscribe>
+                    <topics>
+                      <topic>ros_discovery_info</topic>
+                    </topics>
+                  </subscribe>
                 </allow_rule>
               </xsl:if>
               <default>DENY</default>
