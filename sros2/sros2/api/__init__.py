@@ -40,6 +40,11 @@ from sros2.policy import (
     load_policy,
 )
 
+try:
+    from rclpy.utilities import get_rmw_implementation_identifier
+except ImportError:
+    get_rmw_implementation_identifier = None
+
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 
@@ -51,6 +56,22 @@ TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 KS_CONTEXT = 'contexts'
 KS_PUBLIC = 'public'
 KS_PRIVATE = 'private'
+
+
+def get_current_rmw_implementation():
+    """
+    Get the currently used rmw implementation.
+
+    This is used to generate the correct artifacts depending on the rmw implementation being used.
+    """
+    if get_rmw_implementation_identifier:
+        return get_rmw_implementation_identifier()
+    rmw_impl = os.environ.get('RMW_IMPLEMENTATION')
+    if rmw_impl is not None:
+        return rmw_impl
+    raise RuntimeError(
+        "Cannot identify rmw implementation, please set 'RMW_IMPLEMENTATION' "
+        'environment variable')
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
@@ -226,12 +247,16 @@ def is_key_name_valid(name):
 
 
 def create_permission_file(path, domain_id, policy_element):
+    print('creating permission')
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
-    permissions_xml = permissions_xsl(policy_element)
+    kwargs = {}
+    if get_current_rmw_implementation() in ('rmw_fastrtps_cpp','rmw_fastrtps_dynamic_cpp'):
+        kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam("1")
+    permissions_xml = permissions_xsl(policy_element, **kwargs)
 
     domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
     for domain_id_element in domain_id_elements:
