@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<policy version="0.1.0">
-  <profiles>
-    <profile ns="/" node="default">
-      <topics publish="ALLOW" subscribe="ALLOW">
-        <topic>/*</topic>
-      </topics>
-      <services reply="ALLOW" request="ALLOW">
-        <service>/*</service>
-      </services>
-      <actions call="ALLOW" execute="ALLOW">
-        <action>/*</action>
-      </actions>
-    </profile>
-  </profiles>
+<policy version="0.1.0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+  <contexts>
+    <context path="/">
+      <profiles>
+        <profile ns="/" node="default">
+          <topics publish="ALLOW" subscribe="ALLOW">
+            <topic>/*</topic>
+          </topics>
+          <services reply="ALLOW" request="ALLOW">
+            <service>/*</service>
+          </services>
+          <actions call="ALLOW" execute="ALLOW">
+            <action>/*</action>
+          </actions>
+        </profile>
+      </profiles>
+    </context>
+  </contexts>
 </policy>
