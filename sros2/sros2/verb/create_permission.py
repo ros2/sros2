@@ -31,17 +31,23 @@ class CreatePermissionVerb(VerbExtension):
     """Create permission."""
 
     def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
-        arg.completer = DirectoriesCompleter()
-        parser.add_argument('NAME', help='key name, aka ROS node name')
         arg = parser.add_argument(
-            'POLICY_FILE_PATH', help='path of the policy xml file')
+            '-k', '--keystore-root-path',
+            help='root path of keystore')
+        arg.completer = DirectoriesCompleter()
+        parser.add_argument(
+            '-c', '--context', nargs='*', default=[],
+            help='identity, aka ROS context path')
+        arg = parser.add_argument(
+            '-p', '--policy-files', nargs='*', default=[],
+            help='list of policy xml file paths')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
 
     def main(self, *, args):
         try:
-            success = create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
+            success = create_permission(
+                args.keystore_root_path, args.context, args.policy_files)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1

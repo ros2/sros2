@@ -28,12 +28,14 @@ class ListKeysVerb(VerbExtension):
     """List keys."""
 
     def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+        arg = parser.add_argument(
+            '-k', '--keystore-root-path',
+            help='root path of keystore')
         arg.completer = DirectoriesCompleter()
 
     def main(self, *, args):
         try:
-            if list_keys(args.ROOT):
+            if list_keys(args.keystore_root_path):
                 return 0
         except FileNotFoundError as e:
             print('No such file or directory: {!r}'.format(e.filename), file=sys.stderr)

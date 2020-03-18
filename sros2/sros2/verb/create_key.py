@@ -26,10 +26,15 @@ class CreateKeyVerb(VerbExtension):
     """Create key."""
 
     def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+        arg = parser.add_argument(
+            '-k', '--keystore-root-path',
+            help='root path of keystore')
         arg.completer = DirectoriesCompleter()
-        parser.add_argument('NAME', help='key name, aka ROS node name')
+        parser.add_argument(
+            '-c', '--context', nargs='*', default=[],
+            help='identity, aka ROS context path')
 
     def main(self, *, args):
-        success = create_key(args.ROOT, args.NAME)
+        success = create_key(
+            args.keystore_root_path, args.context)
         return 0 if success else 1

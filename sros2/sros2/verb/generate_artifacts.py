@@ -31,11 +31,13 @@ class GenerateArtifactsVerb(VerbExtension):
     """Generate keys and permission files from a list of identities and policy files."""
 
     def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('-k', '--keystore-root-path', help='root path of keystore')
+        arg = parser.add_argument(
+            '-k', '--keystore-root-path',
+            help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
-            '-n', '--node-names', nargs='*', default=[],
-            help='list of identities, aka ROS node names')
+            '-c', '--contexts', nargs='*', default=[],
+            help='list of identities, aka ROS context paths')
         arg = parser.add_argument(
             '-p', '--policy-files', nargs='*', default=[],
             help='list of policy xml file paths')
@@ -45,7 +47,7 @@ class GenerateArtifactsVerb(VerbExtension):
     def main(self, *, args):
         try:
             success = generate_artifacts(
-                args.keystore_root_path, args.node_names, args.policy_files)
+                args.keystore_root_path, args.contexts, args.policy_files)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1
