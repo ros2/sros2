@@ -48,6 +48,10 @@ _DEFAULT_COMMON_NAME = 'sros2testCA'
 NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
 TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
+KS_CONTEXT = 'contexts'
+KS_PUBLIC = 'public'
+KS_PRIVATE = 'private'
+
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
@@ -145,19 +149,19 @@ def create_keystore(keystore_path):
     if not os.path.exists(keystore_path):
         print('creating keystore: %s' % keystore_path)
         os.makedirs(keystore_path, exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, 'public'), exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, 'private'), exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, 'contexts'), exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, KS_PUBLIC), exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, KS_PRIVATE), exist_ok=True)
+        os.makedirs(os.path.join(keystore_path, KS_CONTEXT), exist_ok=True)
     else:
         print('keystore already exists: %s' % keystore_path)
 
-    keystore_ca_cert_path = os.path.join(keystore_path, 'public', 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(keystore_path, 'private', 'ca.key.pem')
+    keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'ca.key.pem')
     
-    keystore_permissions_ca_cert_path = os.path.join(keystore_path, 'public', 'permissions_ca.cert.pem')
-    keystore_permissions_ca_key_path = os.path.join(keystore_path, 'private', 'permissions_ca.key.pem')
-    keystore_identity_ca_cert_path = os.path.join(keystore_path, 'public', 'identity_ca.cert.pem')
-    keystore_identity_ca_key_path = os.path.join(keystore_path, 'private', 'identity_ca.key.pem')
+    keystore_permissions_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'permissions_ca.cert.pem')
+    keystore_permissions_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
+    keystore_identity_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'identity_ca.cert.pem')
+    keystore_identity_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'identity_ca.key.pem')
 
     if not (os.path.isfile(keystore_permissions_ca_cert_path) and os.path.isfile(keystore_permissions_ca_key_path) and
        not (os.path.isfile(keystore_identity_ca_cert_path) and os.path.isfile(keystore_identity_ca_key_path))):
@@ -171,7 +175,7 @@ def create_keystore(keystore_path):
         print('found CA key and cert, not creating new ones!')
 
     # create governance file
-    gov_path = os.path.join(keystore_path, 'contexts', 'governance.xml')
+    gov_path = os.path.join(keystore_path, KS_CONTEXT, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
         domain_id = os.getenv(DOMAIN_ID_ENV, '0')
@@ -180,7 +184,7 @@ def create_keystore(keystore_path):
         print('found governance file, not creating a new one!')
 
     # sign governance file
-    signed_gov_path = os.path.join(keystore_path, 'contexts', 'governance.p7s')
+    signed_gov_path = os.path.join(keystore_path, KS_CONTEXT, 'governance.p7s')
     if not os.path.isfile(signed_gov_path):
         print('creating signed governance file: %s' % signed_gov_path)
         _create_smime_signed_file(
@@ -198,11 +202,11 @@ def create_keystore(keystore_path):
 
 def is_valid_keystore(path):
     return (
-        os.path.isfile(os.path.join(path, 'public', 'permissions_ca.cert.pem')) and
-        os.path.isfile(os.path.join(path, 'public', 'identity_ca.cert.pem')) and
-        os.path.isfile(os.path.join(path, 'private','permissions_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, 'private','identity_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, 'contexts', 'governance.p7s'))
+        os.path.isfile(os.path.join(path, KS_PUBLIC, 'permissions_ca.cert.pem')) and
+        os.path.isfile(os.path.join(path, KS_PUBLIC, 'identity_ca.cert.pem')) and
+        os.path.isfile(os.path.join(path, KS_PRIVATE,'permissions_ca.key.pem')) and
+        os.path.isfile(os.path.join(path, KS_PRIVATE,'identity_ca.key.pem')) and
+        os.path.isfile(os.path.join(path, KS_CONTEXT, 'governance.p7s'))
     )
 
 
@@ -268,14 +272,14 @@ def create_permission(keystore_path, identity, policy_file_path):
 def create_permissions_from_policy_element(keystore_path, identity, policy_element):
     domain_id = os.getenv(DOMAIN_ID_ENV, '0')
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(keystore_path, 'contexts', relative_path)
+    key_dir = os.path.join(keystore_path, KS_CONTEXT, relative_path)
     print("creating permission file for identity: '%s'" % identity)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_ca_cert_path = os.path.join(keystore_path, 'public', 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(keystore_path, 'private', 'ca.key.pem')
+    keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'ca.cert.pem')
+    keystore_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'ca.key.pem')
     _create_smime_signed_file(
         keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
@@ -289,14 +293,14 @@ def create_key(keystore_path, identity):
     print("creating key for identity: '%s'" % identity)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(keystore_path, 'contexts', relative_path)
+    key_dir = os.path.join(keystore_path, KS_CONTEXT, relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # symlink the CA cert in there
     public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
     for public_cert in public_certs:
         dst = os.path.join(key_dir, public_cert)
-        keystore_ca_cert_path = os.path.join(keystore_path, 'public', public_cert)
+        keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, public_cert)
         relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
         try:
             os.symlink(src=relativepath, dst=dst)
@@ -306,13 +310,13 @@ def create_key(keystore_path, identity):
                 raise RuntimeError(str(e))
 
     # symlink the governance file in there
-    keystore_governance_path = os.path.join(keystore_path, 'contexts', 'governance.p7s')
+    keystore_governance_path = os.path.join(keystore_path, KS_CONTEXT, 'governance.p7s')
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     relativepath = os.path.relpath(keystore_governance_path, key_dir)
     os.symlink(src=relativepath, dst=dest_governance_path)
 
-    keystore_identity_ca_cert_path = os.path.join(keystore_path, 'public', 'identity_ca.cert.pem')
-    keystore_identity_ca_key_path = os.path.join(keystore_path, 'private', 'identity_ca.key.pem')
+    keystore_identity_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'identity_ca.cert.pem')
+    keystore_identity_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'identity_ca.key.pem')
 
     cert_path = os.path.join(key_dir, 'cert.pem')
     key_path = os.path.join(key_dir, 'key.pem')
@@ -335,7 +339,7 @@ def create_key(keystore_path, identity):
     create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_permissions_ca_key_path = os.path.join(keystore_path, 'private', 'permissions_ca.key.pem')
+    keystore_permissions_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
     _create_smime_signed_file(
         keystore_ca_cert_path, keystore_permissions_ca_key_path, permissions_path, signed_permissions_path)
 
