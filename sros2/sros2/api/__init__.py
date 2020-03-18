@@ -217,7 +217,7 @@ def is_key_name_valid(name):
     try:
         return (validate_namespace(node_ns) and validate_node_name(node_name))
     except (InvalidNamespaceException, InvalidNodeNameException) as e:
-        print('{}'.format(e))
+        print(f'{e}')
         return False
 
 
@@ -249,11 +249,9 @@ def get_policy(name, policy_file_path):
 
 def get_policy_from_tree(name, policy_tree):
     context_element = policy_tree.find(
-        path='contexts/context[@path="{path}"]'.format(path=name))
+        path=f'contexts/context[@path="{name}"]')
     if context_element is None:
-        raise RuntimeError('unable to find context "{name}"'.format(
-            name=name
-        ))
+        raise RuntimeError(f'unable to find context "{name}"')
     contexts_element = etree.Element('contexts')
     contexts_element.append(context_element)
     policy_element = etree.Element('policy')
