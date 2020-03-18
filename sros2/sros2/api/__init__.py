@@ -195,6 +195,7 @@ def create_keystore(keystore_path):
     print('cheers!')
     return True
 
+
 def is_valid_keystore(path):
     return (
         os.path.isfile(os.path.join(path, 'public', 'permissions_ca.cert.pem')) and
