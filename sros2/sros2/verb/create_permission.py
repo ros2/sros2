@@ -36,8 +36,8 @@ class CreatePermissionVerb(VerbExtension):
             help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
-            '-c', '--context', nargs='*', default=[],
-            help='identity, aka ROS context path')
+            '-c', '--security-contexts', nargs='*', default=[],
+            help='identity, aka ROS security contexts path')
         arg = parser.add_argument(
             '-p', '--policy-files', nargs='*', default=[],
             help='list of policy xml file paths')

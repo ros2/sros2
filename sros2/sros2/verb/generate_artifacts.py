@@ -36,8 +36,8 @@ class GenerateArtifactsVerb(VerbExtension):
             help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
-            '-c', '--contexts', nargs='*', default=[],
-            help='list of identities, aka ROS context paths')
+            '-c', '--security-contexts', nargs='*', default=[],
+            help='list of identities, aka ROS security contexts paths')
         arg = parser.add_argument(
             '-p', '--policy-files', nargs='*', default=[],
             help='list of policy xml file paths')

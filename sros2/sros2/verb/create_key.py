@@ -31,8 +31,8 @@ class CreateKeyVerb(VerbExtension):
             help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
-            '-c', '--contexts', nargs='*', default=[],
-            help='identity, aka ROS security context path')
+            '-c', '--security-contexts', nargs='*', default=[],
+            help='identity, aka ROS security contexts path')
 
     def main(self, *, args):
         for security_context in args.contexts:
