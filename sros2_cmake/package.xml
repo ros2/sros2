@@ -4,7 +4,7 @@
     <package format="3">
     <name>sros2_cmake</name>
     <version>0.8.1</version>
-    <description>CMake macros to configure security for nodes</description>
+    <description>Cmake macros to configure security</description>
     <maintainer email="ros-security@googlegroups.com">ROS Security Working Group</maintainer>
     <license>Apache 2.0</license>
 

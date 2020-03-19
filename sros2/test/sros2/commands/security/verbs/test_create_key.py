@@ -41,7 +41,11 @@ def security_context_keys_dir(tmpdir_factory):
     assert create_keystore(keystore_dir)
 
     # Now using that keystore, create a keypair along with other files required by DDS
-    assert cli.main(argv=['security', 'create_key', '-k', str(keystore_dir), '-c', '/test_security_context']) == 0
+    assert cli.main(
+        argv=[
+            'security', 'create_key', '-k', str(keystore_dir), '-c', '/test_security_context'
+        ]
+    ) == 0
     security_context_dir = keystore_dir / 'contexts' / 'test_security_context'
     assert security_context_dir.is_dir()
 

@@ -16,7 +16,6 @@ from collections import namedtuple
 import datetime
 import errno
 import os
-import shutil
 import sys
 
 from cryptography import x509
@@ -181,14 +180,20 @@ def create_keystore(keystore_path):
 
     keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'ca.key.pem')
-    
-    keystore_permissions_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'permissions_ca.cert.pem')
-    keystore_permissions_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
+
+    keystore_permissions_ca_cert_path = os.path.join(
+        keystore_path, KS_PUBLIC, 'permissions_ca.cert.pem')
+    keystore_permissions_ca_key_path = os.path.join(
+        keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
     keystore_identity_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'identity_ca.cert.pem')
     keystore_identity_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'identity_ca.key.pem')
 
-    if not (os.path.isfile(keystore_permissions_ca_cert_path) and os.path.isfile(keystore_permissions_ca_key_path) and
-       not (os.path.isfile(keystore_identity_ca_cert_path) and os.path.isfile(keystore_identity_ca_key_path))):
+    if not (
+        os.path.isfile(keystore_permissions_ca_cert_path) and
+        os.path.isfile(keystore_permissions_ca_key_path) and
+        os.path.isfile(keystore_identity_ca_cert_path) and
+        os.path.isfile(keystore_identity_ca_key_path)
+    ):
         print('creating new CA key/cert pair')
         create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
         os.symlink(src='ca.cert.pem', dst=keystore_permissions_ca_cert_path)
@@ -228,8 +233,8 @@ def is_valid_keystore(path):
     return (
         os.path.isfile(os.path.join(path, KS_PUBLIC, 'permissions_ca.cert.pem')) and
         os.path.isfile(os.path.join(path, KS_PUBLIC, 'identity_ca.cert.pem')) and
-        os.path.isfile(os.path.join(path, KS_PRIVATE,'permissions_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, KS_PRIVATE,'identity_ca.key.pem')) and
+        os.path.isfile(os.path.join(path, KS_PRIVATE, 'permissions_ca.key.pem')) and
+        os.path.isfile(os.path.join(path, KS_PRIVATE, 'identity_ca.key.pem')) and
         os.path.isfile(os.path.join(path, KS_CONTEXT, 'governance.p7s'))
     )
 
@@ -259,8 +264,8 @@ def create_permission_file(path, domain_id, policy_element):
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     kwargs = {}
-    if get_current_rmw_implementation() in ('rmw_fastrtps_cpp','rmw_fastrtps_dynamic_cpp'):
-        kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam("1")
+    if get_current_rmw_implementation() in ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp'):
+        kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
     permissions_xml = permissions_xsl(policy_element, **kwargs)
 
     domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
@@ -353,7 +358,12 @@ def create_key(keystore_path, identity):
     if not os.path.isfile(cert_path) or not os.path.isfile(key_path):
         print('creating cert and key')
         _create_key_and_cert(
-            keystore_identity_ca_cert_path, keystore_identity_ca_key_path, identity, cert_path, key_path)
+            keystore_identity_ca_cert_path,
+            keystore_identity_ca_key_path,
+            identity,
+            cert_path,
+            key_path
+        )
     else:
         print('found cert and key; not creating new ones!')
 
@@ -369,9 +379,14 @@ def create_key(keystore_path, identity):
     create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_permissions_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
+    keystore_permissions_ca_key_path = os.path.join(
+        keystore_path, KS_PRIVATE, 'permissions_ca.key.pem')
     _create_smime_signed_file(
-        keystore_ca_cert_path, keystore_permissions_ca_key_path, permissions_path, signed_permissions_path)
+        keystore_ca_cert_path,
+        keystore_permissions_ca_key_path,
+        permissions_path,
+        signed_permissions_path
+    )
 
     return True
 
