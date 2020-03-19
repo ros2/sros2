@@ -1,4 +1,4 @@
-# Copyright 2016-2019 Open Source Robotics Foundation, Inc.
+# Copyright 2016-2020 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-macro(ros2_secure_node)
-  # ros2_secure_node(NODES <node_1> <node_2>...<node_n>)
+macro(ros2_security_generate_artifacts)
+  # ros2_generate_security_artifacts(SECURITY_CONTEXTS <context_1> <context_1>...<context_1>)
   #
-  # NODES (macro multi-arg) takes the node names for which artifacts will be generated
+  # SECURITY_CONTEXTS (macro multi-arg) takes the context names for which artifacts will be generated
   # SECURITY (cmake arg) if not defined or OFF, will not generate keystore/keys/permissions
-  # POLICY_FILE (cmake arg) if defined, policies defined in the file will used to generate permission files for all the nodes listed in the policy file
+  # POLICY_FILE (cmake arg) if defined, policies defined in the file will used to generate
+  #   permission files for all the security contexts listed in the policy file.
   # ROS_SECURITY_ROOT_DIRECTORY (env variable) will be the location of the keystore
   if(NOT SECURITY)
     message(STATUS "Not generating security files")
@@ -30,13 +31,13 @@ macro(ros2_secure_node)
   else()
     set(SECURITY_KEYSTORE ${DEFAULT_KEYSTORE})
   endif()
-  cmake_parse_arguments(ros2_secure_node "" "" "NODES" ${ARGN})
+  cmake_parse_arguments(ros2_generate_security_artifacts "" "" "SECURITY_CONTEXTS" ${ARGN})
   set(generate_artifacts_command ${PROGRAM} security generate_artifacts -k ${SECURITY_KEYSTORE})
-  list(LENGTH ros2_secure_node_NODES nb_nodes)
-  if(${nb_nodes} GREATER "0")
-    list(APPEND generate_artifacts_command "-n")
-    foreach(node ${ros2_secure_node_NODES})
-        list(APPEND generate_artifacts_command ${node})
+  list(LENGTH ros2_generate_security_artifacts_SECURITY_CONTEXTS nb_security_contexts)
+  if(${nb_security_contexts} GREATER "0")
+    list(APPEND generate_artifacts_command "-c")
+    foreach(security_context ${ros2_generate_security_artifacts_SECURITY_CONTEXTS})
+        list(APPEND generate_artifacts_command security_context)
     endforeach()
   endif()
   if(POLICY_FILE)

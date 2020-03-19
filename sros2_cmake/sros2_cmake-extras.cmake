@@ -1,4 +1,4 @@
-# Copyright 2019 Open Source Robotics Foundation Inc.
+# Copyright 2019-2020 Open Source Robotics Foundation Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,5 @@
 
 set(DEFAULT_KEYSTORE "${CMAKE_INSTALL_PREFIX}/ros2_security/keystore")
 
-include("${sros2_cmake_DIR}/ros2_secure_node.cmake")
+include("${sros2_cmake_DIR}/ros2_security_generate_artifacts.cmake")
 
