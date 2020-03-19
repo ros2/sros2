@@ -188,12 +188,14 @@ def create_keystore(keystore_path):
     keystore_identity_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'identity_ca.cert.pem')
     keystore_identity_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'identity_ca.key.pem')
 
-    if not (
-        os.path.isfile(keystore_permissions_ca_cert_path) and
-        os.path.isfile(keystore_permissions_ca_key_path) and
-        os.path.isfile(keystore_identity_ca_cert_path) and
-        os.path.isfile(keystore_identity_ca_key_path)
-    ):
+    required_files = (
+        keystore_permissions_ca_cert_path,
+        keystore_permissions_ca_key_path,
+        keystore_identity_ca_cert_path,
+        keystore_identity_ca_key_path,
+    )
+
+    if not all(os.path.isfile(x) for x in required_files):
         print('creating new CA key/cert pair')
         create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
         os.symlink(src='ca.cert.pem', dst=keystore_permissions_ca_cert_path)
