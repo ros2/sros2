@@ -14,6 +14,7 @@
 
 from collections import namedtuple
 import datetime
+import errno
 import os
 import shutil
 import sys
@@ -167,14 +168,16 @@ def create_governance_file(path, domain_id):
 
 
 def create_keystore(keystore_path):
-    if not os.path.exists(keystore_path):
+    if not is_valid_keystore(keystore_path):
         print('creating keystore: %s' % keystore_path)
-        os.makedirs(keystore_path, exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, KS_PUBLIC), exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, KS_PRIVATE), exist_ok=True)
-        os.makedirs(os.path.join(keystore_path, KS_CONTEXT), exist_ok=True)
     else:
         print('keystore already exists: %s' % keystore_path)
+        return
+
+    os.makedirs(keystore_path, exist_ok=True)
+    os.makedirs(os.path.join(keystore_path, KS_PUBLIC), exist_ok=True)
+    os.makedirs(os.path.join(keystore_path, KS_PRIVATE), exist_ok=True)
+    os.makedirs(os.path.join(keystore_path, KS_CONTEXT), exist_ok=True)
 
     keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'ca.key.pem')
@@ -374,8 +377,13 @@ def create_key(keystore_path, identity):
 
 
 def list_keys(keystore_path):
-    for name in os.listdir(keystore_path):
-        if os.path.isdir(os.path.join(keystore_path, name)):
+    contexts_path = os.path.join(keystore_path, KS_CONTEXT)
+    if not os.path.exists(keystore_path):
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
+    if not os.path.exists(contexts_path):
+        return True
+    for name in os.listdir(contexts_path):
+        if os.path.isdir(os.path.join(contexts_path, name)):
             print(name)
     return True
 
