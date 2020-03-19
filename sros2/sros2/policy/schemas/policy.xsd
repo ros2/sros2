@@ -12,7 +12,7 @@
         <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element name="contexts" type="Contexts" />
         </xs:sequence>
-        <xs:attribute name="version" type="xs:string" use="required" />
+        <xs:attribute name="version" type="xs:string" use="required" fixed="0.2.0"/>
     </xs:complexType>
 
     <xs:complexType name="Contexts">
