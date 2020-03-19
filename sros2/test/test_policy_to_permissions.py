@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+from pathlib import Path
 
 from lxml import etree
 
@@ -35,9 +35,9 @@ def test_policy_to_permissions():
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     # Get policy
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    policy_xml_path = os.path.join(test_dir, 'policies', 'sample_policy.xml')
-    policy_xml = etree.parse(policy_xml_path)
+    test_dir = Path(__file__).resolve().parent
+    policy_xml_path = test_dir / 'policies' / 'sample.policy.xml'
+    policy_xml = etree.parse(str(policy_xml_path))
     policy_xml.xinclude()
 
     # Validate policy schema
@@ -50,8 +50,8 @@ def test_policy_to_permissions():
     permissions_xsd.assertValid(permissions_xml)
 
     # Assert expected permissions
-    permissions_xml_path = os.path.join(test_dir, 'policies', 'permissions.xml')
-    with open(permissions_xml_path) as f:
+    permissions_xml_path = test_dir / 'policies' / 'permissions' / 'sample' / 'permissions.xml'
+    with permissions_xml_path.open() as f:
         expected = f.read()
         actual = etree.tostring(permissions_xml, pretty_print=True).decode()
         assert actual == expected
