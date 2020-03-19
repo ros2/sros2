@@ -232,6 +232,8 @@ def is_valid_keystore(path):
 
 
 def is_key_name_valid(name):
+    # TODO(ivanpauno): Use validate_security_context_name when it's propagated to `rclpy`.
+    #   This is not to bad for the moment.
     ns_and_name = name.rsplit('/', 1)
     if len(ns_and_name) != 2:
         print("The key name needs to start with '/'")
