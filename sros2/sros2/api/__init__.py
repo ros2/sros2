@@ -28,9 +28,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
-from rclpy.exceptions import InvalidNodeNameException
 from rclpy.validate_namespace import validate_namespace
-from rclpy.validate_node_name import validate_node_name
 
 from sros2.policy import (
     get_policy_default,
@@ -64,7 +62,7 @@ def get_current_rmw_implementation():
 
     This is used to generate the correct artifacts depending on the rmw implementation being used.
     """
-    if get_rmw_implementation_identifier:
+    if get_rmw_implementation_identifier is not None:
         return get_rmw_implementation_identifier()
     rmw_impl = os.environ.get('RMW_IMPLEMENTATION')
     if rmw_impl is not None:
@@ -166,6 +164,15 @@ def create_governance_file(path, domain_id):
         f.write(etree.tostring(governance_xml, pretty_print=True))
 
 
+def _create_symlink(*, src, dst):
+    try:
+        os.symlink(src=src, dst=dst)
+    except FileExistsError:
+        if not os.path.samefile(src, dst):
+            print('Existing symlink does not match!')
+            raise
+
+
 def create_keystore(keystore_path):
     if not is_valid_keystore(keystore_path):
         print('creating keystore: %s' % keystore_path)
@@ -198,10 +205,10 @@ def create_keystore(keystore_path):
     if not all(os.path.isfile(x) for x in required_files):
         print('creating new CA key/cert pair')
         create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
-        os.symlink(src='ca.cert.pem', dst=keystore_permissions_ca_cert_path)
-        os.symlink(src='ca.key.pem', dst=keystore_permissions_ca_key_path)
-        os.symlink(src='ca.cert.pem', dst=keystore_identity_ca_cert_path)
-        os.symlink(src='ca.key.pem', dst=keystore_identity_ca_key_path)
+        _create_symlink(src='ca.cert.pem', dst=keystore_permissions_ca_cert_path)
+        _create_symlink(src='ca.key.pem', dst=keystore_permissions_ca_key_path)
+        _create_symlink(src='ca.cert.pem', dst=keystore_identity_ca_cert_path)
+        _create_symlink(src='ca.key.pem', dst=keystore_identity_ca_key_path)
     else:
         print('found CA key and cert, not creating new ones!')
 
@@ -244,16 +251,9 @@ def is_valid_keystore(path):
 def is_key_name_valid(name):
     # TODO(ivanpauno): Use validate_security_context_name when it's propagated to `rclpy`.
     #   This is not to bad for the moment.
-    ns_and_name = name.rsplit('/', 1)
-    if len(ns_and_name) != 2:
-        print("The key name needs to start with '/'")
-        return False
-    node_ns = ns_and_name[0] if ns_and_name[0] else '/'
-    node_name = ns_and_name[1]
-
     try:
-        return (validate_namespace(node_ns) and validate_node_name(node_name))
-    except (InvalidNamespaceException, InvalidNodeNameException) as e:
+        return validate_namespace(name)
+    except InvalidNamespaceException as e:
         print(f'{e}')
         return False
 
@@ -339,18 +339,13 @@ def create_key(keystore_path, identity):
         dst = os.path.join(key_dir, public_cert)
         keystore_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, public_cert)
         relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
-        try:
-            os.symlink(src=relativepath, dst=dst)
-        except FileExistsError as e:
-            if not os.path.samefile(keystore_ca_cert_path, dst):
-                print('Existing symlink does not match!')
-                raise RuntimeError(str(e))
+        _create_symlink(src=relativepath, dst=dst)
 
     # symlink the governance file in there
     keystore_governance_path = os.path.join(keystore_path, KS_CONTEXT, 'governance.p7s')
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     relativepath = os.path.relpath(keystore_governance_path, key_dir)
-    os.symlink(src=relativepath, dst=dest_governance_path)
+    _create_symlink(src=relativepath, dst=dest_governance_path)
 
     keystore_identity_ca_cert_path = os.path.join(keystore_path, KS_PUBLIC, 'identity_ca.cert.pem')
     keystore_identity_ca_key_path = os.path.join(keystore_path, KS_PRIVATE, 'identity_ca.key.pem')
@@ -395,9 +390,9 @@ def create_key(keystore_path, identity):
 
 def list_keys(keystore_path):
     contexts_path = os.path.join(keystore_path, KS_CONTEXT)
-    if not os.path.exists(keystore_path):
+    if not os.path.isdir(keystore_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
-    if not os.path.exists(contexts_path):
+    if not os.path.isdir(contexts_path):
         return True
     for name in os.listdir(contexts_path):
         if os.path.isdir(os.path.join(contexts_path, name)):
