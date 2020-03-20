@@ -28,6 +28,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from lxml import etree
 
 from rclpy.exceptions import InvalidNamespaceException
+from rclpy.utilities import get_rmw_implementation_identifier
 from rclpy.validate_namespace import validate_namespace
 
 from sros2.policy import (
@@ -37,11 +38,6 @@ from sros2.policy import (
     get_transport_template,
     load_policy,
 )
-
-try:
-    from rclpy.utilities import get_rmw_implementation_identifier
-except ImportError:
-    get_rmw_implementation_identifier = None
 
 HIDDEN_NODE_PREFIX = '_'
 DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
@@ -54,22 +50,6 @@ TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 KS_CONTEXT = 'contexts'
 KS_PUBLIC = 'public'
 KS_PRIVATE = 'private'
-
-
-def get_current_rmw_implementation():
-    """
-    Get the currently used rmw implementation.
-
-    This is used to generate the correct artifacts depending on the rmw implementation being used.
-    """
-    if get_rmw_implementation_identifier is not None:
-        return get_rmw_implementation_identifier()
-    rmw_impl = os.environ.get('RMW_IMPLEMENTATION')
-    if rmw_impl is not None:
-        return rmw_impl
-    raise RuntimeError(
-        "Cannot identify rmw implementation, please set 'RMW_IMPLEMENTATION' "
-        'environment variable')
 
 
 def get_node_names(*, node, include_hidden_nodes=False):
@@ -266,7 +246,7 @@ def create_permission_file(path, domain_id, policy_element):
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     kwargs = {}
-    if get_current_rmw_implementation() in ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp'):
+    if get_rmw_implementation_identifier() in ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp'):
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
     permissions_xml = permissions_xsl(policy_element, **kwargs)
 
