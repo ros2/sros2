@@ -47,7 +47,7 @@ class GenerateArtifactsVerb(VerbExtension):
     def main(self, *, args):
         try:
             success = generate_artifacts(
-                args.keystore_root_path, args.contexts, args.policy_files)
+                args.keystore_root_path, args.security_contexts, args.policy_files)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1
