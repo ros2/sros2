@@ -34,14 +34,14 @@ class CreatePermissionVerb(VerbExtension):
         arg = parser.add_argument('-k', '--keystore-root-path', help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
-            '-c', '--security-context', help='identity, aka ROS security contexts path')
-        arg = parser.add_argument('-p', '--policy-files', help='list of policy xml file paths')
+            '-c', '--security-context', help='identity, aka ROS security context path')
+        arg = parser.add_argument('-p', '--policy-file', help='path to the policy xml file')
         arg.completer = FilesCompleter(allowednames=('xml'), directories=False)
 
     def main(self, *, args):
         try:
             success = create_permission(
-                args.keystore_root_path, args.security_context, args.policy_files)
+                args.keystore_root_path, args.security_context, args.policy_file)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1

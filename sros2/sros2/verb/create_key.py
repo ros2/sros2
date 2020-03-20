@@ -32,7 +32,7 @@ class CreateKeyVerb(VerbExtension):
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
             '-c', '--security-context',
-            help='identity, aka ROS security contexts path')
+            help='identity, aka ROS security context path')
 
     def main(self, *, args):
         return 1 if create_key(args.keystore_root_path, args.security_context) is False else 0
