@@ -145,12 +145,13 @@ def create_governance_file(path, domain_id):
 
 
 def _create_symlink(*, src, dst):
-    try:
-        os.symlink(src=src, dst=dst)
-    except FileExistsError:
-        if not os.path.samefile(src, dst):
-            print('Existing symlink does not match!')
-            raise
+    if os.path.exists(dst):
+        src_abs_path = os.path.join(os.path.dirname(dst), src)
+        if os.path.samefile(src_abs_path, dst):
+            return
+        print(f"Existing symlink '{dst}' does not match '{src_abs_path}', overriding it!")
+        os.remove(dst)
+    os.symlink(src=src, dst=dst)
 
 
 def create_keystore(keystore_path):
