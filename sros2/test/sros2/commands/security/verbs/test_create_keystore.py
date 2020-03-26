@@ -61,7 +61,7 @@ def test_create_keystore(keystore_dir):
     assert len(list(private.iterdir())) == len(expected_files_private)
     assert len(list(contexts.iterdir())) == len(expected_files_contexts)
     expected_files = expected_files_public + expected_files_private + expected_files_contexts
-    assert all(x.exists() for x in expected_files)
+    assert all(x.is_file() for x in expected_files)
 
 
 def test_ca_cert(keystore_dir):

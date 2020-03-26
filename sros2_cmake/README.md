@@ -6,11 +6,11 @@ In package.xml add:
 `<depend>sros2_cmake</depend>`  
 In CMakeLists add:  
 `find_package(sros2_cmake REQUIRED)`  
-`ros2_security_generate_artifacts(SECURITY_CONTEXTS <context_name>)`  
+`sros2_generate_artifacts(SECURITY_CONTEXTS <context_name>)`  
 
 Macro definition:  
 ```
-    # ros2_security_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_2>...<context_n>)
+    # sros2_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_2>...<context_n>)
 
     # SECURITY_CONTEXTS (macro multi-arg) takes the security contexts names for which keys will be generated
     #   Each executable can be using a different (or the same), security contexts.

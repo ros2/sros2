@@ -51,6 +51,8 @@ KS_CONTEXT = 'contexts'
 KS_PUBLIC = 'public'
 KS_PRIVATE = 'private'
 
+RMW_WITH_ROS_GRAPH_INFO_TOPIC = ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp')
+
 
 def get_node_names(*, node, include_hidden_nodes=False):
     node_names_and_namespaces = node.get_node_names_and_namespaces()
@@ -247,7 +249,7 @@ def create_permission_file(path, domain_id, policy_element):
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     kwargs = {}
-    if get_rmw_implementation_identifier() in ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp'):
+    if get_rmw_implementation_identifier() in RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
     permissions_xml = permissions_xsl(policy_element, **kwargs)
 

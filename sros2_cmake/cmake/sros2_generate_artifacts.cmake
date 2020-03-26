@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-macro(ros2_security_generate_artifacts)
-  # ros2_generate_security_artifacts(SECURITY_CONTEXTS <context_1> <context_1>...<context_1>)
+macro(sros2_generate_artifacts)
+  # sros2_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_1>...<context_1>)
   #
   # SECURITY_CONTEXTS (macro multi-arg) takes the context names for which artifacts will be generated
   # SECURITY (cmake arg) if not defined or OFF, will not generate keystore/keys/permissions

@@ -14,5 +14,5 @@
 
 set(DEFAULT_KEYSTORE "${CMAKE_INSTALL_PREFIX}/ros2_security/keystore")
 
-include("${sros2_cmake_DIR}/ros2_security_generate_artifacts.cmake")
+include("${sros2_cmake_DIR}/sros2_generate_artifacts.cmake")
 
