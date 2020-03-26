@@ -25,7 +25,7 @@ from test_msgs.srv import Empty
 
 
 # TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skipif(True, reason='temporarily deactivated')
+@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_topics():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific context so that generate_policy can still init
@@ -68,7 +68,7 @@ def test_generate_policy_topics():
 
 
 # TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skipif(True, reason='temporarily deactivated')
+@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_services():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific context so that generate_policy can still init
@@ -111,7 +111,7 @@ def test_generate_policy_services():
 
 
 # TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skipif(True, reason='temporarily deactivated')
+@pytest.mark.skip(reason='temporarily deactivated')
 # TODO(jacobperron): On Windows, this test is flakey due to nodes left-over from tests in
 #                    other packages.
 #                    See: https://github.com/ros2/sros2/issues/143
@@ -125,7 +125,7 @@ def test_generate_policy_no_nodes(capsys):
         assert stderr == 'No nodes detected in the ROS graph. No policy file was generated.'
 
 
-@pytest.mark.skipif(True, reason='temporarily deactivated')
+@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_no_policy_file(capsys):
     with pytest.raises(SystemExit) as e:
         cli.main(argv=['security', 'generate_policy'])
