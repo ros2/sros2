@@ -20,8 +20,8 @@ import pytest
 import rclpy
 from ros2cli import cli
 from sros2.policy import load_policy
-from std_msgs.msg import String
-from std_srvs.srv import Trigger
+from test_msgs.msg import Strings
+from test_msgs.srv import Empty
 
 
 def test_generate_policy_topics():
@@ -33,9 +33,9 @@ def test_generate_policy_topics():
 
         try:
             # Create a publisher and subscription
-            node.create_publisher(String, 'test_generate_policy_topics_pub', 1)
+            node.create_publisher(Strings, 'test_generate_policy_topics_pub', 1)
             node.create_subscription(
-                String, 'test_generate_policy_topics_sub', lambda msg: None, 1)
+                Strings, 'test_generate_policy_topics_sub', lambda msg: None, 1)
 
             # Generate the policy for the running node
             assert cli.main(
@@ -74,8 +74,8 @@ def test_generate_policy_services():
 
         try:
             # Create a server and client
-            node.create_client(Trigger, 'test_generate_policy_services_client')
-            node.create_service(Trigger, 'test_generate_policy_services_server', lambda request,
+            node.create_client(Empty, 'test_generate_policy_services_client')
+            node.create_service(Empty, 'test_generate_policy_services_server', lambda request,
                                 response: response)
 
             # Generate the policy for the running node
