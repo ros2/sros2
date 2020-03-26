@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
-    <package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+    <package format="3">
     <name>sros2_cmake</name>
     <version>0.7.1</version>
-    <description>Cmake macros to configure security for nodes</description>
-    <author email="aws-b9-platform@amazon.com">AWS B9 Team</author>
-    <maintainer email="aws-b9-platform@amazon.com">AWS B9 Team</maintainer>
-    <maintainer email="michael@openrobotics.org">Michael Carroll</maintainer>
+    <description>CMake macros to configure security for nodes</description>
+    <maintainer email="ros-security@googlegroups.com">ROS Security Working Group</maintainer>
     <license>Apache 2.0</license>
+
+    <author>AWS RoboMaker</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
     <build_depend>ament_cmake_test</build_depend>
 
-    <build_export_depend>sros2</build_export_depend>
     <build_export_depend>ros2cli</build_export_depend>
+    <build_export_depend>sros2</build_export_depend>
 
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
