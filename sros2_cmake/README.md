@@ -13,9 +13,9 @@ Macro definition:
     # sros2_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_2>...<context_n>)
 
     # SECURITY_CONTEXTS (macro multi-arg) takes the security contexts names for which keys will be generated
-    #   Each executable can be using a different (or the same), security contexts.
+    #   Executables can use a different or the same security contexts.
     #   All nodes in the same process use the same security context.
     # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
     # ROS_SECURITY_ROOT_DIRECTORY (env variable) the location of the keystore
-    # POLICY_FILE (cmake arg) if defined, will compile policies by security context name into the access private certificates (e.g POLICY_FILE=/etc/policies/<policy.xml>, Generate: <context_name> /etc/policies/<policy.xml>) **if defined, all contexts must have a policy defined for them**
+    # POLICY_FILE (cmake arg) if defined, will generate security artifacts for each context defined in the policy file.
 ```

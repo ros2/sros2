@@ -35,4 +35,5 @@ class CreateKeyVerb(VerbExtension):
             help='identity, aka ROS security context path')
 
     def main(self, *, args):
-        return 1 if create_key(args.keystore_root_path, args.security_context) is False else 0
+        success = create_key(args.keystore_root_path, args.security_context)
+        return 0 if success else 1
