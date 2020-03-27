@@ -47,9 +47,9 @@ jobs:
         apt-get -qq update
         apt-get -qq upgrade -y
         rosdep update
-        rosdep install -y --from-paths . --ignore-src --rosdistro foxy
-    - run: . /opt/ros/foxy/setup.sh && colcon build
-    - run: . /opt/ros/foxy/setup.sh && colcon test
+        rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
+    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
+    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test
     - run: colcon test-result
     - name: Upload Logs
       uses: actions/upload-artifact@v1
