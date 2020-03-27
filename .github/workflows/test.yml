@@ -1,4 +1,4 @@
-name: Test sros2
+name: SROS2 CI
 on:
   pull_request:
   push:
