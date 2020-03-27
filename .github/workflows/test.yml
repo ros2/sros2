@@ -49,7 +49,7 @@ jobs:
         rosdep update
         rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
     - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
-    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test
+    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+
     - run: colcon test-result
     - name: Upload Logs
       uses: actions/upload-artifact@v1
