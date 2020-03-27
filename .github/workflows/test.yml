@@ -4,7 +4,7 @@ on:
   push:
   schedule:
     # Run daily
-    - cron:  '0 12 * * *'
+    - cron:  '0 20 * * *'
 
 jobs:
   test_latest:
