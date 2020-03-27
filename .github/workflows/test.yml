@@ -20,8 +20,9 @@ jobs:
         package-name: |
           sros2
           sros2_cmake
-          # commented for now https://github.com/eProsima/Fast-RTPS/issues/1087
-          # test_security
+        # skipping end-to-end tests for now https://github.com/eProsima/Fast-RTPS/issues/1087
+        #  test_security
+        # extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
