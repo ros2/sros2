@@ -22,6 +22,8 @@
       <xsl:sort select="text()"/>
       <!-- by namespace -->
       <xsl:sort select="concat(@ns, @node)"/>
+      <!-- by path -->
+      <xsl:sort select="concat(@path)"/>
     </xsl:apply-templates>
   </xsl:copy>
 </xsl:template>

@@ -24,7 +24,6 @@ def test_is_key_name_valid():
     # Invalid cases
     assert not is_key_name_valid('')
     assert not is_key_name_valid(' ')
-    assert not is_key_name_valid('/')
     assert not is_key_name_valid('//')
     assert not is_key_name_valid('foo')
     assert not is_key_name_valid('foo/bar')
