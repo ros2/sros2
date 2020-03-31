@@ -36,7 +36,7 @@ def test_policy_to_permissions():
 
     # Get policy
     test_dir = os.path.dirname(os.path.abspath(__file__))
-    policy_xml_path = os.path.join(test_dir, 'policies', 'sample_policy.xml')
+    policy_xml_path = os.path.join(test_dir, 'policies', 'sample.policy.xml')
     policy_xml = etree.parse(policy_xml_path)
     policy_xml.xinclude()
 
