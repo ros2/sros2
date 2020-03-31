@@ -33,7 +33,7 @@ class CreatePermissionVerb(VerbExtension):
     def add_arguments(self, parser, cli_name):
         arg = parser.add_argument('ROOT', help='root path of keystore')
         arg.completer = DirectoriesCompleter()
-        parser.add_argument('NAME', help='key name, aka ROS node name')
+        parser.add_argument('NAME', help='key name, aka ROS security context name')
         arg = parser.add_argument(
             'POLICY_FILE_PATH', help='path of the policy xml file')
         arg.completer = FilesCompleter(

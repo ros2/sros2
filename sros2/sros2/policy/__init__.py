@@ -18,7 +18,7 @@ from lxml import etree
 
 import pkg_resources
 
-POLICY_VERSION = '0.1.0'
+POLICY_VERSION = '0.2.0'
 
 
 def get_policy_default(name):
