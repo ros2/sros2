@@ -33,7 +33,7 @@ permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
 permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
 # Get policy
-policy_xml_path = 'sample_policy.xml'
+policy_xml_path = 'sample.policy.xml'
 policy_xml = etree.parse(policy_xml_path)
 policy_xml.xinclude()
 
