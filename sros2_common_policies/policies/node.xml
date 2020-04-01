@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile xmlns:xi="http://www.w3.org/2003/XInclude">
+  <sros2_policy package="sros2_common_policies" policy="node/logging.xml" />
+  <sros2_policy package="sros2_common_policies" policy="node/time.xml" />
+  <sros2_policy package="sros2_common_policies" policy="node/parameters.xml" />
+</profile>

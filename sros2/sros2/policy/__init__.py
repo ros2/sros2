@@ -61,6 +61,7 @@ def load_policy(policy_file_path):
     if not os.path.isfile(policy_file_path):
         raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
     policy = etree.parse(policy_file_path)
+
     policy.xinclude()
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')

@@ -12,7 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# copied from sros2_cmake/sros2_cmake-extras.cmake
+
 set(DEFAULT_KEYSTORE "${CMAKE_INSTALL_PREFIX}/ros2_security/keystore")
 
 include("${sros2_cmake_DIR}/ros2_secure_node.cmake")
+
+# register ament_package() hook for security policies once.
+macro(_sros2_cmake_register_package_hook)
+  if(NOT DEFINED _SROS2_CMAKE_PACKAGE_HOOK_REGISTERED)
+    set(_SROS2_CMAKE_PACKAGE_HOOK_REGISTERED TRUE)
+
+    find_package(ament_cmake_core QUIET REQUIRED)
+    ament_register_extension("ament_package" "sros2_cmake"
+      "sros2_cmake_package_hook.cmake")
+  endif()
+endmacro()
+
+include("${sros2_cmake_DIR}/sros2_cmake_install_policies.cmake")
 
