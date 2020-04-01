@@ -1,0 +1,61 @@
+name: SROS2 CI
+on:
+  pull_request:
+  push:
+  schedule:
+    # Run daily
+    - cron:  '0 20 * * *'
+
+jobs:
+  test_latest:
+    runs-on: ubuntu-latest
+    container: osrf/ros2:devel
+    steps:
+    - run: |
+        apt-get -qq update
+        apt-get -qq upgrade -y
+        apt-get -qq install -y curl libasio-dev libtinyxml2-dev
+    # TODO(mikaelarguedas) switch back to ros-tooling/action-ros-ci once
+    # https://github.com/ros-tooling/action-ros-ci/pull/109 is released
+    - uses: mikaelarguedas/action-ros-ci@sros2-version
+      with:
+        package-name: |
+          sros2
+          sros2_cmake
+        # skipping end-to-end tests for now https://github.com/eProsima/Fast-RTPS/issues/1087
+        #  test_security
+        # extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.6
+      if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
+      with:
+        file: ros_ws/build/sros2/coverage.xml
+        flags: unittests
+        name: sros2-coverage
+        fail_ci_if_error: true
+        yml: .codecov.yml
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: colcon-logs
+        path: ros_ws/log
+  test_nightly:
+    runs-on: ubuntu-latest
+    container: osrf/ros2:nightly
+    steps:
+    - uses: actions/checkout@v1
+    - run: |
+        apt-get -qq update
+        apt-get -qq upgrade -y
+        rosdep update
+        rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
+    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
+    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+
+    - run: colcon test-result
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: colcon-logs
+        path: ros_ws/log
