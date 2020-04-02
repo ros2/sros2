@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     container: osrf/ros2:devel
     steps:
-    - run: |
+    - name: Install prerequisites for action-ros-ci and FastRTPS
+      run: |
         apt-get -qq update
         apt-get -qq upgrade -y
         apt-get -qq install -y curl libasio-dev libtinyxml2-dev
@@ -33,7 +34,6 @@ jobs:
         flags: unittests
         name: sros2-coverage
         fail_ci_if_error: true
-        yml: .codecov.yml
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: failure()
