@@ -27,8 +27,7 @@ import pytest
 
 from ros2cli import cli
 
-from sros2.api import _DEFAULT_COMMON_NAME
-from sros2.api import create_keystore
+from sros2.api import _keystore
 from sros2.policy import get_transport_schema
 
 
@@ -38,7 +37,7 @@ def security_context_keys_dir(tmpdir_factory):
     keystore_dir = Path(str(tmpdir_factory.mktemp('keystore')))
 
     # First, create the keystore
-    assert create_keystore(keystore_dir)
+    assert _keystore.create_keystore(keystore_dir)
 
     # Now using that keystore, create a keypair along with other files required by DDS
     assert cli.main(
@@ -104,7 +103,7 @@ def test_create_key(security_context_keys_dir):
 def test_cert_pem(security_context_keys_dir):
     cert = load_cert(security_context_keys_dir / 'cert.pem')
     check_common_name(cert.subject, u'/test_security_context')
-    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
     # Verify that the hash algorithm is as expected
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
@@ -140,8 +139,8 @@ def test_governance_p7s(security_context_keys_dir):
 
 def test_identity_ca_cert_pem(security_context_keys_dir):
     cert = load_cert(security_context_keys_dir / 'identity_ca.cert.pem')
-    check_common_name(cert.subject, _DEFAULT_COMMON_NAME)
-    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
+    check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
 
 def test_key_pem(security_context_keys_dir):
@@ -173,8 +172,8 @@ def test_permissions_xml(security_context_keys_dir):
 
 def test_permissions_ca_cert_pem(security_context_keys_dir):
     cert = load_cert(security_context_keys_dir / 'permissions_ca.cert.pem')
-    check_common_name(cert.subject, _DEFAULT_COMMON_NAME)
-    check_common_name(cert.issuer, _DEFAULT_COMMON_NAME)
+    check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
     signatory = load_cert(security_context_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)

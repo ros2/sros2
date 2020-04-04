@@ -22,7 +22,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 import pytest
 
 from ros2cli import cli
-from sros2.api import _DEFAULT_COMMON_NAME
+from sros2.api import _keystore
 
 
 # This fixture will run once for the entire module (as opposed to once per test)
@@ -69,7 +69,7 @@ def test_ca_cert(keystore_dir):
         cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
         names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
         assert len(names) == 1
-        assert names[0].value == _DEFAULT_COMMON_NAME
+        assert names[0].value == _keystore._DEFAULT_COMMON_NAME
         names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.ORGANIZATION_NAME)
         assert len(names) == 0
 
