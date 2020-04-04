@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     container: osrf/ros2:nightly
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - run: |
         apt-get -qq update
         apt-get -qq upgrade -y
