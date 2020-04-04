@@ -45,14 +45,18 @@ jobs:
     container: osrf/ros2:nightly
     steps:
     - uses: actions/checkout@v2
-    - run: |
+    - name: Installing dependencies
+      run: |
         apt-get -qq update
         apt-get -qq upgrade -y
         rosdep update
         rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
-    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
-    - run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+
-    - run: colcon test-result
+    - name: Build workspace
+      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
+    - name: Test workspace
+      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+
+    - name: Check test results
+      run: colcon test-result
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: failure()
