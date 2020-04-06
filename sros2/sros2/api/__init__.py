@@ -145,16 +145,16 @@ def create_permission(keystore_path, identity, policy_file_path):
 
 def create_permissions_from_policy_element(keystore_path, identity, policy_element):
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.keystore_context_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_context_dir(keystore_path), relative_path)
     print("creating permission file for identity: '%s'" % identity)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(
-        _keystore.keystore_public_dir(keystore_path), 'ca.cert.pem')
+        _keystore.get_keystore_public_dir(keystore_path), 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(
-        _keystore.keystore_private_dir(keystore_path), 'ca.key.pem')
+        _keystore.get_keystore_private_dir(keystore_path), 'ca.key.pem')
     _utilities.create_smime_signed_file(
         keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
@@ -168,7 +168,7 @@ def create_key(keystore_path, identity):
     print("creating key for identity: '%s'" % identity)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.keystore_context_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_context_dir(keystore_path), relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # symlink the CA cert in there
@@ -176,21 +176,21 @@ def create_key(keystore_path, identity):
     for public_cert in public_certs:
         dst = os.path.join(key_dir, public_cert)
         keystore_ca_cert_path = os.path.join(
-            _keystore.keystore_public_dir(keystore_path), public_cert)
+            _keystore.get_keystore_public_dir(keystore_path), public_cert)
         relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
         _utilities.create_symlink(src=relativepath, dst=dst)
 
     # symlink the governance file in there
     keystore_governance_path = os.path.join(
-        _keystore.keystore_context_dir(keystore_path), 'governance.p7s')
+        _keystore.get_keystore_context_dir(keystore_path), 'governance.p7s')
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     relativepath = os.path.relpath(keystore_governance_path, key_dir)
     _utilities.create_symlink(src=relativepath, dst=dest_governance_path)
 
     keystore_identity_ca_cert_path = os.path.join(
-        _keystore.keystore_public_dir(keystore_path), 'identity_ca.cert.pem')
+        _keystore.get_keystore_public_dir(keystore_path), 'identity_ca.cert.pem')
     keystore_identity_ca_key_path = os.path.join(
-        _keystore.keystore_private_dir(keystore_path), 'identity_ca.key.pem')
+        _keystore.get_keystore_private_dir(keystore_path), 'identity_ca.key.pem')
 
     cert_path = os.path.join(key_dir, 'cert.pem')
     key_path = os.path.join(key_dir, 'key.pem')
@@ -218,7 +218,7 @@ def create_key(keystore_path, identity):
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_permissions_ca_key_path = os.path.join(
-        _keystore.keystore_private_dir(keystore_path), 'permissions_ca.key.pem')
+        _keystore.get_keystore_private_dir(keystore_path), 'permissions_ca.key.pem')
     _utilities.create_smime_signed_file(
         keystore_ca_cert_path,
         keystore_permissions_ca_key_path,
@@ -230,7 +230,7 @@ def create_key(keystore_path, identity):
 
 
 def list_keys(keystore_path):
-    contexts_path = _keystore.keystore_context_dir(keystore_path)
+    contexts_path = _keystore.get_keystore_context_dir(keystore_path)
     if not os.path.isdir(keystore_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
     if not os.path.isdir(contexts_path):

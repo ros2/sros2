@@ -106,15 +106,15 @@ def is_valid_keystore(path):
     )
 
 
-def keystore_context_dir(keystore_path: str) -> str:
+def get_keystore_context_dir(keystore_path: str) -> str:
     return os.path.join(keystore_path, _KS_CONTEXT)
 
 
-def keystore_public_dir(keystore_path: str) -> str:
+def get_keystore_public_dir(keystore_path: str) -> str:
     return os.path.join(keystore_path, _KS_PUBLIC)
 
 
-def keystore_private_dir(keystore_path: str) -> str:
+def get_keystore_private_dir(keystore_path: str) -> str:
     return os.path.join(keystore_path, _KS_PRIVATE)
 
 
