@@ -1,4 +1,3 @@
-# Copyright 2020 Canonical Ltd
 # Copyright 2016-2019 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import lxml
+from lxml import etree
 
 from sros2.policy import load_policy
 
@@ -28,8 +27,8 @@ def get_policy_from_tree(name, policy_tree):
         path=f'contexts/context[@path="{name}"]')
     if context_element is None:
         raise RuntimeError(f'unable to find context "{name}"')
-    contexts_element = lxml.etree.Element('contexts')
+    contexts_element = etree.Element('contexts')
     contexts_element.append(context_element)
-    policy_element = lxml.etree.Element('policy')
+    policy_element = etree.Element('policy')
     policy_element.append(contexts_element)
     return policy_element
