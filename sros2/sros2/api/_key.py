@@ -1,3 +1,4 @@
+# Copyright 2019-2020 Canonical Ltd
 # Copyright 2016-2019 Open Source Robotics Foundation, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 import errno
 import os
-import sys
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -24,75 +23,16 @@ from cryptography.hazmat.primitives import serialization
 from rclpy.exceptions import InvalidNamespaceException
 from rclpy.validate_namespace import validate_namespace
 
-from sros2.policy import (
-    get_policy_default,
-    load_policy,
-)
+from sros2.policy import get_policy_default
 
 from . import _keystore, _permission, _policy, _utilities
-
-HIDDEN_NODE_PREFIX = '_'
-
-NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
-TopicInfo = namedtuple('Topic', ('fqn', 'type'))
-
-
-def get_node_names(*, node, include_hidden_nodes=False):
-    node_names_and_namespaces = node.get_node_names_and_namespaces()
-    return [
-        NodeName(
-            node=t[0],
-            ns=t[1],
-            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
-        for t in node_names_and_namespaces
-        if (
-            include_hidden_nodes or
-            (t[0] and not t[0].startswith(HIDDEN_NODE_PREFIX))
-        )
-    ]
-
-
-def get_topics(node_name, func):
-    names_and_types = func(node_name.node, node_name.ns)
-    return [
-        TopicInfo(
-            fqn=t[0],
-            type=t[1])
-        for t in names_and_types]
-
-
-def get_subscriber_info(node, node_name):
-    return get_topics(node_name, node.get_subscriber_names_and_types_by_node)
-
-
-def get_publisher_info(node, node_name):
-    return get_topics(node_name, node.get_publisher_names_and_types_by_node)
-
-
-def get_service_info(node, node_name):
-    return get_topics(node_name, node.get_service_names_and_types_by_node)
-
-
-def get_client_info(node, node_name):
-    return get_topics(node_name, node.get_client_names_and_types_by_node)
-
-
-def is_key_name_valid(name):
-    # TODO(ivanpauno): Use validate_security_context_name when it's propagated to `rclpy`.
-    #   This is not to bad for the moment.
-    #   Related with https://github.com/ros2/rclpy/issues/528.
-    try:
-        return validate_namespace(name)
-    except InvalidNamespaceException as e:
-        print(e)
-        return False
 
 
 def create_key(keystore_path, identity):
     if not _keystore.is_valid_keystore(keystore_path):
         print("'%s' is not a valid keystore " % keystore_path)
         return False
-    if not is_key_name_valid(identity):
+    if not _is_key_name_valid(identity):
         return False
     print("creating key for identity: '%s'" % identity)
 
@@ -170,43 +110,15 @@ def list_keys(keystore_path):
     return True
 
 
-def distribute_key(source_keystore_path, taget_keystore_path):
-    raise NotImplementedError()
-
-
-def get_keystore_path_from_env():
-    root_keystore_env_var = 'ROS_SECURITY_ROOT_DIRECTORY'
-    root_keystore_path = os.getenv(root_keystore_env_var)
-    if root_keystore_path is None:
-        print('%s is empty' % root_keystore_env_var, file=sys.stderr)
-    return root_keystore_path
-
-
-def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
-    if keystore_path is None:
-        keystore_path = get_keystore_path_from_env()
-        if keystore_path is None:
-            return False
-    if not _keystore.is_valid_keystore(keystore_path):
-        print('%s is not a valid keystore, creating new keystore' % keystore_path)
-        _keystore.create_keystore(keystore_path)
-
-    # create keys for all provided identities
-    for identity in identity_names:
-        if not create_key(keystore_path, identity):
-            return False
-    for policy_file in policy_files:
-        policy_tree = load_policy(policy_file)
-        contexts_element = policy_tree.find('contexts')
-        for context in contexts_element:
-            identity_name = context.get('path')
-            if identity_name not in identity_names:
-                if not create_key(keystore_path, identity_name):
-                    return False
-            policy_element = _policy.get_policy_from_tree(identity_name, policy_tree)
-            _permission.create_permissions_from_policy_element(
-                keystore_path, identity_name, policy_element)
-    return True
+def _is_key_name_valid(name):
+    # TODO(ivanpauno): Use validate_security_context_name when it's propagated to `rclpy`.
+    #   This is not to bad for the moment.
+    #   Related with https://github.com/ros2/rclpy/issues/528.
+    try:
+        return validate_namespace(name)
+    except InvalidNamespaceException as e:
+        print(e)
+        return False
 
 
 def _create_key_and_cert(

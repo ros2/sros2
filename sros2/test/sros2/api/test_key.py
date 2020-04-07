@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sros2.api import is_key_name_valid
+from sros2.api import _key
 
 
 def test_is_key_name_valid():
     # Valid cases
-    assert is_key_name_valid('/foo')
-    assert is_key_name_valid('/foo/bar')
-    assert is_key_name_valid('/foo/bar123/_/baz_')
+    assert _key._is_key_name_valid('/foo')
+    assert _key._is_key_name_valid('/foo/bar')
+    assert _key._is_key_name_valid('/foo/bar123/_/baz_')
 
     # Invalid cases
-    assert not is_key_name_valid('')
-    assert not is_key_name_valid(' ')
-    assert not is_key_name_valid('//')
-    assert not is_key_name_valid('foo')
-    assert not is_key_name_valid('foo/bar')
-    assert not is_key_name_valid('/42foo')
-    assert not is_key_name_valid('/foo/42bar')
+    assert not _key._is_key_name_valid('')
+    assert not _key._is_key_name_valid(' ')
+    assert not _key._is_key_name_valid('//')
+    assert not _key._is_key_name_valid('foo')
+    assert not _key._is_key_name_valid('foo/bar')
+    assert not _key._is_key_name_valid('/42foo')
+    assert not _key._is_key_name_valid('/foo/42bar')
