@@ -23,7 +23,7 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from sros2.api import create_permission
+from sros2.api import _permission
 from sros2.verb import VerbExtension
 
 
@@ -41,7 +41,7 @@ class CreatePermissionVerb(VerbExtension):
 
     def main(self, *, args):
         try:
-            success = create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
+            success = _permission.create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
         return 0 if success else 1
