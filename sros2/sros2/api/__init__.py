@@ -34,7 +34,7 @@ from sros2.policy import (
     load_policy,
 )
 
-from . import _keystore, _utilities
+from . import _keystore, _policy, _utilities
 
 HIDDEN_NODE_PREFIX = '_'
 
@@ -120,25 +120,8 @@ def create_permission_file(path, domain_id, policy_element):
         f.write(etree.tostring(permissions_xml, pretty_print=True))
 
 
-def get_policy(name, policy_file_path):
-    policy_tree = load_policy(policy_file_path)
-    return get_policy_from_tree(name, policy_tree)
-
-
-def get_policy_from_tree(name, policy_tree):
-    context_element = policy_tree.find(
-        path=f'contexts/context[@path="{name}"]')
-    if context_element is None:
-        raise RuntimeError(f'unable to find context "{name}"')
-    contexts_element = etree.Element('contexts')
-    contexts_element.append(context_element)
-    policy_element = etree.Element('policy')
-    policy_element.append(contexts_element)
-    return policy_element
-
-
 def create_permission(keystore_path, identity, policy_file_path):
-    policy_element = get_policy(identity, policy_file_path)
+    policy_element = _policy.get_policy(identity, policy_file_path)
     create_permissions_from_policy_element(keystore_path, identity, policy_element)
     return True
 
@@ -209,7 +192,7 @@ def create_key(keystore_path, identity):
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
     policy_file_path = get_policy_default('policy.xml')
-    policy_element = get_policy('/', policy_file_path)
+    policy_element = _policy.get_policy('/', policy_file_path)
     context_element = policy_element.find('contexts/context')
     context_element.attrib['path'] = identity
 
@@ -274,7 +257,7 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
             if identity_name not in identity_names:
                 if not create_key(keystore_path, identity_name):
                     return False
-            policy_element = get_policy_from_tree(identity_name, policy_tree)
+            policy_element = _policy.get_policy_from_tree(identity_name, policy_tree)
             create_permissions_from_policy_element(
                 keystore_path, identity_name, policy_element)
     return True
