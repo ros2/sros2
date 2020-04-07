@@ -16,14 +16,14 @@ import os
 import tempfile
 
 from ros2cli import cli
-from sros2.api import create_key, create_keystore
+from sros2.api import _keystore, create_key
 
 
 def test_list_keys(capsys):
     with tempfile.TemporaryDirectory() as keystore_dir:
         with capsys.disabled():
             # First, create the keystore
-            assert create_keystore(keystore_dir)
+            assert _keystore.create_keystore(keystore_dir)
 
             # Now using that keystore, create a keypair
             assert create_key(keystore_dir, '/test_context')
@@ -37,7 +37,7 @@ def test_list_keys_no_keys(capsys):
     with tempfile.TemporaryDirectory() as keystore_dir:
         with capsys.disabled():
             # First, create the keystore
-            assert create_keystore(keystore_dir)
+            assert _keystore.create_keystore(keystore_dir)
 
         # Now verify that empty keystore we just created contains no keys
         assert cli.main(argv=['security', 'list_keys', keystore_dir]) == 0

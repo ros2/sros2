@@ -18,7 +18,7 @@ except ImportError:
     def DirectoriesCompleter():
         return None
 
-from sros2.api import create_keystore
+from sros2.api import _keystore
 from sros2.verb import VerbExtension
 
 
@@ -30,5 +30,5 @@ class CreateKeystoreVerb(VerbExtension):
         arg.completer = DirectoriesCompleter()
 
     def main(self, *, args):
-        success = create_keystore(args.ROOT)
+        success = _keystore.create_keystore(args.ROOT)
         return 0 if success else 1
