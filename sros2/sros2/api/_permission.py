@@ -16,7 +16,7 @@ import os
 
 from lxml import etree
 
-import rclpy
+from rclpy.utilities import get_rmw_implementation_identifier
 
 from sros2.policy import get_transport_schema, get_transport_template
 
@@ -56,7 +56,7 @@ def create_permission_file(path, domain_id, policy_element):
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     kwargs = {}
-    if rclpy.get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
+    if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
     permissions_xml = permissions_xsl(policy_element, **kwargs)
 
