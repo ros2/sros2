@@ -23,7 +23,7 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from sros2.api import generate_artifacts
+from sros2.api import _artifact_generation
 from sros2.verb import VerbExtension
 
 
@@ -44,7 +44,7 @@ class GenerateArtifactsVerb(VerbExtension):
 
     def main(self, *, args):
         try:
-            success = generate_artifacts(
+            success = _artifact_generation.generate_artifacts(
                 args.keystore_root_path, args.security_contexts, args.policy_files)
         except FileNotFoundError as e:
             raise RuntimeError(str(e))
