@@ -13,7 +13,15 @@
 # limitations under the License.
 
 import os
+import pathlib
+
+import pytest
 
 # Disable lxml2 lookup of resources on the internet by configuring it to use a proxy
 # that does not exist
 os.environ['HTTP_PROXY'] = 'http://example.com'
+
+
+@pytest.fixture('session')
+def test_policy_dir():
+    return pathlib.Path(__file__).parent / 'policies'
