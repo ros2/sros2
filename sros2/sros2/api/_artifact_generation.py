@@ -12,75 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
-import os
-import sys
-
 from sros2.policy import load_policy
 
-from . import _key, _keystore, _permission, _policy
-
-HIDDEN_NODE_PREFIX = '_'
-
-NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
-TopicInfo = namedtuple('Topic', ('fqn', 'type'))
-
-
-def get_node_names(*, node, include_hidden_nodes=False):
-    node_names_and_namespaces = node.get_node_names_and_namespaces()
-    return [
-        NodeName(
-            node=t[0],
-            ns=t[1],
-            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
-        for t in node_names_and_namespaces
-        if (
-            include_hidden_nodes or
-            (t[0] and not t[0].startswith(HIDDEN_NODE_PREFIX))
-        )
-    ]
-
-
-def get_topics(node_name, func):
-    names_and_types = func(node_name.node, node_name.ns)
-    return [
-        TopicInfo(
-            fqn=t[0],
-            type=t[1])
-        for t in names_and_types]
-
-
-def get_subscriber_info(node, node_name):
-    return get_topics(node_name, node.get_subscriber_names_and_types_by_node)
-
-
-def get_publisher_info(node, node_name):
-    return get_topics(node_name, node.get_publisher_names_and_types_by_node)
-
-
-def get_service_info(node, node_name):
-    return get_topics(node_name, node.get_service_names_and_types_by_node)
-
-
-def get_client_info(node, node_name):
-    return get_topics(node_name, node.get_client_names_and_types_by_node)
-
-
-def distribute_key(source_keystore_path, taget_keystore_path):
-    raise NotImplementedError()
-
-
-def get_keystore_path_from_env():
-    root_keystore_env_var = 'ROS_SECURITY_ROOT_DIRECTORY'
-    root_keystore_path = os.getenv(root_keystore_env_var)
-    if root_keystore_path is None:
-        print('%s is empty' % root_keystore_env_var, file=sys.stderr)
-    return root_keystore_path
+from . import _key, _keystore, _permission, _policy, _utilities
 
 
 def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
     if keystore_path is None:
-        keystore_path = get_keystore_path_from_env()
+        keystore_path = _utilities.get_keystore_path_from_env()
         if keystore_path is None:
             return False
     if not _keystore.is_valid_keystore(keystore_path):

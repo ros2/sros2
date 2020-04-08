@@ -15,6 +15,7 @@
 
 import datetime
 import os
+import sys
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -24,6 +25,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
+_KEYSTORE_DIR_ENV = 'ROS_SECURITY_ROOT_DIRECTORY'
 
 
 def create_symlink(*, src, dst):
@@ -38,6 +40,13 @@ def create_symlink(*, src, dst):
 
 def domain_id() -> str:
     return os.getenv(_DOMAIN_ID_ENV, '0')
+
+
+def get_keystore_path_from_env():
+    root_keystore_path = os.getenv(_KEYSTORE_DIR_ENV)
+    if root_keystore_path is None:
+        print('%s is empty' % _KEYSTORE_DIR_ENV, file=sys.stderr)
+    return root_keystore_path
 
 
 def create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
