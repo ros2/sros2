@@ -13,12 +13,6 @@
 # limitations under the License.
 
 from collections import namedtuple
-import os
-import sys
-
-from sros2.policy import load_policy
-
-from . import _key, _keystore, _permission, _policy
 
 HIDDEN_NODE_PREFIX = '_'
 
@@ -68,38 +62,3 @@ def get_client_info(node, node_name):
 
 def distribute_key(source_keystore_path, taget_keystore_path):
     raise NotImplementedError()
-
-
-def get_keystore_path_from_env():
-    root_keystore_env_var = 'ROS_SECURITY_ROOT_DIRECTORY'
-    root_keystore_path = os.getenv(root_keystore_env_var)
-    if root_keystore_path is None:
-        print('%s is empty' % root_keystore_env_var, file=sys.stderr)
-    return root_keystore_path
-
-
-def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
-    if keystore_path is None:
-        keystore_path = get_keystore_path_from_env()
-        if keystore_path is None:
-            return False
-    if not _keystore.is_valid_keystore(keystore_path):
-        print('%s is not a valid keystore, creating new keystore' % keystore_path)
-        _keystore.create_keystore(keystore_path)
-
-    # create keys for all provided identities
-    for identity in identity_names:
-        if not _key.create_key(keystore_path, identity):
-            return False
-    for policy_file in policy_files:
-        policy_tree = load_policy(policy_file)
-        contexts_element = policy_tree.find('contexts')
-        for context in contexts_element:
-            identity_name = context.get('path')
-            if identity_name not in identity_names:
-                if not _key.create_key(keystore_path, identity_name):
-                    return False
-            policy_element = _policy.get_policy_from_tree(identity_name, policy_tree)
-            _permission.create_permissions_from_policy_element(
-                keystore_path, identity_name, policy_element)
-    return True
