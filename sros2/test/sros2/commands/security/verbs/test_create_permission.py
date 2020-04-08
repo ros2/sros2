@@ -18,8 +18,9 @@ import lxml
 
 import pytest
 
+import rclpy
 from ros2cli import cli
-from sros2.api import _key, _keystore
+from sros2.api import _key, _keystore, _permission
 
 
 # This fixture will run once for the entire module (as opposed to once per test)
@@ -63,7 +64,10 @@ def test_create_permission(security_context_dir):
     assert grants[0].get('name') == '/talker_listener/talker'
 
     allow_rules = list(grants[0].iterchildren(tag='allow_rule'))
-    assert len(allow_rules) == 1
+    if rclpy.get_rmw_implementation_identifier() in _permission._RMW_WITH_ROS_GRAPH_INFO_TOPIC:
+        assert len(allow_rules) == 2
+    else:
+        assert len(allow_rules) == 1
 
     publish_rules = list(allow_rules[0].iterchildren(tag='publish'))
     assert len(publish_rules) == 1
@@ -78,7 +82,7 @@ def test_create_permission(security_context_dir):
 
     subscribed_topics_set = list(subscribe_rules[0].iterchildren(tag='topics'))
     assert len(subscribed_topics_set) == 1
-    subscribed_topics = list(subscribed_topics_set[0].iterchildren(tag='topic'))
+    subscribed_topics = [c.text for c in subscribed_topics_set[0].iterchildren(tag='topic')]
     assert len(subscribed_topics) == 14
 
     # Verify that publication is allowed on chatter, but not subscription
