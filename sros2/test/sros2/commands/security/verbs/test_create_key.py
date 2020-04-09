@@ -33,7 +33,7 @@ from sros2.policy import get_transport_schema
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def security_context_keys_dir(tmpdir_factory):
+def enclave_keys_dir(tmpdir_factory):
     keystore_dir = Path(str(tmpdir_factory.mktemp('keystore')))
 
     # First, create the keystore
@@ -41,12 +41,12 @@ def security_context_keys_dir(tmpdir_factory):
 
     # Now using that keystore, create a keypair along with other files required by DDS
     assert cli.main(
-        argv=['security', 'create_key', str(keystore_dir), '/test_security_context']) == 0
-    security_context_dir = keystore_dir / 'contexts' / 'test_security_context'
-    assert security_context_dir.is_dir()
+        argv=['security', 'create_key', str(keystore_dir), '/test_enclave']) == 0
+    enclave_dir = keystore_dir / 'enclaves' / 'test_enclave'
+    assert enclave_dir.is_dir()
 
-    # Return path to directory containing the security_context's files
-    return security_context_dir
+    # Return path to directory containing the enclave's files
+    return enclave_dir
 
 
 def load_cert(path):
@@ -89,20 +89,20 @@ def verify_signature(cert, signatory):
     return True
 
 
-def test_create_key(security_context_keys_dir):
+def test_create_key(enclave_keys_dir):
     expected_files = (
         'cert.pem', 'governance.p7s', 'identity_ca.cert.pem', 'key.pem', 'permissions.p7s',
         'permissions.xml', 'permissions_ca.cert.pem'
     )
-    assert len(list(security_context_keys_dir.iterdir())) == len(expected_files)
+    assert len(list(enclave_keys_dir.iterdir())) == len(expected_files)
 
     for expected_file in expected_files:
-        assert (security_context_keys_dir / expected_file).is_file()
+        assert (enclave_keys_dir / expected_file).is_file()
 
 
-def test_cert_pem(security_context_keys_dir):
-    cert = load_cert(security_context_keys_dir / 'cert.pem')
-    check_common_name(cert.subject, u'/test_security_context')
+def test_cert_pem(enclave_keys_dir):
+    cert = load_cert(enclave_keys_dir / 'cert.pem')
+    check_common_name(cert.subject, u'/test_enclave')
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
     # Verify that the hash algorithm is as expected
@@ -123,28 +123,28 @@ def test_cert_pem(security_context_keys_dir):
     assert value.path_length is None
 
     # Verify this cert is indeed signed by the keystore CA
-    signatory = load_cert(security_context_keys_dir / 'identity_ca.cert.pem')
+    signatory = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)
 
 
-def test_governance_p7s(security_context_keys_dir):
+def test_governance_p7s(enclave_keys_dir):
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
-    with open(security_context_keys_dir / 'governance.p7s') as f:
+    with open(enclave_keys_dir / 'governance.p7s') as f:
         lines = f.readlines()
         assert lines[0] == 'MIME-Version: 1.0\n'
         assert lines[1].startswith(
             'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
 
 
-def test_identity_ca_cert_pem(security_context_keys_dir):
-    cert = load_cert(security_context_keys_dir / 'identity_ca.cert.pem')
+def test_identity_ca_cert_pem(enclave_keys_dir):
+    cert = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
 
-def test_key_pem(security_context_keys_dir):
-    private_key = load_private_key(security_context_keys_dir / 'key.pem')
+def test_key_pem(enclave_keys_dir):
+    private_key = load_private_key(enclave_keys_dir / 'key.pem')
     assert isinstance(private_key, ec.EllipticCurvePrivateKey)
     assert private_key.key_size == 256
 
@@ -153,27 +153,27 @@ def test_key_pem(security_context_keys_dir):
     assert public_key.key_size == 256
 
 
-def test_permissions_p7s(security_context_keys_dir):
+def test_permissions_p7s(enclave_keys_dir):
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
-    with open(security_context_keys_dir / 'permissions.p7s') as f:
+    with open(enclave_keys_dir / 'permissions.p7s') as f:
         lines = f.readlines()
         assert lines[0] == 'MIME-Version: 1.0\n'
         assert lines[1].startswith(
             'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
 
 
-def test_permissions_xml(security_context_keys_dir):
-    permissions_xml = etree.parse(str(security_context_keys_dir / 'permissions.xml'))
+def test_permissions_xml(enclave_keys_dir):
+    permissions_xml = etree.parse(str(enclave_keys_dir / 'permissions.xml'))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
     permissions_xsd.assertValid(permissions_xml)
 
 
-def test_permissions_ca_cert_pem(security_context_keys_dir):
-    cert = load_cert(security_context_keys_dir / 'permissions_ca.cert.pem')
+def test_permissions_ca_cert_pem(enclave_keys_dir):
+    cert = load_cert(enclave_keys_dir / 'permissions_ca.cert.pem')
     check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
-    signatory = load_cert(security_context_keys_dir / 'identity_ca.cert.pem')
+    signatory = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)

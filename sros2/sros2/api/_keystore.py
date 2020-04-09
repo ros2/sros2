@@ -24,7 +24,7 @@ from sros2.policy import get_transport_default, get_transport_schema
 from . import _utilities
 
 
-_KS_CONTEXT = 'contexts'
+_KS_CONTEXT = 'enclaves'
 _KS_PUBLIC = 'public'
 _KS_PRIVATE = 'private'
 _DEFAULT_COMMON_NAME = 'sros2testCA'
@@ -106,7 +106,7 @@ def is_valid_keystore(path):
     )
 
 
-def get_keystore_context_dir(keystore_path: str) -> str:
+def get_keystore_enclave_dir(keystore_path: str) -> str:
     return os.path.join(keystore_path, _KS_CONTEXT)
 
 

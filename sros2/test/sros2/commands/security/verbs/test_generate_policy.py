@@ -28,10 +28,10 @@ from test_msgs.srv import Empty
 @pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_topics():
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Create a test-specific context so that generate_policy can still init
-        context = rclpy.Context()
-        rclpy.init(context=context)
-        node = rclpy.create_node('test_generate_policy_topics_node', context=context)
+        # Create a test-specific enclave so that generate_policy can still init
+        enclave = rclpy.Context()
+        rclpy.init(enclave=enclave)
+        node = rclpy.create_node('test_generate_policy_topics_node', enclave=enclave)
 
         try:
             # Create a publisher and subscription
@@ -44,7 +44,7 @@ def test_generate_policy_topics():
                 argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
         finally:
             node.destroy_node()
-            rclpy.shutdown(context=context)
+            rclpy.shutdown(enclave=enclave)
 
         # Load the policy and pull out the allowed publications and subscriptions
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
@@ -71,10 +71,10 @@ def test_generate_policy_topics():
 @pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_services():
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Create a test-specific context so that generate_policy can still init
-        context = rclpy.Context()
-        rclpy.init(context=context)
-        node = rclpy.create_node('test_generate_policy_services_node', context=context)
+        # Create a test-specific enclave so that generate_policy can still init
+        enclave = rclpy.Context()
+        rclpy.init(enclave=enclave)
+        node = rclpy.create_node('test_generate_policy_services_node', enclave=enclave)
 
         try:
             # Create a server and client
@@ -87,7 +87,7 @@ def test_generate_policy_services():
                 argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
         finally:
             node.destroy_node()
-            rclpy.shutdown(context=context)
+            rclpy.shutdown(enclave=enclave)
 
         # Load the policy and pull out allowed replies and requests
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))

@@ -23,12 +23,12 @@ def get_policy(name, policy_file_path):
 
 
 def get_policy_from_tree(name, policy_tree):
-    context_element = policy_tree.find(
-        path=f'contexts/context[@path="{name}"]')
-    if context_element is None:
-        raise RuntimeError(f'unable to find context "{name}"')
-    contexts_element = etree.Element('contexts')
-    contexts_element.append(context_element)
+    enclave_element = policy_tree.find(
+        path=f'enclaves/enclave[@path="{name}"]')
+    if enclave_element is None:
+        raise RuntimeError(f'unable to find enclave "{name}"')
+    enclaves_element = etree.Element('enclaves')
+    enclaves_element.append(enclave_element)
     policy_element = etree.Element('policy')
-    policy_element.append(contexts_element)
+    policy_element.append(enclaves_element)
     return policy_element

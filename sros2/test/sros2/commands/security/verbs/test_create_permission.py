@@ -29,14 +29,14 @@ _test_identity = '/talker_listener/talker'
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def security_context_dir(tmpdir_factory, test_policy_dir) -> pathlib.Path:
+def enclave_dir(tmpdir_factory, test_policy_dir) -> pathlib.Path:
     keystore_dir = pathlib.Path(str(tmpdir_factory.mktemp('keystore')))
 
     # First, create the keystore as well as a keypair for the talker
     assert _keystore.create_keystore(keystore_dir)
     assert _key.create_key(keystore_dir, _test_identity)
 
-    security_files_dir = keystore_dir.joinpath(f'contexts{_test_identity}')
+    security_files_dir = keystore_dir.joinpath(f'enclaves{_test_identity}')
     assert security_files_dir.is_dir()
 
     # Now using that keystore, create a permissions file using the sample policy
@@ -50,11 +50,11 @@ def security_context_dir(tmpdir_factory, test_policy_dir) -> pathlib.Path:
     return security_files_dir
 
 
-def test_create_permission(security_context_dir):
-    assert security_context_dir.joinpath('permissions.xml').is_file()
-    assert security_context_dir.joinpath('permissions.p7s').is_file()
+def test_create_permission(enclave_dir):
+    assert enclave_dir.joinpath('permissions.xml').is_file()
+    assert enclave_dir.joinpath('permissions.p7s').is_file()
 
-    tree = lxml.etree.parse(str(security_context_dir.joinpath('permissions.xml')))
+    tree = lxml.etree.parse(str(enclave_dir.joinpath('permissions.xml')))
 
     # Validate the schema
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')

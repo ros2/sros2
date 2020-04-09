@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <policy version="0.2.0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
-  <contexts>
-    <context path="/add_two_ints/add_two_ints_server">
+  <enclaves>
+    <enclave path="/add_two_ints/add_two_ints_server">
       <profiles>
         <profile ns="/" node="add_two_ints_server">
           <xi:include href="common/node.xml"
@@ -12,8 +12,8 @@
           </services>
         </profile>
       </profiles>
-    </context>
-    <context path="/add_two_ints/add_two_ints_client">
+    </enclave>
+    <enclave path="/add_two_ints/add_two_ints_client">
       <profiles>
         <profile ns="/" node="add_two_ints_client">
           <xi:include href="common/node.xml"
@@ -23,6 +23,6 @@
           </services>
         </profile>
       </profiles>
-    </context>
-  </contexts>
+    </enclave>
+  </enclaves>
 </policy>

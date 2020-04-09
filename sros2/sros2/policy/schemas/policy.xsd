@@ -10,14 +10,14 @@
     <xs:element name="policy" type="Policy" />
     <xs:complexType name="Policy">
         <xs:sequence minOccurs="1" maxOccurs="1">
-            <xs:element name="contexts" type="Contexts" />
+            <xs:element name="enclaves" type="Contexts" />
         </xs:sequence>
         <xs:attribute name="version" type="xs:string" use="required" fixed="0.2.0"/>
     </xs:complexType>
 
     <xs:complexType name="Contexts">
         <xs:sequence minOccurs="1" maxOccurs="unbounded">
-            <xs:element name="context" type="Context" />
+            <xs:element name="enclave" type="Context" />
         </xs:sequence>
     </xs:complexType>
 

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <policy version="0.2.0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
-  <contexts>
+  <enclaves>
     <xi:include href="talker_listener.policy.xml"
-      xpointer="xpointer(/policy/contexts/*)"/>
+      xpointer="xpointer(/policy/enclaves/*)"/>
     <xi:include href="add_two_ints.policy.xml"
-      xpointer="xpointer(/policy/contexts/*)"/>
+      xpointer="xpointer(/policy/enclaves/*)"/>
     <xi:include href="minimal_action.policy.xml"
-      xpointer="xpointer(/policy/contexts/*)"/>
-    <context path="/sample_policy/admin">
+      xpointer="xpointer(/policy/enclaves/*)"/>
+    <enclave path="/sample_policy/admin">
       <profiles>
         <profile ns="/" node="admin">
           <xi:include href="common/node.xml"
@@ -24,6 +24,6 @@
           </topics>
         </profile>
       </profiles>
-    </context>
-  </contexts>
+    </enclave>
+  </enclaves>
 </policy>
