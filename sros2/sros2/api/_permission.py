@@ -34,16 +34,16 @@ def create_permission(keystore_path, identity, policy_file_path):
 
 def create_permissions_from_policy_element(keystore_path, identity, policy_element):
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.keystore_context_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_context_dir(keystore_path), relative_path)
     print("creating permission file for identity: '%s'" % identity)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
     keystore_ca_cert_path = os.path.join(
-        _keystore.keystore_public_dir(keystore_path), 'ca.cert.pem')
+        _keystore.get_keystore_public_dir(keystore_path), 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(
-        _keystore.keystore_private_dir(keystore_path), 'ca.key.pem')
+        _keystore.get_keystore_private_dir(keystore_path), 'ca.key.pem')
     _utilities.create_smime_signed_file(
         keystore_ca_cert_path, keystore_ca_key_path, permissions_path, signed_permissions_path)
 
