@@ -29,7 +29,7 @@ from test_msgs.srv import Empty
 def test_generate_policy_topics():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific enclave so that generate_policy can still init
-        enclave = rclpy.Context()
+        context = rclpy.Context()
         rclpy.init(enclave=enclave)
         node = rclpy.create_node('test_generate_policy_topics_node', enclave=enclave)
 
@@ -72,7 +72,7 @@ def test_generate_policy_topics():
 def test_generate_policy_services():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific enclave so that generate_policy can still init
-        enclave = rclpy.Context()
+        context = rclpy.Context()
         rclpy.init(enclave=enclave)
         node = rclpy.create_node('test_generate_policy_services_node', enclave=enclave)
 
