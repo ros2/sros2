@@ -37,7 +37,7 @@ def create_key(keystore_path, identity):
     print("creating key for identity: '%s'" % identity)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.get_keystore_enclave_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_enclaves_dir(keystore_path), relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # symlink the CA cert in there
@@ -51,7 +51,7 @@ def create_key(keystore_path, identity):
 
     # symlink the governance file in there
     keystore_governance_path = os.path.join(
-        _keystore.get_keystore_enclave_dir(keystore_path), 'governance.p7s')
+        _keystore.get_keystore_enclaves_dir(keystore_path), 'governance.p7s')
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     relativepath = os.path.relpath(keystore_governance_path, key_dir)
     _utilities.create_symlink(src=relativepath, dst=dest_governance_path)
@@ -99,7 +99,7 @@ def create_key(keystore_path, identity):
 
 
 def list_keys(keystore_path):
-    enclaves_path = _keystore.get_keystore_enclave_dir(keystore_path)
+    enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
     if not os.path.isdir(keystore_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
     if not os.path.isdir(enclaves_path):

@@ -24,7 +24,7 @@ from sros2.policy import get_transport_default, get_transport_schema
 from . import _utilities
 
 
-_KS_CONTEXT = 'enclaves'
+_KS_ENCLAVES = 'enclaves'
 _KS_PUBLIC = 'public'
 _KS_PRIVATE = 'private'
 _DEFAULT_COMMON_NAME = 'sros2testCA'
@@ -40,7 +40,7 @@ def create_keystore(keystore_path):
     os.makedirs(keystore_path, exist_ok=True)
     os.makedirs(os.path.join(keystore_path, _KS_PUBLIC), exist_ok=True)
     os.makedirs(os.path.join(keystore_path, _KS_PRIVATE), exist_ok=True)
-    os.makedirs(os.path.join(keystore_path, _KS_CONTEXT), exist_ok=True)
+    os.makedirs(os.path.join(keystore_path, _KS_ENCLAVES), exist_ok=True)
 
     keystore_ca_cert_path = os.path.join(keystore_path, _KS_PUBLIC, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, _KS_PRIVATE, 'ca.key.pem')
@@ -72,7 +72,7 @@ def create_keystore(keystore_path):
         print('found CA key and cert, not creating new ones!')
 
     # create governance file
-    gov_path = os.path.join(keystore_path, _KS_CONTEXT, 'governance.xml')
+    gov_path = os.path.join(keystore_path, _KS_ENCLAVES, 'governance.xml')
     if not os.path.isfile(gov_path):
         print('creating governance file: %s' % gov_path)
         _create_governance_file(gov_path, _utilities.domain_id())
@@ -80,7 +80,7 @@ def create_keystore(keystore_path):
         print('found governance file, not creating a new one!')
 
     # sign governance file
-    signed_gov_path = os.path.join(keystore_path, _KS_CONTEXT, 'governance.p7s')
+    signed_gov_path = os.path.join(keystore_path, _KS_ENCLAVES, 'governance.p7s')
     if not os.path.isfile(signed_gov_path):
         print('creating signed governance file: %s' % signed_gov_path)
         _utilities.create_smime_signed_file(
@@ -102,12 +102,12 @@ def is_valid_keystore(path):
         os.path.isfile(os.path.join(path, _KS_PUBLIC, 'identity_ca.cert.pem')) and
         os.path.isfile(os.path.join(path, _KS_PRIVATE, 'permissions_ca.key.pem')) and
         os.path.isfile(os.path.join(path, _KS_PRIVATE, 'identity_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, _KS_CONTEXT, 'governance.p7s'))
+        os.path.isfile(os.path.join(path, _KS_ENCLAVES, 'governance.p7s'))
     )
 
 
-def get_keystore_enclave_dir(keystore_path: str) -> str:
-    return os.path.join(keystore_path, _KS_CONTEXT)
+def get_keystore_enclaves_dir(keystore_path: str) -> str:
+    return os.path.join(keystore_path, _KS_ENCLAVES)
 
 
 def get_keystore_public_dir(keystore_path: str) -> str:
