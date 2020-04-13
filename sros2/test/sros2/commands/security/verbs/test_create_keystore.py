@@ -40,7 +40,7 @@ def keystore_dir(tmpdir_factory):
 def test_create_keystore(keystore_dir):
     public = keystore_dir / 'public'
     private = keystore_dir / 'private'
-    contexts = keystore_dir / 'contexts'
+    enclaves = keystore_dir / 'enclaves'
     expected_files_public = (
         public / 'ca.cert.pem',
         public / 'permissions_ca.cert.pem',
@@ -51,16 +51,16 @@ def test_create_keystore(keystore_dir):
         private / 'permissions_ca.key.pem',
         private / 'identity_ca.key.pem',
     )
-    expected_files_contexts = (
-        contexts / 'governance.p7s',
-        contexts / 'governance.xml',
+    expected_files_enclaves = (
+        enclaves / 'governance.p7s',
+        enclaves / 'governance.xml',
     )
 
     assert len(list(keystore_dir.iterdir())) == 3
     assert len(list(public.iterdir())) == len(expected_files_public)
     assert len(list(private.iterdir())) == len(expected_files_private)
-    assert len(list(contexts.iterdir())) == len(expected_files_contexts)
-    expected_files = expected_files_public + expected_files_private + expected_files_contexts
+    assert len(list(enclaves.iterdir())) == len(expected_files_enclaves)
+    expected_files = expected_files_public + expected_files_private + expected_files_enclaves
     assert all(x.is_file() for x in expected_files)
 
 
@@ -84,7 +84,7 @@ def test_ca_key(keystore_dir):
 def test_governance_p7s(keystore_dir):
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
-    with (keystore_dir / 'contexts' / 'governance.p7s').open('r') as f:
+    with (keystore_dir / 'enclaves' / 'governance.p7s').open('r') as f:
         lines = f.readlines()
         assert lines[0] == 'MIME-Version: 1.0\n'
         assert lines[1].startswith(
@@ -93,4 +93,4 @@ def test_governance_p7s(keystore_dir):
 
 def test_governance_xml(keystore_dir):
     # Validates valid XML
-    ElementTree.parse(str(keystore_dir / 'contexts' / 'governance.xml'))
+    ElementTree.parse(str(keystore_dir / 'enclaves' / 'governance.xml'))

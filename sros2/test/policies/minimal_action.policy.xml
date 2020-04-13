@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <policy version="0.2.0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
-  <contexts>
-    <context path="/minimal_action/minimal_action_server">
+  <enclaves>
+    <enclave path="/minimal_action/minimal_action_server">
       <profiles>
         <profile ns="/" node="minimal_action_server">
           <xi:include href="common/node.xml"
@@ -12,8 +12,8 @@
           </actions>
         </profile>
       </profiles>
-    </context>
-    <context path="/minimal_action/minimal_action_client">
+    </enclave>
+    <enclave path="/minimal_action/minimal_action_client">
       <profiles>
         <profile ns="/" node="minimal_action_client">
           <xi:include href="common/node.xml"
@@ -23,6 +23,6 @@
           </actions>
         </profile>
       </profiles>
-    </context>
-  </contexts>
+    </enclave>
+  </enclaves>
 </policy>

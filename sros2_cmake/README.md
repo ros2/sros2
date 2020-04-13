@@ -6,16 +6,16 @@ In package.xml add:
 `<depend>sros2_cmake</depend>`  
 In CMakeLists add:  
 `find_package(sros2_cmake REQUIRED)`  
-`sros2_generate_artifacts(SECURITY_CONTEXTS <context_name>)`  
+`sros2_generate_artifacts(ENCLAVES <enclave_name>)`  
 
 Macro definition:  
 ```
-    # sros2_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_2>...<context_n>)
+    # sros2_generate_artifacts(ENCLAVES <enclave_1> <enclave_2>...<enclave_n>)
 
-    # SECURITY_CONTEXTS (macro multi-arg) takes the security contexts names for which keys will be generated
-    #   Executables can use a different or the same security contexts.
-    #   All nodes in the same process use the same security context.
+    # ENCLAVES (macro multi-arg) takes the enclaves names for which keys will be generated
+    #   Executables can use a different or the same enclaves.
+    #   All nodes in the same process use the same enclave.
     # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
     # ROS_SECURITY_ROOT_DIRECTORY (env variable) the location of the keystore
-    # POLICY_FILE (cmake arg) if defined, will generate security artifacts for each context defined in the policy file.
+    # POLICY_FILE (cmake arg) if defined, will generate security artifacts for each enclave defined in the policy file.
 ```

@@ -13,12 +13,12 @@
 # limitations under the License.
 
 macro(sros2_generate_artifacts)
-  # sros2_generate_artifacts(SECURITY_CONTEXTS <context_1> <context_1>...<context_1>)
+  # sros2_generate_artifacts(ENCLAVES <enclave_1> <enclave_1>...<enclave_1>)
   #
-  # SECURITY_CONTEXTS (macro multi-arg) takes the context names for which artifacts will be generated
+  # ENCLAVES (macro multi-arg) takes the enclave names for which artifacts will be generated
   # SECURITY (cmake arg) if not defined or OFF, will not generate keystore/keys/permissions
   # POLICY_FILE (cmake arg) if defined, policies defined in the file will used to generate
-  #   permission files for all the security contexts listed in the policy file.
+  #   permission files for all the enclaves listed in the policy file.
   # ROS_SECURITY_ROOT_DIRECTORY (env variable) will be the location of the keystore
   if(NOT SECURITY)
     message(STATUS "Not generating security files")
@@ -31,13 +31,13 @@ macro(sros2_generate_artifacts)
   else()
     set(SECURITY_KEYSTORE ${DEFAULT_KEYSTORE})
   endif()
-  cmake_parse_arguments(ros2_generate_security_artifacts "" "" "SECURITY_CONTEXTS" ${ARGN})
+  cmake_parse_arguments(ros2_generate_security_artifacts "" "" "ENCLAVES" ${ARGN})
   set(generate_artifacts_command ${PROGRAM} security generate_artifacts -k ${SECURITY_KEYSTORE})
-  list(LENGTH ros2_generate_security_artifacts_SECURITY_CONTEXTS nb_security_contexts)
-  if(${nb_security_contexts} GREATER "0")
-    list(APPEND generate_artifacts_command "-c")
-    foreach(security_context ${ros2_generate_security_artifacts_SECURITY_CONTEXTS})
-        list(APPEND generate_artifacts_command security_context)
+  list(LENGTH ros2_generate_security_artifacts_ENCLAVES nb_enclaves)
+  if(${nb_enclaves} GREATER "0")
+    list(APPEND generate_artifacts_command "-e")
+    foreach(enclave ${ros2_generate_security_artifacts_ENCLAVES})
+        list(APPEND generate_artifacts_command enclave)
     endforeach()
   endif()
   if(POLICY_FILE)

@@ -37,7 +37,7 @@ def create_key(keystore_path, identity):
     print("creating key for identity: '%s'" % identity)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.get_keystore_context_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_enclaves_dir(keystore_path), relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # symlink the CA cert in there
@@ -51,7 +51,7 @@ def create_key(keystore_path, identity):
 
     # symlink the governance file in there
     keystore_governance_path = os.path.join(
-        _keystore.get_keystore_context_dir(keystore_path), 'governance.p7s')
+        _keystore.get_keystore_enclaves_dir(keystore_path), 'governance.p7s')
     dest_governance_path = os.path.join(key_dir, 'governance.p7s')
     relativepath = os.path.relpath(keystore_governance_path, key_dir)
     _utilities.create_symlink(src=relativepath, dst=dest_governance_path)
@@ -79,8 +79,8 @@ def create_key(keystore_path, identity):
     # later using a policy if desired
     policy_file_path = get_policy_default('policy.xml')
     policy_element = _policy.get_policy('/', policy_file_path)
-    context_element = policy_element.find('contexts/context')
-    context_element.attrib['path'] = identity
+    enclave_element = policy_element.find('enclaves/enclave')
+    enclave_element.attrib['path'] = identity
 
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     _permission.create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
@@ -99,19 +99,19 @@ def create_key(keystore_path, identity):
 
 
 def list_keys(keystore_path):
-    contexts_path = _keystore.get_keystore_context_dir(keystore_path)
+    enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
     if not os.path.isdir(keystore_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
-    if not os.path.isdir(contexts_path):
+    if not os.path.isdir(enclaves_path):
         return True
-    for name in os.listdir(contexts_path):
-        if os.path.isdir(os.path.join(contexts_path, name)):
+    for name in os.listdir(enclaves_path):
+        if os.path.isdir(os.path.join(enclaves_path, name)):
             print(name)
     return True
 
 
 def _is_key_name_valid(name):
-    # TODO(ivanpauno): Use validate_security_context_name when it's propagated to `rclpy`.
+    # TODO(ivanpauno): Use validate_enclave_name when it's propagated to `rclpy`.
     #   This is not to bad for the moment.
     #   Related with https://github.com/ros2/rclpy/issues/528.
     try:

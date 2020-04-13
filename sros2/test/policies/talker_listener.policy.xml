@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <policy version="0.2.0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
-  <contexts>
-    <context path="/talker_listener/talker">
+  <enclaves>
+    <enclave path="/talker_listener/talker">
       <profiles>
         <profile ns="/" node="talker">
           <xi:include href="common/node.xml"
@@ -12,8 +12,8 @@
           </topics>
         </profile>
       </profiles>
-    </context>
-    <context path="/talker_listener/listener">
+    </enclave>
+    <enclave path="/talker_listener/listener">
       <profiles>
         <profile ns="/" node="listener">
           <xi:include href="common/node.xml"
@@ -23,6 +23,6 @@
           </topics>
         </profile>
       </profiles>
-    </context>
-  </contexts>
+    </enclave>
+  </enclaves>
 </policy>

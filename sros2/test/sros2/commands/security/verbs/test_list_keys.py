@@ -26,11 +26,11 @@ def test_list_keys(capsys):
             assert _keystore.create_keystore(keystore_dir)
 
             # Now using that keystore, create a keypair
-            assert _key.create_key(keystore_dir, '/test_context')
+            assert _key.create_key(keystore_dir, '/test_enclave')
 
         # Now verify that the key we just created is included in the list
         assert cli.main(argv=['security', 'list_keys', keystore_dir]) == 0
-        assert capsys.readouterr().out.strip() == 'test_context'
+        assert capsys.readouterr().out.strip() == 'test_enclave'
 
 
 def test_list_keys_no_keys(capsys):

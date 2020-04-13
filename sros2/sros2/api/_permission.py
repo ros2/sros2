@@ -34,7 +34,7 @@ def create_permission(keystore_path, identity, policy_file_path):
 
 def create_permissions_from_policy_element(keystore_path, identity, policy_element):
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.get_keystore_context_dir(keystore_path), relative_path)
+    key_dir = os.path.join(_keystore.get_keystore_enclaves_dir(keystore_path), relative_path)
     print("creating permission file for identity: '%s'" % identity)
     permissions_path = os.path.join(key_dir, 'permissions.xml')
     create_permission_file(permissions_path, _utilities.domain_id(), policy_element)

@@ -22,12 +22,12 @@
 
 <xsl:param name="allow_ros_discovery_topic" select="0"/>
 
-<xsl:template match="/policy/contexts">
+<xsl:template match="/policy/enclaves">
   <xsl:variable name="dds">
     <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_permissions.xsd">
       <permissions>
-        <xsl:for-each select="context">
+        <xsl:for-each select="enclave">
           <xsl:variable name="common_name">
             <xsl:value-of select="@path"/>
           </xsl:variable>

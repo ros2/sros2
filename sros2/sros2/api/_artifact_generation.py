@@ -32,9 +32,9 @@ def generate_artifacts(keystore_path=None, identity_names=[], policy_files=[]):
             return False
     for policy_file in policy_files:
         policy_tree = load_policy(policy_file)
-        contexts_element = policy_tree.find('contexts')
-        for context in contexts_element:
-            identity_name = context.get('path')
+        enclaves_element = policy_tree.find('enclaves')
+        for enclave in enclaves_element:
+            identity_name = enclave.get('path')
             if identity_name not in identity_names:
                 if not _key.create_key(keystore_path, identity_name):
                     return False
