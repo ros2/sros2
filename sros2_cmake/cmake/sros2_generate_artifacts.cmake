@@ -19,15 +19,15 @@ macro(sros2_generate_artifacts)
   # SECURITY (cmake arg) if not defined or OFF, will not generate keystore/keys/permissions
   # POLICY_FILE (cmake arg) if defined, policies defined in the file will used to generate
   #   permission files for all the enclaves listed in the policy file.
-  # ROS_SECURITY_ROOT_DIRECTORY (env variable) will be the location of the keystore
+  # ROS_SECURITY_KEYSTORE (env variable) will be the location of the keystore
   if(NOT SECURITY)
     message(STATUS "Not generating security files")
     return()
   endif()
   find_program(PROGRAM ros2)
 
-  if(DEFINED ENV{ROS_SECURITY_ROOT_DIRECTORY})
-    set(SECURITY_KEYSTORE $ENV{ROS_SECURITY_ROOT_DIRECTORY})
+  if(DEFINED ENV{ROS_SECURITY_KEYSTORE})
+    set(SECURITY_KEYSTORE $ENV{ROS_SECURITY_KEYSTORE})
   else()
     set(SECURITY_KEYSTORE ${DEFAULT_KEYSTORE})
   endif()
