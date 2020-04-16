@@ -25,7 +25,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
-_KEYSTORE_DIR_ENV = 'ROS_SECURITY_ROOT_DIRECTORY'
+_KEYSTORE_DIR_ENV = 'ROS_SECURITY_KEYSTORE'
 
 
 def create_symlink(*, src, dst):

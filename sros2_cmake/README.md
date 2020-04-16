@@ -16,6 +16,6 @@ Macro definition:
     #   Executables can use a different or the same enclaves.
     #   All nodes in the same process use the same enclave.
     # SECURITY (cmake arg) if not define or OFF, will not generate key/keystores
-    # ROS_SECURITY_ROOT_DIRECTORY (env variable) the location of the keystore
+    # ROS_SECURITY_KEYSTORE (env variable) the location of the keystore
     # POLICY_FILE (cmake arg) if defined, will generate security artifacts for each enclave defined in the policy file.
 ```
