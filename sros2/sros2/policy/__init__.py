@@ -16,45 +16,47 @@ import os
 
 from lxml import etree
 
-import pkg_resources
+try:
+    import importlib.resources as importlib_resources
+except ModuleNotFoundError:
+    # (clalancette): We have to ignore the type, otherwise mypy throws a warning.
+    # See https://github.com/python/mypy/issues/1153 for details.
+    import importlib_resources  # type: ignore
 
 POLICY_VERSION = '0.2.0'
 
 
 def get_policy_default(name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'defaults', name))
+    with importlib_resources.path('sros2.policy.defaults', name) as path:
+        return str(path)
 
 
 def get_policy_schema(name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'schemas', name))
+    with importlib_resources.path('sros2.policy.schemas', name) as path:
+        return str(path)
 
 
 def get_policy_template(name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'templates', name))
+    with importlib_resources.path('sros2.policy.templates', name) as path:
+        return str(path)
 
 
 def get_transport_default(transport, name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'defaults', transport, name))
+    module = 'sros2.policy.defaults.' + transport
+    with importlib_resources.path(module, name) as path:
+        return str(path)
 
 
 def get_transport_schema(transport, name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'schemas', transport, name))
+    module = 'sros2.policy.schemas.' + transport
+    with importlib_resources.path(module, name) as path:
+        return str(path)
 
 
 def get_transport_template(transport, name):
-    return pkg_resources.resource_filename(
-        package_or_requirement='sros2',
-        resource_name=os.path.join('policy', 'templates', transport, name))
+    module = 'sros2.policy.templates.' + transport
+    with importlib_resources.path(module, name) as path:
+        return str(path)
 
 
 def load_policy(policy_file_path):
