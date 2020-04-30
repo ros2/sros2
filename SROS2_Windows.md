@@ -61,8 +61,8 @@ ros2 security create_keystore demo_keys
 #### Generate keys and certificates for the talker and listener nodes
 
 ```bat
-ros2 security create_key demo_keys /talker
-ros2 security create_key demo_keys /listener
+ros2 security create_key demo_keys /talker_listener/talker
+ros2 security create_key demo_keys /talker_listener/listener
 ```
 
 If `unable to write 'random state'` appears then set the environment variable `RANDFILE`.
@@ -105,7 +105,7 @@ call <path_to_ros2_install>/setup.bat
 set ROS_SECURITY_KEYSTORE=%cd%/demo_keys
 set ROS_SECURITY_ENABLE=true
 set ROS_SECURITY_STRATEGY=Enforce
-ros2 run demo_nodes_py talker
+ros2 run demo_nodes_py talker --ros-args --enclave /talker_listener/talker
 ```
 
 Open another terminal:
@@ -115,7 +115,7 @@ call <path_to_ros2_install>/setup.bat
 set ROS_SECURITY_KEYSTORE=%cd%/demo_keys
 set ROS_SECURITY_ENABLE=true
 set ROS_SECURITY_STRATEGY=Enforce
-ros2 run demo_nodes_py listener
+ros2 run demo_nodes_py listener --ros-args --enclave /talker_listener/listener
 ```
 
 These nodes will be communicating using authentication and encryption!
@@ -124,12 +124,6 @@ If you look at the packet contents on e.g. Wireshark, the messages will be encry
 Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py) packages arbitrarily.
 
 These nodes are able to communicate because we have created the appropriate keys and certificates for them.
-However, other nodes will not be able to communicate, e.g. the following invocation will fail to start a node with a name that is not associated with valid keys/certificates:
-
-```bat
-REM This will fail because the node name does not have valid keys/certificates
-ros2 run demo_nodes_cpp talker --ros-args -r __node:=not_talker
-```
 
 ### Access Control
 
@@ -147,8 +141,8 @@ svn checkout https://github.com/ros2/sros2/trunk/sros2/test/policies
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bat
-ros2 security create_permission demo_keys /talker policies/sample_policy.xml
-ros2 security create_permission demo_keys /listener policies/sample_policy.xml
+ros2 security create_permission demo_keys /talker_listener/talker policies/sample.policy.xml
+ros2 security create_permission demo_keys /talker_listener/listener policies/sample.policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).
@@ -156,13 +150,13 @@ These permission files will be stricter than the ones that were used in the prev
 In one terminal (after preparing the terminal as previously described), run the `talker` demo program:
 
 ```bat
-ros2 run demo_nodes_cpp talker
+ros2 run demo_nodes_cpp talker --ros-args -e /talker_listener/talker
 ```
 
 In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program:
 
 ```bat
-ros2 run demo_nodes_py listener
+ros2 run demo_nodes_py listener --ros-args -e /talker_listener/listener
 ```
 
 At this point, your `talker` and `listener` nodes should be communicating securely, using explicit access control lists!
@@ -173,5 +167,5 @@ For example, the following attempt for the `listener` node to subscribe to a top
 
 ```bat
 REM This will fail because the node is not permitted to subscribe to topics other than chatter.
-ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter
+ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/talker
 ```
