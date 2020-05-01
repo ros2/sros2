@@ -43,7 +43,7 @@ from sros2.verb import VerbExtension
 
 _HIDDEN_NODE_PREFIX = '_'
 
-_NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
+_NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn', 'path'))
 _TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
 
@@ -73,7 +73,15 @@ class GeneratePolicyVerb(VerbExtension):
             return policy
 
     def get_profile(self, policy, node_name):
-        profile = policy.find(
+        enclave = policy.find(
+            path='enclaves/enclave[@path="{path}"]'.format(
+                enclave=node_name.path))
+        if enclave is None:
+            enclave = etree.Element('enclave')
+            enclave.attrib['path'] = node_name.path
+            enclaves = policy.find('enclaves')
+            enclaves.append(enclave)
+        profile = enclave.find(
             path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
                 ns=node_name.ns,
                 node=node_name.node))
@@ -147,13 +155,14 @@ class GeneratePolicyVerb(VerbExtension):
 
 
 def _get_node_names(*, node, include_hidden_nodes=False):
-    node_names_and_namespaces = node.get_node_names_and_namespaces()
+    node_names_and_namespaces_with_enclaves = node.get_node_names_and_namespaces_with_enclaves()
     return [
         _NodeName(
             node=t[0],
             ns=t[1],
-            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
-        for t in node_names_and_namespaces
+            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0],
+            path=t[2])
+        for t in node_names_and_namespaces_with_enclaves
         if (
             include_hidden_nodes or
             (t[0] and not t[0].startswith(_HIDDEN_NODE_PREFIX))
