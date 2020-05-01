@@ -43,7 +43,7 @@ from sros2.verb import VerbExtension
 
 _HIDDEN_NODE_PREFIX = '_'
 
-_NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn'))
+_NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn', 'path'))
 _TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
 
@@ -66,31 +66,35 @@ class GeneratePolicyVerb(VerbExtension):
         if os.path.isfile(policy_file_path):
             return load_policy(policy_file_path)
         else:
-            profiles = etree.Element('profiles')
+            enclaves = etree.Element('enclaves')
             policy = etree.Element('policy')
             policy.attrib['version'] = POLICY_VERSION
-            policy.append(profiles)
+            policy.append(enclaves)
             return policy
 
     def get_profile(self, policy, node_name):
-        profile = policy.find(
-            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
-                ns=node_name.ns,
-                node=node_name.node))
+        enclave = policy.find(
+            path=f'enclaves/enclave[@path="{node_name.path}"]')
+        if enclave is None:
+            enclave = etree.Element('enclave')
+            enclave.attrib['path'] = node_name.path
+            profiles = etree.Element('profiles')
+            enclave.append(profiles)
+            enclaves = policy.find('enclaves')
+            enclaves.append(enclave)
+        profile = enclave.find(
+            path=f'profiles/profile[@ns="{node_name.ns}"][@node="{node_name.node}"]')
         if profile is None:
             profile = etree.Element('profile')
             profile.attrib['ns'] = node_name.ns
             profile.attrib['node'] = node_name.node
-            profiles = policy.find('profiles')
+            profiles = enclave.find('profiles')
             profiles.append(profile)
         return profile
 
     def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
         permissions = profile.find(
-            path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
-                permission_type=permission_type,
-                rule_type=rule_type,
-                rule_qualifier=rule_qualifier))
+            path=f'{permission_type}s[@{rule_type}="{rule_qualifier}"]')
         if permissions is None:
             permissions = etree.Element(permission_type + 's')
             permissions.attrib[rule_type] = rule_qualifier
@@ -147,13 +151,14 @@ class GeneratePolicyVerb(VerbExtension):
 
 
 def _get_node_names(*, node, include_hidden_nodes=False):
-    node_names_and_namespaces = node.get_node_names_and_namespaces()
+    node_names_and_namespaces_with_enclaves = node.get_node_names_and_namespaces_with_enclaves()
     return [
         _NodeName(
             node=t[0],
             ns=t[1],
-            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0])
-        for t in node_names_and_namespaces
+            fqn=t[1] + ('' if t[1].endswith('/') else '/') + t[0],
+            path=t[2])
+        for t in node_names_and_namespaces_with_enclaves
         if (
             include_hidden_nodes or
             (t[0] and not t[0].startswith(_HIDDEN_NODE_PREFIX))

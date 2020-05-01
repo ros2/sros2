@@ -65,10 +65,7 @@ enhance the security of ROS 2 deployments.""",
             'create_permission = sros2.verb.create_permission'
             ':CreatePermissionVerb',
             'generate_artifacts = sros2.verb.generate_artifacts:GenerateArtifactsVerb',
-            # TODO(ivanpauno): Reactivate this after having a way to introspect
-            # enclave names in rclpy.
-            # Related with https://github.com/ros2/rclpy/issues/529.
-            # 'generate_policy = sros2.verb.generate_policy:GeneratePolicyVerb',
+            'generate_policy = sros2.verb.generate_policy:GeneratePolicyVerb',
             'list_keys = sros2.verb.list_keys:ListKeysVerb',
         ],
     },
