@@ -66,19 +66,21 @@ class GeneratePolicyVerb(VerbExtension):
         if os.path.isfile(policy_file_path):
             return load_policy(policy_file_path)
         else:
-            profiles = etree.Element('profiles')
+            enclaves = etree.Element('enclaves')
             policy = etree.Element('policy')
             policy.attrib['version'] = POLICY_VERSION
-            policy.append(profiles)
+            policy.append(enclaves)
             return policy
 
     def get_profile(self, policy, node_name):
         enclave = policy.find(
             path='enclaves/enclave[@path="{path}"]'.format(
-                enclave=node_name.path))
+                path=node_name.path))
         if enclave is None:
             enclave = etree.Element('enclave')
             enclave.attrib['path'] = node_name.path
+            profiles = etree.Element('profiles')
+            enclave.append(profiles)
             enclaves = policy.find('enclaves')
             enclaves.append(enclave)
         profile = enclave.find(
@@ -89,7 +91,7 @@ class GeneratePolicyVerb(VerbExtension):
             profile = etree.Element('profile')
             profile.attrib['ns'] = node_name.ns
             profile.attrib['node'] = node_name.node
-            profiles = policy.find('profiles')
+            profiles = enclave.find('profiles')
             profiles.append(profile)
         return profile
 
