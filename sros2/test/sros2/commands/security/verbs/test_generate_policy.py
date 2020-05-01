@@ -24,8 +24,6 @@ from test_msgs.msg import Strings
 from test_msgs.srv import Empty
 
 
-# TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_topics():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific context so that generate_policy can still init
@@ -67,8 +65,6 @@ def test_generate_policy_topics():
         assert len([t for t in topics if t.text == 'test_generate_policy_topics_pub']) == 0
 
 
-# TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_services():
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create a test-specific context so that generate_policy can still init
@@ -110,8 +106,6 @@ def test_generate_policy_services():
         assert len([s for s in services if s.text == 'test_generate_policy_services_server']) == 0
 
 
-# TODO(ivanpauno): reactivate this test after updating generate policy
-@pytest.mark.skip(reason='temporarily deactivated')
 # TODO(jacobperron): On Windows, this test is flakey due to nodes left-over from tests in
 #                    other packages.
 #                    See: https://github.com/ros2/sros2/issues/143
