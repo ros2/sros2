@@ -74,8 +74,7 @@ class GeneratePolicyVerb(VerbExtension):
 
     def get_profile(self, policy, node_name):
         enclave = policy.find(
-            path='enclaves/enclave[@path="{path}"]'.format(
-                path=node_name.path))
+            path=f'enclaves/enclave[@path="{node_name.path}"]')
         if enclave is None:
             enclave = etree.Element('enclave')
             enclave.attrib['path'] = node_name.path
@@ -84,9 +83,7 @@ class GeneratePolicyVerb(VerbExtension):
             enclaves = policy.find('enclaves')
             enclaves.append(enclave)
         profile = enclave.find(
-            path='profiles/profile[@ns="{ns}"][@node="{node}"]'.format(
-                ns=node_name.ns,
-                node=node_name.node))
+            path=f'profiles/profile[@ns="{node_name.ns}"][@node="{node_name.node}"]')
         if profile is None:
             profile = etree.Element('profile')
             profile.attrib['ns'] = node_name.ns
@@ -97,10 +94,7 @@ class GeneratePolicyVerb(VerbExtension):
 
     def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
         permissions = profile.find(
-            path='{permission_type}s[@{rule_type}="{rule_qualifier}"]'.format(
-                permission_type=permission_type,
-                rule_type=rule_type,
-                rule_qualifier=rule_qualifier))
+            path=f'{permission_type}s[@{rule_type}="{rule_qualifier}"]')
         if permissions is None:
             permissions = etree.Element(permission_type + 's')
             permissions.attrib[rule_type] = rule_qualifier
