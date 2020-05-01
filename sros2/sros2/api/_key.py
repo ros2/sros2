@@ -86,10 +86,12 @@ def create_key(keystore_path, identity):
     _permission.create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
+    keystore_permissions_ca_cert_path = os.path.join(
+        _keystore.get_keystore_public_dir(keystore_path), 'permissions_ca.cert.pem')
     keystore_permissions_ca_key_path = os.path.join(
         _keystore.get_keystore_private_dir(keystore_path), 'permissions_ca.key.pem')
     _utilities.create_smime_signed_file(
-        keystore_ca_cert_path,
+        keystore_permissions_ca_cert_path,
         keystore_permissions_ca_key_path,
         permissions_path,
         signed_permissions_path
