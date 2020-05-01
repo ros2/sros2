@@ -47,7 +47,7 @@ def test_generate_policy_topics():
         # Load the policy and pull out the allowed publications and subscriptions
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
         profile = policy.find(
-            path='profiles/profile[@ns="/"][@node="test_generate_policy_topics_node"]')
+            path='enclaves/enclave[@path="/"]/profiles/profile[@ns="/"][@node="test_generate_policy_topics_node"]')
         assert profile is not None
         topics_publish_allowed = profile.find(path='topics[@publish="ALLOW"]')
         assert topics_publish_allowed is not None
@@ -88,7 +88,7 @@ def test_generate_policy_services():
         # Load the policy and pull out allowed replies and requests
         policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
         profile = policy.find(
-            path='profiles/profile[@ns="/"][@node="test_generate_policy_services_node"]')
+            path='enclaves/enclave[@path="/"]/profiles/profile[@ns="/"][@node="test_generate_policy_services_node"]')
         assert profile is not None
         service_reply_allowed = profile.find(path='services[@reply="ALLOW"]')
         assert service_reply_allowed is not None
