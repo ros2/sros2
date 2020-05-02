@@ -51,9 +51,7 @@ def get_keystore_path_from_env():
 
 def create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
     # Load the CA cert and key from disk
-    with open(cert_path, 'rb') as cert_file:
-        cert = x509.load_pem_x509_certificate(
-            cert_file.read(), cryptography_backend())
+    cert = load_cert(cert_path)
 
     with open(key_path, 'rb') as key_file:
         private_key = serialization.load_pem_private_key(
@@ -123,6 +121,12 @@ def write_key(
 def write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
     with open(cert_path, 'wb') as f:
         f.write(cert.public_bytes(encoding=encoding))
+
+
+def load_cert(cert_path):
+    with open(cert_path, 'rb') as cert_file:
+        return x509.load_pem_x509_certificate(
+            cert_file.read(), cryptography_backend())
 
 
 def _sign_bytes(cert, key, byte_string):
