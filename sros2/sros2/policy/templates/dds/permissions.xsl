@@ -6,11 +6,13 @@
  <xsl:output omit-xml-declaration="yes" indent="yes"/>
  <xsl:strip-space elements="*"/>
 
+<xsl:param name="not_valid_before" select="'2020-05-01T00:00:00'"/>
+<xsl:param name="not_valid_after" select="'2030-05-01T00:00:00'"/>
 
 <xsl:variable name="template_validity">
   <validity>
-    <not_before>2013-10-26T00:00:00</not_before>
-    <not_after>2023-10-26T22:45:30</not_after>
+    <not_before><xsl:value-of select="$not_valid_before" /></not_before>
+    <not_after><xsl:value-of select="$not_valid_after" /></not_after>
   </validity>
 </xsl:variable>
 
