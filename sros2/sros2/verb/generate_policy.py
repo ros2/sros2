@@ -47,11 +47,6 @@ _NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn', 'path'))
 _TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 
 
-def formatTopics(topic_list, permission, topic_map):
-    for topic in topic_list:
-        topic_map[topic.name].append(permission)
-
-
 class GeneratePolicyVerb(VerbExtension):
     """Generate XML policy file from ROS graph data."""
 
