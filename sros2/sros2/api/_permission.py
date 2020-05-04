@@ -60,6 +60,12 @@ def create_permission_file(path, domain_id, policy_element):
     permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
 
     kwargs = {}
+
+    cert_path = os.path.join(os.path.dirname(path), 'cert.pem')
+    cert_content = _utilities.load_cert(cert_path)
+    kwargs['not_valid_before'] = etree.XSLT.strparam(cert_content.not_valid_before.isoformat())
+    kwargs['not_valid_after'] = etree.XSLT.strparam(cert_content.not_valid_after.isoformat())
+
     if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
     permissions_xml = permissions_xsl(policy_element, **kwargs)

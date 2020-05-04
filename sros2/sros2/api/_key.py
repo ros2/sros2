@@ -126,8 +126,7 @@ def _is_key_name_valid(name):
 def _create_key_and_cert(
         keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path):
     # Load the CA cert and key from disk
-    with open(keystore_ca_cert_path, 'rb') as f:
-        ca_cert = x509.load_pem_x509_certificate(f.read(), cryptography_backend())
+    ca_cert = _utilities.load_cert(keystore_ca_cert_path)
 
     with open(keystore_ca_key_path, 'rb') as f:
         ca_key = serialization.load_pem_private_key(f.read(), None, cryptography_backend())

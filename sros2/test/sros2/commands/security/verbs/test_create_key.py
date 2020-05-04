@@ -27,7 +27,7 @@ import pytest
 
 from ros2cli import cli
 
-from sros2.api import _keystore
+from sros2.api import _keystore, _utilities
 from sros2.policy import get_transport_schema
 
 
@@ -47,12 +47,6 @@ def enclave_keys_dir(tmpdir_factory):
 
     # Return path to directory containing the enclave's files
     return enclave_dir
-
-
-def load_cert(path):
-    with open(path, 'rb') as f:
-        pem_data = f.read()
-    return x509.load_pem_x509_certificate(pem_data, default_backend())
 
 
 def load_csr(path):
@@ -101,7 +95,7 @@ def test_create_key(enclave_keys_dir):
 
 
 def test_cert_pem(enclave_keys_dir):
-    cert = load_cert(enclave_keys_dir / 'cert.pem')
+    cert = _utilities.load_cert(enclave_keys_dir / 'cert.pem')
     check_common_name(cert.subject, u'/test_enclave')
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
@@ -123,7 +117,7 @@ def test_cert_pem(enclave_keys_dir):
     assert value.path_length is None
 
     # Verify this cert is indeed signed by the keystore CA
-    signatory = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
+    signatory = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)
 
 
@@ -138,7 +132,7 @@ def test_governance_p7s(enclave_keys_dir):
 
 
 def test_identity_ca_cert_pem(enclave_keys_dir):
-    cert = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
+    cert = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
@@ -171,9 +165,9 @@ def test_permissions_xml(enclave_keys_dir):
 
 
 def test_permissions_ca_cert_pem(enclave_keys_dir):
-    cert = load_cert(enclave_keys_dir / 'permissions_ca.cert.pem')
+    cert = _utilities.load_cert(enclave_keys_dir / 'permissions_ca.cert.pem')
     check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
 
-    signatory = load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
+    signatory = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)
