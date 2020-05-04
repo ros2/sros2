@@ -136,7 +136,6 @@ def test_generate_policy_no_nodes(capsys):
         assert stderr == 'No nodes detected in the ROS graph. No policy file was generated.'
 
 
-@pytest.mark.skip(reason='temporarily deactivated')
 def test_generate_policy_no_policy_file(capsys):
     with pytest.raises(SystemExit) as e:
         cli.main(argv=['security', 'generate_policy'])
