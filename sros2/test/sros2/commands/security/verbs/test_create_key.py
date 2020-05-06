@@ -104,7 +104,7 @@ def test_cert_pem(enclave_keys_dir):
 
     # Verify the cert is valid for the expected timespan
     utcnow = datetime.datetime.utcnow()
-    assert _datetimes_are_close(cert.not_valid_before, utcnow)
+    assert _datetimes_are_close(cert.not_valid_before, utcnow - datetime.timedelta(days=1))
     assert _datetimes_are_close(cert.not_valid_after, utcnow + datetime.timedelta(days=3650))
 
     # Verify that the cert ensures this key cannot be used to sign others as a CA

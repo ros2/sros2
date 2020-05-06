@@ -87,7 +87,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         ).serial_number(
             x509.random_serial_number()
         ).not_valid_before(
-            utcnow
+            utcnow - datetime.timedelta(days=1)
         ).not_valid_after(
             # TODO: This should not be hard-coded
             utcnow + datetime.timedelta(days=3650)
