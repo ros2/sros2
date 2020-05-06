@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.0 (2020-05-06)
+------------------
 * Use matching validity dates for cert and permissions (`#205 <https://github.com/ros2/sros2/issues/205>`_)
 * permission signing should use permissions_ca (`#204 <https://github.com/ros2/sros2/issues/204>`_)
 * Rename keystore root env from ROS_SECURITY_ROOT_DIRECTORY to ROS_SECURITY_KEYSTORE (`#200 <https://github.com/ros2/sros2/issues/200>`_)

@@ -2,8 +2,8 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.0 (2020-05-06)
+------------------
 * Rename keystore root env from ROS_SECURITY_ROOT_DIRECTORY to ROS_SECURITY_KEYSTORE (`#200 <https://github.com/ros2/sros2/issues/200>`_)
 * Security enclaves:
   * security-context -> enclave (`#198 <https://github.com/ros2/sros2/issues/198>`_)
