@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import os
 
 from lxml import etree
@@ -63,8 +64,19 @@ def create_permission_file(path, domain_id, policy_element):
 
     cert_path = os.path.join(os.path.dirname(path), 'cert.pem')
     cert_content = _utilities.load_cert(cert_path)
-    kwargs['not_valid_before'] = etree.XSLT.strparam(cert_content.not_valid_before.isoformat())
-    kwargs['not_valid_after'] = etree.XSLT.strparam(cert_content.not_valid_after.isoformat())
+
+    kwargs['not_valid_before'] = etree.XSLT.strparam(
+        datetime.datetime.combine(
+            cert_content.not_valid_before.date(),
+            cert_content.not_valid_before.time(),
+            datetime.timezone.utc
+        ).isoformat())
+    kwargs['not_valid_after'] = etree.XSLT.strparam(
+        datetime.datetime.combine(
+            cert_content.not_valid_after.date(),
+            cert_content.not_valid_after.time(),
+            datetime.timezone.utc
+        ).isoformat())
 
     if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')

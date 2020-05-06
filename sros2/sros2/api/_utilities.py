@@ -80,7 +80,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
     else:
         extension = x509.BasicConstraints(ca=False, path_length=None)
 
-    utcnow = datetime.datetime.utcnow()
+    utcnow = datetime.datetime.now(datetime.timezone.utc)
     builder = x509.CertificateBuilder(
         ).issuer_name(
             issuer_name
