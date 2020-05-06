@@ -103,9 +103,17 @@ def test_cert_pem(enclave_keys_dir):
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
 
     # Verify the cert is valid for the expected timespan
-    utcnow = datetime.datetime.utcnow()
-    assert _datetimes_are_close(cert.not_valid_before, utcnow)
-    assert _datetimes_are_close(cert.not_valid_after, utcnow + datetime.timedelta(days=3650))
+    utcnow = datetime.datetime.now(datetime.timezone.utc)
+    tz_aware_not_valid_before = datetime.datetime.combine(
+        cert.not_valid_before.date(), cert.not_valid_before.time(),
+        datetime.timezone.utc
+    )
+    tz_aware_not_valid_after = datetime.datetime.combine(
+        cert.not_valid_after.date(), cert.not_valid_after.time(),
+        datetime.timezone.utc
+    )
+    assert _datetimes_are_close(tz_aware_not_valid_before, utcnow)
+    assert _datetimes_are_close(tz_aware_not_valid_after, utcnow + datetime.timedelta(days=3650))
 
     # Verify that the cert ensures this key cannot be used to sign others as a CA
     assert len(cert.extensions) == 1

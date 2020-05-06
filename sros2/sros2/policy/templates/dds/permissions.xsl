@@ -6,8 +6,8 @@
  <xsl:output omit-xml-declaration="yes" indent="yes"/>
  <xsl:strip-space elements="*"/>
 
-<xsl:param name="not_valid_before" select="'2020-05-01T00:00:00'"/>
-<xsl:param name="not_valid_after" select="'2030-05-01T00:00:00'"/>
+<xsl:param name="not_valid_before" select="'2020-05-01T00:00:00+00:00'"/>
+<xsl:param name="not_valid_after" select="'2030-05-01T00:00:00+00:00'"/>
 
 <xsl:variable name="template_validity">
   <validity>
