@@ -2,6 +2,15 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rename keystore root env from ROS_SECURITY_ROOT_DIRECTORY to ROS_SECURITY_KEYSTORE (`#200 <https://github.com/ros2/sros2/issues/200>`_)
+* Security enclaves:
+  * security-context -> enclave (`#198 <https://github.com/ros2/sros2/issues/198>`_)
+  * Update sros2_cmake to use security contexts (`#177 <https://github.com/ros2/sros2/issues/177>`_)
+* Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
+* Contributors: Ivan Santiago Paunovic, Mikael Arguedas, Ruffin
+
 0.8.1 (2019-11-13)
 ------------------
 

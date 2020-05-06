@@ -2,6 +2,36 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use matching validity dates for cert and permissions (`#205 <https://github.com/ros2/sros2/issues/205>`_)
+* permission signing should use permissions_ca (`#204 <https://github.com/ros2/sros2/issues/204>`_)
+* Rename keystore root env from ROS_SECURITY_ROOT_DIRECTORY to ROS_SECURITY_KEYSTORE (`#200 <https://github.com/ros2/sros2/issues/200>`_)
+* API cleanup
+  * remove function leftover from old generation strategy (`#207 <https://github.com/ros2/sros2/issues/207>`_)
+  * remove distribute_key completely (`#197 <https://github.com/ros2/sros2/issues/197>`_)
+  * api: reorganize policy generation API (`#196 <https://github.com/ros2/sros2/issues/196>`_)
+  * api: reorganize artifact generation API (`#195 <https://github.com/ros2/sros2/issues/195>`_)
+  * api: reorganize key API (`#192 <https://github.com/ros2/sros2/issues/192>`_)
+  * api: reorganize permission API (`#191 <https://github.com/ros2/sros2/issues/191>`_)
+  * api: reorganize policy API (`#190 <https://github.com/ros2/sros2/issues/190>`_)
+  * api: reorganize keystore API (`#188 <https://github.com/ros2/sros2/issues/188>`_)
+* Security enclaves:
+  * Use security contexts (`#177 <https://github.com/ros2/sros2/issues/177>`_)
+  * security-context -> enclave (`#198 <https://github.com/ros2/sros2/issues/198>`_)
+  * Update generate_policy verb for enclaves (`#203 <https://github.com/ros2/sros2/issues/203>`_)
+  * reenable test_generate_policy_no_policy_file (`#206 <https://github.com/ros2/sros2/issues/206>`_)
+* [ci] Add GitHub actions for linting and source-build CI (`#178 <https://github.com/ros2/sros2/issues/178>`_)
+* [test] use test_msgs instead of std message packages (`#181 <https://github.com/ros2/sros2/issues/181>`_)
+* [test] more verbose test_flake8 error messages (same as `ros2/launch_ros#135 <https://github.com/ros2/launch_ros/issues/135>`_)
+* [bookkeeping] Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
+* Symlink CA certs instead of copy (`#176 <https://github.com/ros2/sros2/issues/176>`_)
+* update from ros2cli API:
+  * pass argv in add_arguments to add_subparsers_on_demand (`#175 <https://github.com/ros2/sros2/issues/175>`_)
+  * switch to not deprecated API (`#174 <https://github.com/ros2/sros2/issues/174>`_)
+  * Use ros2cli.node.NodeStrategy consistently. (`#173 <https://github.com/ros2/sros2/issues/173>`_)
+* Contributors: Dirk Thomas, Ivan Santiago Paunovic, Kyle Fazzari, Michel Hidalgo, Mikael Arguedas, Ruffin
+
 0.8.1 (2019-11-13)
 ------------------
 * add profile for lifecycle nodes (`#146 <https://github.com/ros2/sros2/issues/146>`_)
