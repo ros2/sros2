@@ -87,7 +87,10 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         ).serial_number(
             x509.random_serial_number()
         ).not_valid_before(
-            utcnow
+            # Using a day earlier here to prevent Connext (5.3.1) from complaining
+            # when extracting it from the permissions file and thinking it's in the future
+            # https://github.com/ros2/ci/pull/436#issuecomment-624874296
+            utcnow - datetime.timedelta(days=1)
         ).not_valid_after(
             # TODO: This should not be hard-coded
             utcnow + datetime.timedelta(days=3650)
