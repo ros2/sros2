@@ -104,6 +104,10 @@ def test_cert_pem(enclave_keys_dir):
 
     # Verify the cert is valid for the expected timespan
     utcnow = datetime.datetime.utcnow()
+
+    # Using a day earlier here to prevent Connext (5.3.1) from complaining
+    # when extracting it from the permissions file and thinking it's in the future
+    # https://github.com/ros2/ci/pull/436#issuecomment-624874296
     assert _datetimes_are_close(cert.not_valid_before, utcnow - datetime.timedelta(days=1))
     assert _datetimes_are_close(cert.not_valid_after, utcnow + datetime.timedelta(days=3650))
 
