@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.1 (2020-05-11)
+------------------
 * start validity date a day before to account for timezone mismatch (`#209 <https://github.com/ros2/sros2/issues/209>`_)
 * Contributors: Mikael Arguedas
 
