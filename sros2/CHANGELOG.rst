@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* start validity date a day before to account for timezone mismatch (`#209 <https://github.com/ros2/sros2/issues/209>`_)
+* Contributors: Mikael Arguedas
+
 0.9.0 (2020-05-06)
 ------------------
 * Use matching validity dates for cert and permissions (`#205 <https://github.com/ros2/sros2/issues/205>`_)
