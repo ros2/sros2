@@ -42,7 +42,11 @@ def test_generate_policy_topics():
 
             # Generate the policy for the running node
             assert cli.main(
-                argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
+                argv=['security',
+                      'generate_policy',
+                      '--no-daemon',
+                      '--spin-time', '1',
+                      os.path.join(tmpdir, 'test-policy.xml')]) == 0
         finally:
             node.destroy_node()
             rclpy.shutdown(context=context)
@@ -94,7 +98,11 @@ def test_generate_policy_services():
 
             # Generate the policy for the running node
             assert cli.main(
-                argv=['security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) == 0
+                argv=['security',
+                      'generate_policy',
+                      '--no-daemon',
+                      '--spin-time', '1',
+                      os.path.join(tmpdir, 'test-policy.xml')]) == 0
         finally:
             node.destroy_node()
             rclpy.shutdown(context=context)
@@ -131,7 +139,10 @@ def test_generate_policy_services():
 def test_generate_policy_no_nodes(capsys):
     with tempfile.TemporaryDirectory() as tmpdir:
         assert cli.main(argv=[
-            'security', 'generate_policy', os.path.join(tmpdir, 'test-policy.xml')]) != 0
+            'security',
+            'generate_policy',
+            '--no-daemon',
+            os.path.join(tmpdir, 'test-policy.xml')]) != 0
         stderr = capsys.readouterr().err.strip()
         assert stderr == 'No nodes detected in the ROS graph. No policy file was generated.'
 
