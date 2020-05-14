@@ -42,7 +42,7 @@ jobs:
         path: ros_ws/log
   test_nightly:
     runs-on: ubuntu-latest
-    container: osrf/ros2:nightly
+    container: osrf/ros2:nightly-rmw-nonfree
     steps:
     - uses: actions/checkout@v2
     - name: Installing dependencies
