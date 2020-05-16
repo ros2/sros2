@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xml="http://www.w3.org/XML/1998/namespace"
+    elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+               schemaLocation="http://www.w3.org/2001/03/xml.xsd" />
+    <!-- TODO: Use namespaces for xs:import so schemas can be DRY -->
+
+    <xs:element name="policy" type="Policy" />
+    <xs:complexType name="Policy">
+        <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element name="profiles" type="Profiles" />
+        </xs:sequence>
+        <xs:attribute name="version" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="Profiles">
+        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="profile" type="Profile" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Profile">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:choice minOccurs="1" maxOccurs="1">
+                <xs:element name="raws" minOccurs="1" type="RawExpressionList" />
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="ns" type="xs:string" use="required" />
+        <xs:attribute name="node" type="xs:string" use="required" />
+        <xs:attribute ref="xml:base" />
+    </xs:complexType>
+
+    <xs:complexType name="RawExpressionList">
+        <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="raw" type="Expression" />
+        </xs:sequence>
+        <xs:attribute name="publish" type="RuleQualifier" use="optional" />
+        <xs:attribute name="relay" type="RuleQualifier" use="optional" />
+        <xs:attribute name="subscribe" type="RuleQualifier" use="optional" />
+        <xs:attribute ref="xml:base" />
+    </xs:complexType>
+
+    <xs:simpleType name="Expression">
+        <xs:restriction base="xs:string" />
+    </xs:simpleType>
+
+    <xs:simpleType name="RuleQualifier">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ALLOW" />
+            <xs:enumeration value="DENY" />
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
