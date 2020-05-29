@@ -17,6 +17,7 @@ import itertools
 import os
 import sys
 import tempfile
+import unittest
 
 from launch_ros.actions import Node
 
@@ -37,6 +38,7 @@ from utilities.sros2_cli_test_case import SROS2CLITestCase  # noqa: E402
 
 
 @pytest.mark.rostest
+@unittest.skipIf(os.name == 'nt', 'Flaky on Windows')
 @launch_testing.parametrize('rmw_implementation,use_daemon', itertools.product(
     get_available_rmw_implementations(), (True, False)
 ))
