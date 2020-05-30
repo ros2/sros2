@@ -32,7 +32,7 @@ def test_list_keys(capsys):
 
         # Now verify that the key we just created is included in the list
         assert cli.main(argv=['security', 'list_keys', keystore_dir]) == 0
-        assert (capsys.readouterr().out.strip() == '\n'.join(sorted(enclave_names)))
+        assert capsys.readouterr().out.strip() == '\n'.join(sorted(enclave_names))
 
 
 def test_list_keys_no_keys(capsys):
