@@ -169,5 +169,5 @@ For example, the following attempt for the `listener` node to subscribe to a top
 
 ```bash
 # This will fail because the node is not permitted to subscribe to topics other than chatter.
-ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/talker
+ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/listener
 ```
