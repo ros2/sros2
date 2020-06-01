@@ -1,6 +1,6 @@
 # Context
 
-![SROS2 CI](https://github.com/ros2/sros2/workflows/SROS2%20CI/badge.svg)
+[![SROS2 CI](https://github.com/ros2/sros2/workflows/SROS2%20CI/badge.svg)](https://github.com/ros2/sros2/actions?query=workflow%3A%22SROS2+CI%22+branch%3Amaster)
 [![codecov](https://codecov.io/gh/ros2/sros2/branch/master/graph/badge.svg)](https://codecov.io/gh/ros2/sros2)
 
 This package provides the tools and instructions to use ROS2 on top of DDS-Security.
