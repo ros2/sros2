@@ -168,6 +168,7 @@ To do this, we will use the sample policy file provided in `examples/sample_poli
 First, we will copy this sample policy file into our keystore:
 
 ```bash
+sudo apt update && sudo apt install subversion
 cd ~/sros2_demo
 svn checkout https://github.com/ros2/sros2/trunk/sros2/test/policies
 ```
@@ -201,5 +202,5 @@ For example, the following attempt for the `listener` node to subscribe to a top
 
 ```bash
 # This will fail because the node is not permitted to subscribe to topics other than chatter.
-ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/talker
+ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/listener
 ```
