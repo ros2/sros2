@@ -111,7 +111,7 @@ def list_keys(keystore_path):
     p = pathlib.Path(enclaves_path)
     key_file_paths = sorted(p.glob('**/key.pem'))
     for key_file_path in key_file_paths:
-        print('/{}'.format(key_file_path.parent.relative_to(enclaves_path)))
+        print('/{}'.format(key_file_path.parent.relative_to(enclaves_path).as_posix()))
     return True
 
 
