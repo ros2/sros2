@@ -15,6 +15,7 @@
 
 import errno
 import os
+import pathlib
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -103,12 +104,14 @@ def create_key(keystore_path, identity):
 def list_keys(keystore_path):
     enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
     if not os.path.isdir(keystore_path):
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
     if not os.path.isdir(enclaves_path):
         return True
-    for name in os.listdir(enclaves_path):
-        if os.path.isdir(os.path.join(enclaves_path, name)):
-            print(name)
+    p = pathlib.Path(enclaves_path)
+    key_file_paths = sorted(p.glob('**/key.pem'))
+    for key_file_path in key_file_paths:
+        print('/{}'.format(key_file_path.parent.relative_to(enclaves_path).as_posix()))
     return True
 
 

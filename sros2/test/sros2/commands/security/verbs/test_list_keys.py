@@ -20,17 +20,19 @@ from sros2.api import _key, _keystore
 
 
 def test_list_keys(capsys):
+    enclave_names = ['/test_enclave', '/test/nested_enclave', '/sky/is/the/limit']
     with tempfile.TemporaryDirectory() as keystore_dir:
         with capsys.disabled():
             # First, create the keystore
             assert _keystore.create_keystore(keystore_dir)
 
             # Now using that keystore, create a keypair
-            assert _key.create_key(keystore_dir, '/test_enclave')
+            for enclave_name in enclave_names:
+                assert _key.create_key(keystore_dir, enclave_name)
 
         # Now verify that the key we just created is included in the list
         assert cli.main(argv=['security', 'list_keys', keystore_dir]) == 0
-        assert capsys.readouterr().out.strip() == 'test_enclave'
+        assert capsys.readouterr().out.strip() == '\n'.join(sorted(enclave_names))
 
 
 def test_list_keys_no_keys(capsys):
