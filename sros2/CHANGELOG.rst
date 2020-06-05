@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.2 (2020-06-06)
+------------------
 * Fix list keys verb (`#219 <https://github.com/ros2/sros2/issues/219>`_)
 * Contributors: Mikael Arguedas
 
