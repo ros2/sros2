@@ -14,7 +14,9 @@
 
 from collections import namedtuple
 import datetime
+import errno
 import os
+import pathlib
 import shutil
 import sys
 
@@ -324,9 +326,13 @@ def create_key(keystore_path, identity):
 
 
 def list_keys(keystore_path):
-    for name in os.listdir(keystore_path):
-        if os.path.isdir(os.path.join(keystore_path, name)):
-            print(name)
+    if not os.path.isdir(keystore_path):
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
+    p = pathlib.Path(keystore_path)
+    key_file_paths = sorted(p.glob('**/key.pem'))
+    for key_file_path in key_file_paths:
+        print('/{}'.format(key_file_path.parent.relative_to(keystore_path).as_posix()))
     return True
 
 

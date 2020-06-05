@@ -20,17 +20,19 @@ from sros2.api import create_key, create_keystore
 
 
 def test_list_keys(capsys):
+    key_names = ['/test_node', '/test_namespace/test_node', '/sky/is/the/limit']
     with tempfile.TemporaryDirectory() as keystore_dir:
         with capsys.disabled():
             # First, create the keystore
             assert create_keystore(keystore_dir)
 
             # Now using that keystore, create a keypair
-            assert create_key(keystore_dir, '/test_node')
+            for key in key_names:
+                assert create_key(keystore_dir, key)
 
         # Now verify that the key we just created is included in the list
         assert cli.main(argv=['security', 'list_keys', keystore_dir]) == 0
-        assert capsys.readouterr().out.strip() == 'test_node'
+        assert capsys.readouterr().out.strip() == '\n'.join(sorted(key_names))
 
 
 def test_list_keys_no_keys(capsys):
