@@ -17,6 +17,7 @@ import itertools
 import os
 import sys
 import tempfile
+import unittest
 
 from launch_ros.actions import Node
 
@@ -42,6 +43,11 @@ from utilities.sros2_cli_test_case import SROS2CLITestCase  # noqa: E402
     get_available_rmw_implementations(), (True, False)
 ))
 def generate_test_description(rmw_implementation, use_daemon):
+    if 'connext' in rmw_implementation and not use_daemon:
+        raise unittest.SkipTest(
+            f'Using {rmw_implementation} w/o a daemon makes tests flaky'
+        )
+
     additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
     path_to_pub_sub_node_script = os.path.join(
         os.path.dirname(__file__), 'fixtures', 'pub_sub_node.py'
