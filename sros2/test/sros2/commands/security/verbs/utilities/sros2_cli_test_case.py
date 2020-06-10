@@ -31,7 +31,7 @@ import launch_testing_ros.tools
 from ros2cli.node.strategy import NodeStrategy
 
 
-MAX_DISCOVERY_DELAY = 2.0 if os.name != 'nt' else 4.0  # seconds
+MAX_DISCOVERY_DELAY = 4.0  # seconds
 
 
 def generate_sros2_cli_test_description(
@@ -43,11 +43,7 @@ def generate_sros2_cli_test_description(
         fixture_actions = [ExecuteProcess(
             cmd=['ros2', 'daemon', 'start'],
             name='daemon-start',
-            # Wait for daemon to discover fixture nodes.
-            on_exit=[TimerAction(
-                period=MAX_DISCOVERY_DELAY,
-                actions=fixture_actions
-            )],
+            on_exit=fixture_actions,
             additional_env=additional_env
         )]
     return LaunchDescription([
