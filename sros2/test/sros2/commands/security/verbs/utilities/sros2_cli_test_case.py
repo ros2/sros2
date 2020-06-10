@@ -14,13 +14,11 @@
 
 import argparse
 import contextlib
-import os
 import time
 import unittest
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
-from launch.actions import TimerAction
 
 import launch_testing
 import launch_testing.asserts
