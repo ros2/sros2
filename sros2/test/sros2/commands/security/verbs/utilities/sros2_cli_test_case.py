@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import contextlib
+import os
+import time
 import unittest
 
 from launch import LaunchDescription
@@ -25,8 +28,10 @@ import launch_testing.markers
 import launch_testing.tools
 import launch_testing_ros.tools
 
+from ros2cli.node.strategy import NodeStrategy
 
-MAX_DISCOVERY_DELAY = 2.0  # seconds
+
+MAX_DISCOVERY_DELAY = 2.0 if os.name != 'nt' else 4.0  # seconds
 
 
 def generate_sros2_cli_test_description(
@@ -92,3 +97,21 @@ class SROS2CLITestCase(unittest.TestCase):
             ) as sros2_command:
                 yield sros2_command
         cls.launch_sros2_command = launch_sros2_command
+
+        def wait_for(self, expected_topics=[], expected_services=[]):
+            if not expected_topics and not expected_services:
+                return True
+            args = argparse.Namespace()
+            args.use_daemon = use_daemon
+            args.spin_time = MAX_DISCOVERY_DELAY
+            with NodeStrategy(args) as node:
+                start_time = time.time()
+                while time.time() - start_time < MAX_DISCOVERY_DELAY:
+                    topics = [name for name, _ in node.get_topic_names_and_types()]
+                    services = [name for name, _ in node.get_service_names_and_types()]
+                    if all(t in topics for t in expected_topics) and \
+                       all(s in services for s in expected_services):
+                        return True
+                    time.sleep(0.1)  # this sleep time is arbitrary
+                return False
+        cls.wait_for = wait_for
