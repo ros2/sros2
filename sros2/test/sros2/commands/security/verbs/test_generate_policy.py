@@ -94,7 +94,7 @@ def generate_test_description(rmw_implementation, use_daemon):
     ), locals()
 
 
-GENERATE_POLICY_TIMEOUT = 10 if os.name != 'nt' else 20  # seconds
+GENERATE_POLICY_TIMEOUT = 10 if os.name != 'nt' else 30  # seconds
 
 
 class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
