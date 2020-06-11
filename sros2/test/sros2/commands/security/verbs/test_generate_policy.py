@@ -94,6 +94,9 @@ def generate_test_description(rmw_implementation, use_daemon):
     ), locals()
 
 
+GENERATE_POLICY_TIMEOUT = 10 if os.name != 'nt' else 20  # seconds
+
+
 class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
 
     def test_generate_policy_topics(
@@ -111,7 +114,7 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
             with self.launch_sros2_command(
                 arguments=['generate_policy', os.path.join(tmpdir, 'test-policy.xml')]
             ) as gen_command:
-                assert gen_command.wait_for_shutdown(timeout=10)
+                assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
             assert gen_command.exit_code == launch_testing.asserts.EXIT_OK
 
             # Load the policy and pull out the allowed publications and subscriptions
@@ -152,7 +155,7 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
             with self.launch_sros2_command(
                 arguments=['generate_policy', os.path.join(tmpdir, 'test-policy.xml')]
             ) as gen_command:
-                assert gen_command.wait_for_shutdown(timeout=10)
+                assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
             assert gen_command.exit_code == launch_testing.asserts.EXIT_OK
 
             # Load the policy and pull out allowed replies and requests
