@@ -2,6 +2,17 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump setup.py package version
+* Merge pull request `#222 <https://github.com/ros2/sros2/issues/222>`_ from mikaelarguedas/eloquent_backports
+  Eloquent backports
+* Fix list_keys verb
+  backport and adaptation of https://github.com/ros2/sros2/pull/219 to eloquent
+* Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
+* Update tutorials for Eloquent-style ros arguments. (`#170  <https://github.com/ros2/sros2/issues/170>`_)
+* Contributors: Mikael Arguedas
+
 0.8.1 (2019-11-13)
 ------------------
 * add profile for lifecycle nodes (`#146 <https://github.com/ros2/sros2/issues/146>`_)

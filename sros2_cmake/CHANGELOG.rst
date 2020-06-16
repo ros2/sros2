@@ -2,6 +2,15 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#222 <https://github.com/ros2/sros2/issues/222>`_ from mikaelarguedas/eloquent_backports
+  Eloquent backports
+* Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
+  * update maintainer and fix invalid package.xml
+  * use format 3 for consistency and futureproofness
+* Contributors: Mikael Arguedas
+
 0.8.1 (2019-11-13)
 ------------------
 
