@@ -2,6 +2,18 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump package version in setup.py
+* Merge pull request `#223 <https://github.com/ros2/sros2/issues/223>`_ from mikaelarguedas/dashing_backports
+  Dashing backports
+* Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
+* Fix list_keys verb
+  backport and adaptation of https://github.com/ros2/sros2/pull/219 to eloquent
+* Fix test_policy_to_permissions test failing when there's no internet (`#158 <https://github.com/ros2/sros2/issues/158>`_) (`#161 <https://github.com/ros2/sros2/issues/161>`_)
+* Fix missing resources for ament (`#162 <https://github.com/ros2/sros2/issues/162>`_)
+* Contributors: Mikael Arguedas, Peter Baughman
+
 0.7.1 (2019-06-12)
 ------------------
 * Guard against empty ROS graph when generating policy (`#118 <https://github.com/ros2/sros2/issues/118>`_)
