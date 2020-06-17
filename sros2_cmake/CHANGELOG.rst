@@ -2,8 +2,8 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.2 (2020-06-17)
+------------------
 * Merge pull request `#223 <https://github.com/ros2/sros2/issues/223>`_ from mikaelarguedas/dashing_backports
   Dashing backports
 * Update maintainer to point to ros-security mailing list + fix package.xml (`#179 <https://github.com/ros2/sros2/issues/179>`_)
