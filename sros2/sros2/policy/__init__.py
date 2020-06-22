@@ -19,7 +19,8 @@ from lxml import etree
 try:
     import importlib.resources as importlib_resources
 except ModuleNotFoundError:
-    # (clalancette): We have to ignore the type, otherwise mypy throws a warning.
+    # (clalancette): This fallback is necessary when importlib-resources is installed from pip.
+    # Note that we have to ignore the type, otherwise mypy throws a warning.
     # See https://github.com/python/mypy/issues/1153 for details.
     import importlib_resources  # type: ignore
 
