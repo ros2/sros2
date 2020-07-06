@@ -96,7 +96,7 @@ class SROS2CLITestCase(unittest.TestCase):
             if not expected_topics and not expected_services:
                 return True
             args = argparse.Namespace()
-            args.use_daemon = use_daemon
+            args.no_daemon = not use_daemon
             args.spin_time = MAX_DISCOVERY_DELAY
             with NodeStrategy(args) as node:
                 start_time = time.time()
