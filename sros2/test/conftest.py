@@ -22,6 +22,6 @@ import pytest
 os.environ['HTTP_PROXY'] = 'http://example.com'
 
 
-@pytest.fixture('session')
+@pytest.fixture(scope='session')
 def test_policy_dir():
     return pathlib.Path(__file__).parent / 'policies'
