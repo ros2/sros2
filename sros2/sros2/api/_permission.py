@@ -23,7 +23,11 @@ from sros2.policy import get_transport_schema, get_transport_template
 from . import _keystore, _policy, _utilities
 
 
-_RMW_WITH_ROS_GRAPH_INFO_TOPIC = ('rmw_fastrtps_cpp', 'rmw_fastrtps_dynamic_cpp')
+_RMW_WITH_ROS_GRAPH_INFO_TOPIC = (
+    'rmw_cyclonedds_cpp',
+    'rmw_fastrtps_cpp',
+    'rmw_fastrtps_dynamic_cpp'
+)
 
 
 def create_permission(keystore_path, identity, policy_file_path):
