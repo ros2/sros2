@@ -130,15 +130,15 @@ First, we'll create an empty keystore on `oldschool`, which is just an empty dir
 
 ```
 ssh oldschool.local
-mkdir -p ~/sros2_demo/demo_keys
+mkdir -p ~/sros2_demo/demo_keys/enclaves/talker_listener
 exit
 ```
 
 Now, we'll copy the keys/certificates for the "talker" program from `feather2` to `oldschool`:
 
 ```
-cd ~/sros2_demo/demo_keys
-scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keys
+cd ~/sros2_demo/demo_keys/enclaves/talker_listener/
+scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keys/enclaves/talker_listener/
 ```
 
 That will be very quick, since it's just copying some very small text files.
