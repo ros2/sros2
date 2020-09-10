@@ -12,24 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pathlib
+import sys
+
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
     def DirectoriesCompleter():
         return None
 
-from sros2.api import _key
+import sros2.keystore
 from sros2.verb import VerbExtension
 
 
-class CreateKeyVerb(VerbExtension):
-    """Create key."""
+class CreateEnclaveVerb(VerbExtension):
+    """Create enclave."""
 
-    def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+    def add_arguments(self, parser, cli_name) -> None:
+        arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
-        parser.add_argument('NAME', help='key name, aka ROS enclave name')
+        parser.add_argument('NAME', help='enclave name')
 
-    def main(self, *, args):
-        success = _key.create_key(args.ROOT, args.NAME)
-        return 0 if success else 1
+    def main(self, *, args) -> int:
+        try:
+            sros2.keystore.create_enclave(args.ROOT, args.NAME)
+        except sros2.errors.SROS2Error as e:
+            print(f'Unable to create enclave: {str(e)}', file=sys.stderr)
+            return 1
+        return 0

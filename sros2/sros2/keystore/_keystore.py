@@ -14,14 +14,15 @@
 # limitations under the License.
 
 import os
+import pathlib
 
 from cryptography import x509
 
 import lxml
 
+from sros2 import _utilities
+import sros2.errors
 from sros2.policy import get_transport_default, get_transport_schema
-
-from . import _utilities
 
 
 _KS_ENCLAVES = 'enclaves'
@@ -30,12 +31,9 @@ _KS_PRIVATE = 'private'
 _DEFAULT_COMMON_NAME = 'sros2testCA'
 
 
-def create_keystore(keystore_path):
-    if not is_valid_keystore(keystore_path):
-        print('creating keystore: %s' % keystore_path)
-    else:
-        print('keystore already exists: %s' % keystore_path)
-        return
+def create_keystore(keystore_path: pathlib.Path) -> None:
+    if is_valid_keystore(keystore_path):
+        raise sros2.errors.KeystoreExistsError(keystore_path)
 
     os.makedirs(keystore_path, exist_ok=True)
     os.makedirs(os.path.join(keystore_path, _KS_PUBLIC), exist_ok=True)
@@ -45,14 +43,14 @@ def create_keystore(keystore_path):
     keystore_ca_cert_path = os.path.join(keystore_path, _KS_PUBLIC, 'ca.cert.pem')
     keystore_ca_key_path = os.path.join(keystore_path, _KS_PRIVATE, 'ca.key.pem')
 
-    keystore_permissions_ca_cert_path = os.path.join(
-        keystore_path, _KS_PUBLIC, 'permissions_ca.cert.pem')
-    keystore_permissions_ca_key_path = os.path.join(
-        keystore_path, _KS_PRIVATE, 'permissions_ca.key.pem')
-    keystore_identity_ca_cert_path = os.path.join(
-        keystore_path, _KS_PUBLIC, 'identity_ca.cert.pem')
-    keystore_identity_ca_key_path = os.path.join(
-        keystore_path, _KS_PRIVATE, 'identity_ca.key.pem')
+    keystore_permissions_ca_cert_path = keystore_path.joinpath(
+        _KS_PUBLIC, 'permissions_ca.cert.pem')
+    keystore_permissions_ca_key_path = keystore_path.joinpath(
+        _KS_PRIVATE, 'permissions_ca.key.pem')
+    keystore_identity_ca_cert_path = keystore_path.joinpath(
+        _KS_PUBLIC, 'identity_ca.cert.pem')
+    keystore_identity_ca_key_path = keystore_path.joinpath(
+        _KS_PRIVATE, 'identity_ca.key.pem')
 
     required_files = (
         keystore_permissions_ca_cert_path,
@@ -61,61 +59,53 @@ def create_keystore(keystore_path):
         keystore_identity_ca_key_path,
     )
 
+    # Create new CA if one doesn't already exist
     if not all(os.path.isfile(x) for x in required_files):
-        print('creating new CA key/cert pair')
         _create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
-        _utilities.create_symlink(src='ca.cert.pem', dst=keystore_permissions_ca_cert_path)
-        _utilities.create_symlink(src='ca.key.pem', dst=keystore_permissions_ca_key_path)
-        _utilities.create_symlink(src='ca.cert.pem', dst=keystore_identity_ca_cert_path)
-        _utilities.create_symlink(src='ca.key.pem', dst=keystore_identity_ca_key_path)
-    else:
-        print('found CA key and cert, not creating new ones!')
+        _utilities.create_symlink(
+            src=pathlib.Path('ca.cert.pem'), dst=keystore_permissions_ca_cert_path)
+        _utilities.create_symlink(
+            src=pathlib.Path('ca.key.pem'), dst=keystore_permissions_ca_key_path)
+        _utilities.create_symlink(
+            src=pathlib.Path('ca.cert.pem'), dst=keystore_identity_ca_cert_path)
+        _utilities.create_symlink(
+            src=pathlib.Path('ca.key.pem'), dst=keystore_identity_ca_key_path)
 
-    # create governance file
-    gov_path = os.path.join(keystore_path, _KS_ENCLAVES, 'governance.xml')
-    if not os.path.isfile(gov_path):
-        print('creating governance file: %s' % gov_path)
+    # Create governance file if it doesn't already exist
+    gov_path = keystore_path.joinpath(_KS_ENCLAVES, 'governance.xml')
+    if not gov_path.is_file():
         _create_governance_file(gov_path, _utilities.domain_id())
-    else:
-        print('found governance file, not creating a new one!')
 
-    # sign governance file
-    signed_gov_path = os.path.join(keystore_path, _KS_ENCLAVES, 'governance.p7s')
-    if not os.path.isfile(signed_gov_path):
-        print('creating signed governance file: %s' % signed_gov_path)
+    # Sign governance file if it hasn't already been signed
+    signed_gov_path = keystore_path.joinpath(_KS_ENCLAVES, 'governance.p7s')
+    if not signed_gov_path.is_file():
         _utilities.create_smime_signed_file(
             keystore_permissions_ca_cert_path,
             keystore_permissions_ca_key_path,
             gov_path,
             signed_gov_path)
-    else:
-        print('found signed governance file, not creating a new one!')
-
-    print('all done! enjoy your keystore in %s' % keystore_path)
-    print('cheers!')
-    return True
 
 
-def is_valid_keystore(path):
+def is_valid_keystore(path: pathlib.Path) -> bool:
     return (
-        os.path.isfile(os.path.join(path, _KS_PUBLIC, 'permissions_ca.cert.pem')) and
-        os.path.isfile(os.path.join(path, _KS_PUBLIC, 'identity_ca.cert.pem')) and
-        os.path.isfile(os.path.join(path, _KS_PRIVATE, 'permissions_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, _KS_PRIVATE, 'identity_ca.key.pem')) and
-        os.path.isfile(os.path.join(path, _KS_ENCLAVES, 'governance.p7s'))
+        path.joinpath(_KS_PUBLIC, 'permissions_ca.cert.pem').is_file() and
+        path.joinpath(_KS_PUBLIC, 'identity_ca.cert.pem').is_file() and
+        path.joinpath(_KS_PRIVATE, 'permissions_ca.key.pem').is_file() and
+        path.joinpath(_KS_PRIVATE, 'identity_ca.key.pem').is_file() and
+        path.joinpath(_KS_ENCLAVES, 'governance.p7s').is_file()
     )
 
 
-def get_keystore_enclaves_dir(keystore_path: str) -> str:
-    return os.path.join(keystore_path, _KS_ENCLAVES)
+def get_keystore_enclaves_dir(keystore_path: pathlib.Path) -> pathlib.Path:
+    return keystore_path.joinpath(_KS_ENCLAVES)
 
 
-def get_keystore_public_dir(keystore_path: str) -> str:
-    return os.path.join(keystore_path, _KS_PUBLIC)
+def get_keystore_public_dir(keystore_path: pathlib.Path) -> pathlib.Path:
+    return keystore_path.joinpath(_KS_PUBLIC)
 
 
-def get_keystore_private_dir(keystore_path: str) -> str:
-    return os.path.join(keystore_path, _KS_PRIVATE)
+def get_keystore_private_dir(keystore_path: pathlib.Path) -> pathlib.Path:
+    return keystore_path.joinpath(_KS_PRIVATE)
 
 
 def _create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
@@ -127,14 +117,14 @@ def _create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     _utilities.write_cert(cert, ca_cert_out_path)
 
 
-def _create_governance_file(path, domain_id):
+def _create_governance_file(path: pathlib.Path, domain_id):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     governance_xml_path = get_transport_default('dds', 'governance.xml')
-    governance_xml = lxml.etree.parse(governance_xml_path)
+    governance_xml = lxml.etree.parse(str(governance_xml_path))
 
     governance_xsd_path = get_transport_schema('dds', 'governance.xsd')
-    governance_xsd = lxml.etree.XMLSchema(lxml.etree.parse(governance_xsd_path))
+    governance_xsd = lxml.etree.XMLSchema(lxml.etree.parse(str(governance_xsd_path)))
 
     domain_id_elements = governance_xml.findall(
         'domain_access_rules/domain_rule/domains/id')
@@ -144,7 +134,7 @@ def _create_governance_file(path, domain_id):
     try:
         governance_xsd.assertValid(governance_xml)
     except lxml.etree.DocumentInvalid as e:
-        raise RuntimeError(str(e))
+        raise sros2.errors.InvalidGovernanceXMLError(e) from e
 
     with open(path, 'wb') as f:
         f.write(lxml.etree.tostring(governance_xml, pretty_print=True))

@@ -15,6 +15,7 @@
 
 import itertools
 import os
+import pathlib
 import sys
 import tempfile
 import unittest
@@ -42,7 +43,7 @@ from utilities.sros2_cli_test_case import SROS2CLITestCase  # noqa: E402
 @launch_testing.parametrize('rmw_implementation,use_daemon', itertools.product(
     get_available_rmw_implementations(), (True, False)
 ))
-def generate_test_description(rmw_implementation, use_daemon):
+def generate_test_description(rmw_implementation: str, use_daemon: bool):
     if 'connext' in rmw_implementation and not use_daemon:
         raise unittest.SkipTest(
             f'Using {rmw_implementation} w/o a daemon makes tests flaky'
@@ -111,14 +112,15 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         ])
 
         with tempfile.TemporaryDirectory() as tmpdir:
+            test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
             with self.launch_sros2_command(
-                arguments=['generate_policy', os.path.join(tmpdir, 'test-policy.xml')]
+                arguments=['generate_policy', str(test_policy)]
             ) as gen_command:
                 assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
             assert gen_command.exit_code == launch_testing.asserts.EXIT_OK
 
             # Load the policy and pull out the allowed publications and subscriptions
-            policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
+            policy = load_policy(test_policy)
             profile = policy.find(
                 path=f'enclaves/enclave[@path="{pub_sub_node_enclave}"]'
                      + f'/profiles/profile[@ns="{pub_sub_node_namespace}"]'
@@ -152,14 +154,15 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         ])
 
         with tempfile.TemporaryDirectory() as tmpdir:
+            test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
             with self.launch_sros2_command(
-                arguments=['generate_policy', os.path.join(tmpdir, 'test-policy.xml')]
+                arguments=['generate_policy', str(test_policy)]
             ) as gen_command:
                 assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
             assert gen_command.exit_code == launch_testing.asserts.EXIT_OK
 
             # Load the policy and pull out allowed replies and requests
-            policy = load_policy(os.path.join(tmpdir, 'test-policy.xml'))
+            policy = load_policy(test_policy)
             profile = policy.find(
                 path=f'enclaves/enclave[@path="{client_srv_node_enclave}"]'
                      + f'/profiles/profile[@ns="{client_srv_node_namespace}"]'

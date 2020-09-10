@@ -18,23 +18,28 @@ except ImportError:
     def DirectoriesCompleter():
         return None
 
+import pathlib
 import sys
 
-from sros2.api import _key
+import sros2.keystore
 from sros2.verb import VerbExtension
 
 
-class ListKeysVerb(VerbExtension):
-    """List keys."""
+class ListEnclavesVerb(VerbExtension):
+    """List enclaves in keystore."""
 
-    def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+    def add_arguments(self, parser, cli_name) -> None:
+        arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
 
-    def main(self, *, args):
+    def main(self, *, args) -> int:
         try:
-            if _key.list_keys(args.ROOT):
-                return 0
-        except FileNotFoundError as e:
-            print('No such file or directory: {!r}'.format(e.filename), file=sys.stderr)
+            enclaves = sros2.keystore.get_enclaves(args.ROOT)
+            if enclaves:
+                # Print each enclave on its own line
+                for enclave in sorted(enclaves):
+                    print(enclave)
+            return 0
+        except sros2.errors.SROS2Error as e:
+            print(f'Unable to list enclaves: {str(e)}', file=sys.stderr)
         return 1

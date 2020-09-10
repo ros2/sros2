@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import errno
 import os
 import pathlib
+from typing import Set
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -24,48 +24,52 @@ from cryptography.hazmat.primitives import serialization
 from rclpy.exceptions import InvalidNamespaceException
 from rclpy.validate_namespace import validate_namespace
 
+from sros2 import _utilities
+from sros2.api import _policy
+import sros2.errors
 from sros2.policy import get_policy_default
 
-from . import _keystore, _permission, _policy, _utilities
+from . import _keystore, _permission
 
 
-def create_key(keystore_path, identity):
+def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
     if not _keystore.is_valid_keystore(keystore_path):
-        print("'%s' is not a valid keystore " % keystore_path)
-        return False
-    if not _is_key_name_valid(identity):
-        return False
-    print("creating key for identity: '%s'" % identity)
+        raise sros2.errors.InvalidKeystoreError(keystore_path)
+
+    if not _is_enclave_name_valid(identity):
+        raise sros2.errors.InvalidEnclaveNameError(identity)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.get_keystore_enclaves_dir(keystore_path), relative_path)
+    key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
     os.makedirs(key_dir, exist_ok=True)
 
     # symlink the CA cert in there
     public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
     for public_cert in public_certs:
-        dst = os.path.join(key_dir, public_cert)
-        keystore_ca_cert_path = os.path.join(
-            _keystore.get_keystore_public_dir(keystore_path), public_cert)
-        relativepath = os.path.relpath(keystore_ca_cert_path, key_dir)
+        dst = key_dir.joinpath(public_cert)
+        keystore_ca_cert_path = _keystore.get_keystore_public_dir(
+            keystore_path).joinpath(public_cert)
+        relativepath = pathlib.Path(
+            os.path.relpath(keystore_ca_cert_path, key_dir))
         _utilities.create_symlink(src=relativepath, dst=dst)
 
     # symlink the governance file in there
-    keystore_governance_path = os.path.join(
-        _keystore.get_keystore_enclaves_dir(keystore_path), 'governance.p7s')
-    dest_governance_path = os.path.join(key_dir, 'governance.p7s')
-    relativepath = os.path.relpath(keystore_governance_path, key_dir)
+    keystore_governance_path = _keystore.get_keystore_enclaves_dir(
+        keystore_path).joinpath('governance.p7s')
+    dest_governance_path = key_dir.joinpath('governance.p7s')
+    relativepath = pathlib.Path(
+        os.path.relpath(keystore_governance_path, key_dir))
     _utilities.create_symlink(src=relativepath, dst=dest_governance_path)
 
-    keystore_identity_ca_cert_path = os.path.join(
-        _keystore.get_keystore_public_dir(keystore_path), 'identity_ca.cert.pem')
-    keystore_identity_ca_key_path = os.path.join(
-        _keystore.get_keystore_private_dir(keystore_path), 'identity_ca.key.pem')
+    keystore_identity_ca_cert_path = _keystore.get_keystore_public_dir(
+        keystore_path).joinpath('identity_ca.cert.pem')
+    keystore_identity_ca_key_path = _keystore.get_keystore_private_dir(
+        keystore_path).joinpath('identity_ca.key.pem')
 
-    cert_path = os.path.join(key_dir, 'cert.pem')
-    key_path = os.path.join(key_dir, 'key.pem')
-    if not os.path.isfile(cert_path) or not os.path.isfile(key_path):
-        print('creating cert and key')
+    # Only create certs/keys if they don't already exist
+    cert_path = key_dir.joinpath('cert.pem')
+    key_path = key_dir.joinpath('key.pem')
+    if not cert_path.is_file() or not key_path.is_file():
         _create_key_and_cert(
             keystore_identity_ca_cert_path,
             keystore_identity_ca_key_path,
@@ -73,8 +77,6 @@ def create_key(keystore_path, identity):
             cert_path,
             key_path
         )
-    else:
-        print('found cert and key; not creating new ones!')
 
     # create a wildcard permissions file for this node which can be overridden
     # later using a policy if desired
@@ -83,14 +85,14 @@ def create_key(keystore_path, identity):
     enclave_element = policy_element.find('enclaves/enclave')
     enclave_element.attrib['path'] = identity
 
-    permissions_path = os.path.join(key_dir, 'permissions.xml')
+    permissions_path = key_dir.joinpath('permissions.xml')
     _permission.create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
-    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_permissions_ca_cert_path = os.path.join(
-        _keystore.get_keystore_public_dir(keystore_path), 'permissions_ca.cert.pem')
-    keystore_permissions_ca_key_path = os.path.join(
-        _keystore.get_keystore_private_dir(keystore_path), 'permissions_ca.key.pem')
+    signed_permissions_path = key_dir.joinpath('permissions.p7s')
+    keystore_permissions_ca_cert_path = _keystore.get_keystore_public_dir(
+        keystore_path).joinpath('permissions_ca.cert.pem')
+    keystore_permissions_ca_key_path = _keystore.get_keystore_private_dir(
+        keystore_path).joinpath('permissions_ca.key.pem')
     _utilities.create_smime_signed_file(
         keystore_permissions_ca_cert_path,
         keystore_permissions_ca_key_path,
@@ -98,24 +100,24 @@ def create_key(keystore_path, identity):
         signed_permissions_path
     )
 
-    return True
 
+def get_enclaves(keystore_path: pathlib.Path) -> Set[str]:
+    if not _keystore.is_valid_keystore(keystore_path):
+        raise sros2.errors.InvalidKeystoreError(keystore_path)
 
-def list_keys(keystore_path):
     enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
-    if not os.path.isdir(keystore_path):
-        raise FileNotFoundError(
-            errno.ENOENT, os.strerror(errno.ENOENT), keystore_path)
-    if not os.path.isdir(enclaves_path):
-        return True
-    p = pathlib.Path(enclaves_path)
-    key_file_paths = sorted(p.glob('**/key.pem'))
-    for key_file_path in key_file_paths:
-        print('/{}'.format(key_file_path.parent.relative_to(enclaves_path).as_posix()))
-    return True
+    enclaves: Set[str] = set()
+    if os.path.isdir(enclaves_path):
+        p = pathlib.Path(enclaves_path)
+        key_file_paths = p.glob('**/key.pem')
+
+        for key_file_path in key_file_paths:
+            enclaves.add(f'/{key_file_path.parent.relative_to(enclaves_path).as_posix()}')
+
+    return enclaves
 
 
-def _is_key_name_valid(name):
+def _is_enclave_name_valid(name: str) -> bool:
     # TODO(ivanpauno): Use validate_enclave_name when it's propagated to `rclpy`.
     #   This is not to bad for the moment.
     #   Related with https://github.com/ros2/rclpy/issues/528.
@@ -127,7 +129,11 @@ def _is_key_name_valid(name):
 
 
 def _create_key_and_cert(
-        keystore_ca_cert_path, keystore_ca_key_path, identity, cert_path, key_path):
+        keystore_ca_cert_path: pathlib.Path,
+        keystore_ca_key_path: pathlib.Path,
+        identity: str,
+        cert_path: pathlib.Path,
+        key_path: pathlib.Path):
     # Load the CA cert and key from disk
     ca_cert = _utilities.load_cert(keystore_ca_cert_path)
 

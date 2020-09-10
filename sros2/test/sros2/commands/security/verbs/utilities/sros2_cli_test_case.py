@@ -34,7 +34,7 @@ MAX_DISCOVERY_DELAY = 4.0  # seconds
 
 def generate_sros2_cli_test_description(
     fixture_actions, rmw_implementation, use_daemon
-):
+) -> LaunchDescription:
     additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
     if use_daemon:
         # Start daemon.

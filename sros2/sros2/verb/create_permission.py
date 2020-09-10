@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pathlib
+import sys
+
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
@@ -23,25 +26,26 @@ except ImportError:
     def FilesCompleter(*, allowednames, directories):
         return None
 
-from sros2.api import _permission
+import sros2.keystore
 from sros2.verb import VerbExtension
 
 
 class CreatePermissionVerb(VerbExtension):
     """Create permission."""
 
-    def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('ROOT', help='root path of keystore')
+    def add_arguments(self, parser, cli_name) -> None:
+        arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument('NAME', help='key name, aka ROS enclave name')
         arg = parser.add_argument(
-            'POLICY_FILE_PATH', help='path of the policy xml file')
+            'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
 
-    def main(self, *, args):
+    def main(self, *, args) -> int:
         try:
-            success = _permission.create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
-        except FileNotFoundError as e:
-            raise RuntimeError(str(e))
-        return 0 if success else 1
+            sros2.keystore.create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
+        except sros2.errors.SROS2Error as e:
+            print(f'Unable to create permission: {str(e)}', file=sys.stderr)
+            return 1
+        return 0
