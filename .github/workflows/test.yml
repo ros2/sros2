@@ -28,7 +28,7 @@ jobs:
           test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.6
+      uses: codecov/codecov-action@v1
       if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
       with:
         file: ros_ws/build/sros2/coverage.xml
