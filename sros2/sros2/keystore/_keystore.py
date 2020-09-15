@@ -35,18 +35,21 @@ def create_keystore(keystore_path: pathlib.Path) -> None:
     if is_valid_keystore(keystore_path):
         raise sros2.errors.KeystoreExistsError(keystore_path)
 
-    os.makedirs(keystore_path, exist_ok=True)
-    os.makedirs(os.path.join(keystore_path, _KS_PUBLIC), exist_ok=True)
-    os.makedirs(os.path.join(keystore_path, _KS_PRIVATE), exist_ok=True)
-    os.makedirs(os.path.join(keystore_path, _KS_ENCLAVES), exist_ok=True)
+    for path in (
+            keystore_path,
+            keystore_path.joinpath(_KS_PUBLIC),
+            keystore_path.joinpath(_KS_PRIVATE),
+            keystore_path.joinpath(_KS_ENCLAVES)):
+        path.mkdir(parents=True, exist_ok=True)
 
-    keystore_ca_cert_path = os.path.join(keystore_path, _KS_PUBLIC, 'ca.cert.pem')
-    keystore_ca_key_path = os.path.join(keystore_path, _KS_PRIVATE, 'ca.key.pem')
+    keystore_ca_cert_path = keystore_path.joinpath(_KS_PUBLIC, 'ca.cert.pem')
+    keystore_ca_key_path = keystore_path.joinpath(_KS_PRIVATE, 'ca.key.pem')
 
     keystore_permissions_ca_cert_path = keystore_path.joinpath(
         _KS_PUBLIC, 'permissions_ca.cert.pem')
     keystore_permissions_ca_key_path = keystore_path.joinpath(
         _KS_PRIVATE, 'permissions_ca.key.pem')
+
     keystore_identity_ca_cert_path = keystore_path.joinpath(
         _KS_PUBLIC, 'identity_ca.cert.pem')
     keystore_identity_ca_key_path = keystore_path.joinpath(
@@ -62,14 +65,12 @@ def create_keystore(keystore_path: pathlib.Path) -> None:
     # Create new CA if one doesn't already exist
     if not all(os.path.isfile(x) for x in required_files):
         _create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
-        _utilities.create_symlink(
-            src=pathlib.Path('ca.cert.pem'), dst=keystore_permissions_ca_cert_path)
-        _utilities.create_symlink(
-            src=pathlib.Path('ca.key.pem'), dst=keystore_permissions_ca_key_path)
-        _utilities.create_symlink(
-            src=pathlib.Path('ca.cert.pem'), dst=keystore_identity_ca_cert_path)
-        _utilities.create_symlink(
-            src=pathlib.Path('ca.key.pem'), dst=keystore_identity_ca_key_path)
+
+        for path in (keystore_permissions_ca_cert_path, keystore_identity_ca_cert_path):
+            _utilities.create_symlink(src=pathlib.Path('ca.cert.pem'), dst=path)
+
+        for path in (keystore_permissions_ca_key_path, keystore_identity_ca_key_path):
+            _utilities.create_symlink(src=pathlib.Path('ca.key.pem'), dst=path)
 
     # Create governance file if it doesn't already exist
     gov_path = keystore_path.joinpath(_KS_ENCLAVES, 'governance.xml')
@@ -117,7 +118,7 @@ def _create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     _utilities.write_cert(cert, ca_cert_out_path)
 
 
-def _create_governance_file(path: pathlib.Path, domain_id):
+def _create_governance_file(path: pathlib.Path, domain_id: str):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     governance_xml_path = get_transport_default('dds', 'governance.xml')

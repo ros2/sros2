@@ -60,7 +60,7 @@ def get_transport_template(transport: str, name: str) -> pathlib.Path:
         return path
 
 
-def load_policy(policy_file_path: pathlib.Path):
+def load_policy(policy_file_path: pathlib.Path) -> etree.ElementTree:
     if not policy_file_path.is_file():
         raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
     policy = etree.parse(str(policy_file_path))
