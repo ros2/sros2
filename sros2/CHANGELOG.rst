@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.3 (2020-09-16)
+------------------
 * add cyclonedds to the list of rmw using graph info topics (#231) (#238)
   Signed-off-by: Mikael Arguedas <mikael.arguedas@gmail.com>
 * Add scope parameter (backport to Foxy) (#232)
