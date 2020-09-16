@@ -2,6 +2,14 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add cyclonedds to the list of rmw using graph info topics (#231) (#238)
+  Signed-off-by: Mikael Arguedas <mikael.arguedas@gmail.com>
+* Add scope parameter (backport to Foxy) (#232)
+  Signed-off-by: Jose Luis Rivero <jrivero@osrfoundation.org>
+* Contributors: Jose Luis Rivero, Mikael Arguedas
+
 0.9.2 (2020-06-06)
 ------------------
 * Fix list keys verb (`#219 <https://github.com/ros2/sros2/issues/219>`_)
