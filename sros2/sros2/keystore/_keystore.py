@@ -28,7 +28,7 @@ from sros2.policy import get_transport_default, get_transport_schema
 _KS_ENCLAVES = 'enclaves'
 _KS_PUBLIC = 'public'
 _KS_PRIVATE = 'private'
-_DEFAULT_COMMON_NAME = 'sros2testCA'
+_DEFAULT_COMMON_NAME = 'sros2CA'
 
 
 def create_keystore(keystore_path: pathlib.Path) -> None:
