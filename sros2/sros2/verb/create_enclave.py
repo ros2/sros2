@@ -47,5 +47,7 @@ class CreateKeyVerb(CreateEnclaveVerb):
     """DEPRECATED: Create enclave. Use create_enclave instead."""
 
     def main(self, *, args) -> int:
-        warnings.warn("create_key is deprecated and will be removed in a future release. Use create_enclave instead.", FutureWarning)
+        warnings.warn(
+            'create_key is deprecated and will be removed in a future release. Use create_enclave '
+            'instead.', FutureWarning)
         return super().main(args=args)

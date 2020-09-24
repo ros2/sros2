@@ -96,6 +96,22 @@ def test_create_enclave(enclave_keys_dir):
         assert (enclave_keys_dir / expected_file).is_file()
 
 
+def test_create_enclave_twice(tmpdir):
+    keystore_dir = Path(tmpdir)
+
+    # First, create the keystore
+    sros2.keystore.create_keystore(keystore_dir)
+    assert keystore_dir.is_dir()
+
+    # Now using that keystore, create an enclave
+    assert cli.main(
+        argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
+    enclave_dir = keystore_dir / 'enclaves' / 'test_enclave'
+    assert enclave_dir.is_dir()
+
+    # Now create it again and confirm... something
+
+
 def test_cert_pem(enclave_keys_dir):
     cert = _utilities.load_cert(enclave_keys_dir / 'cert.pem')
     check_common_name(cert.subject, u'/test_enclave')

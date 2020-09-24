@@ -33,7 +33,7 @@ _KEYSTORE_DIR_ENV = 'ROS_SECURITY_KEYSTORE'
 def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
     if dst.exists():
         # Don't do more work than we need to
-        if dst.samefile(src):
+        if dst.samefile(dst.parent.joinpath(src)):
             return
         os.remove(dst)
     os.symlink(src, dst)
