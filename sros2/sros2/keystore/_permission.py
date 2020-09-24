@@ -44,8 +44,8 @@ def create_permission(
 
 def create_permissions_from_policy_element(
         keystore_path: pathlib.Path,
-        identity: str, policy_element:
-        etree.Element) -> None:
+        identity: str,
+        policy_element: etree.Element) -> None:
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
     permissions_path = key_dir.joinpath('permissions.xml')
