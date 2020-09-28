@@ -109,7 +109,9 @@ def test_create_enclave_twice(tmpdir):
     enclave_dir = keystore_dir / 'enclaves' / 'test_enclave'
     assert enclave_dir.is_dir()
 
-    # Now create it again and confirm... something
+    # Now create it again and confirm that the command doesn't fail
+    assert cli.main(
+        argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
 
 
 def test_cert_pem(enclave_keys_dir):

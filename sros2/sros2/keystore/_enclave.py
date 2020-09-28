@@ -107,9 +107,8 @@ def get_enclaves(keystore_path: pathlib.Path) -> Set[str]:
 
     enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
     enclaves: Set[str] = set()
-    if os.path.isdir(enclaves_path):
-        p = pathlib.Path(enclaves_path)
-        key_file_paths = p.glob('**/key.pem')
+    if enclaves_path.is_dir():
+        key_file_paths = enclaves_path.glob('**/key.pem')
 
         for key_file_path in key_file_paths:
             enclaves.add(f'/{key_file_path.parent.relative_to(enclaves_path).as_posix()}')

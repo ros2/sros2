@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import pathlib
 
 from cryptography import x509
@@ -63,7 +62,7 @@ def create_keystore(keystore_path: pathlib.Path) -> None:
     )
 
     # Create new CA if one doesn't already exist
-    if not all(os.path.isfile(x) for x in required_files):
+    if not all(x.is_file() for x in required_files):
         _create_ca_key_cert(keystore_ca_key_path, keystore_ca_cert_path)
 
         for path in (keystore_permissions_ca_cert_path, keystore_identity_ca_cert_path):
