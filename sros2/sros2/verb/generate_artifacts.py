@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pathlib
+import sys
+
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
@@ -24,28 +27,31 @@ except ImportError:
         return None
 
 from sros2.api import _artifact_generation
+import sros2.errors
 from sros2.verb import VerbExtension
 
 
 class GenerateArtifactsVerb(VerbExtension):
     """Generate keys and permission files from a list of identities and policy files."""
 
-    def add_arguments(self, parser, cli_name):
-        arg = parser.add_argument('-k', '--keystore-root-path', help='root path of keystore')
+    def add_arguments(self, parser, cli_name) -> None:
+        arg = parser.add_argument(
+            '-k', '--keystore-root-path', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument(
             '-e', '--enclaves', nargs='*', default=[],
             help='list of identities, aka ROS security enclave names')
         arg = parser.add_argument(
-            '-p', '--policy-files', nargs='*', default=[],
+            '-p', '--policy-files', nargs='*', type=pathlib.Path, default=[],
             help='list of policy xml file paths')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
 
-    def main(self, *, args):
+    def main(self, *, args) -> int:
         try:
-            success = _artifact_generation.generate_artifacts(
+            _artifact_generation.generate_artifacts(
                 args.keystore_root_path, args.enclaves, args.policy_files)
-        except FileNotFoundError as e:
-            raise RuntimeError(str(e))
-        return 0 if success else 1
+        except sros2.errors.SROS2Error as e:
+            print(f'Unable to generate artifacts: {str(e)}', file=sys.stderr)
+            return 1
+        return 0

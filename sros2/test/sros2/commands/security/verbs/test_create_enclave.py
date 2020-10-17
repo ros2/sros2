@@ -27,21 +27,23 @@ import pytest
 
 from ros2cli import cli
 
-from sros2.api import _keystore, _utilities
+from sros2 import _utilities
+import sros2.keystore
 from sros2.policy import get_transport_schema
 
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def enclave_keys_dir(tmpdir_factory):
+def enclave_keys_dir(tmpdir_factory) -> Path:
     keystore_dir = Path(str(tmpdir_factory.mktemp('keystore')))
 
     # First, create the keystore
-    assert _keystore.create_keystore(keystore_dir)
+    sros2.keystore.create_keystore(keystore_dir)
+    assert keystore_dir.is_dir()
 
     # Now using that keystore, create a keypair along with other files required by DDS
     assert cli.main(
-        argv=['security', 'create_key', str(keystore_dir), '/test_enclave']) == 0
+        argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
     enclave_dir = keystore_dir / 'enclaves' / 'test_enclave'
     assert enclave_dir.is_dir()
 
@@ -83,7 +85,7 @@ def verify_signature(cert, signatory):
     return True
 
 
-def test_create_key(enclave_keys_dir):
+def test_create_enclave(enclave_keys_dir):
     expected_files = (
         'cert.pem', 'governance.p7s', 'identity_ca.cert.pem', 'key.pem', 'permissions.p7s',
         'permissions.xml', 'permissions_ca.cert.pem'
@@ -94,10 +96,28 @@ def test_create_key(enclave_keys_dir):
         assert (enclave_keys_dir / expected_file).is_file()
 
 
+def test_create_enclave_twice(tmpdir):
+    keystore_dir = Path(tmpdir)
+
+    # First, create the keystore
+    sros2.keystore.create_keystore(keystore_dir)
+    assert keystore_dir.is_dir()
+
+    # Now using that keystore, create an enclave
+    assert cli.main(
+        argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
+    enclave_dir = keystore_dir / 'enclaves' / 'test_enclave'
+    assert enclave_dir.is_dir()
+
+    # Now create it again and confirm that the command doesn't fail
+    assert cli.main(
+        argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
+
+
 def test_cert_pem(enclave_keys_dir):
     cert = _utilities.load_cert(enclave_keys_dir / 'cert.pem')
     check_common_name(cert.subject, u'/test_enclave')
-    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
 
     # Verify that the hash algorithm is as expected
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
@@ -137,8 +157,8 @@ def test_governance_p7s(enclave_keys_dir):
 
 def test_identity_ca_cert_pem(enclave_keys_dir):
     cert = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
-    check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
-    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.subject, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
 
 
 def test_key_pem(enclave_keys_dir):
@@ -164,14 +184,14 @@ def test_permissions_p7s(enclave_keys_dir):
 def test_permissions_xml(enclave_keys_dir):
     permissions_xml = etree.parse(str(enclave_keys_dir / 'permissions.xml'))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
-    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+    permissions_xsd = etree.XMLSchema(etree.parse(str(permissions_xsd_path)))
     permissions_xsd.assertValid(permissions_xml)
 
 
 def test_permissions_ca_cert_pem(enclave_keys_dir):
     cert = _utilities.load_cert(enclave_keys_dir / 'permissions_ca.cert.pem')
-    check_common_name(cert.subject, _keystore._DEFAULT_COMMON_NAME)
-    check_common_name(cert.issuer, _keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.subject, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
+    check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
 
     signatory = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     assert verify_signature(cert, signatory)

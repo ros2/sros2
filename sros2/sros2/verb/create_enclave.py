@@ -14,6 +14,7 @@
 
 import pathlib
 import sys
+import warnings
 
 try:
     from argcomplete.completers import DirectoriesCompleter
@@ -21,22 +22,32 @@ except ImportError:
     def DirectoriesCompleter():
         return None
 
-import sros2.errors
 import sros2.keystore
 from sros2.verb import VerbExtension
 
 
-class CreateKeystoreVerb(VerbExtension):
-    """Create keystore."""
+class CreateEnclaveVerb(VerbExtension):
+    """Create enclave."""
 
     def add_arguments(self, parser, cli_name) -> None:
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
+        parser.add_argument('NAME', help='enclave name')
 
     def main(self, *, args) -> int:
         try:
-            sros2.keystore.create_keystore(args.ROOT)
+            sros2.keystore.create_enclave(args.ROOT, args.NAME)
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to create keystore: {str(e)}', file=sys.stderr)
+            print(f'Unable to create enclave: {str(e)}', file=sys.stderr)
             return 1
         return 0
+
+
+class CreateKeyVerb(CreateEnclaveVerb):
+    """DEPRECATED: Create enclave. Use create_enclave instead."""
+
+    def main(self, *, args) -> int:
+        warnings.warn(
+            'create_key is deprecated and will be removed in a future release. Use create_enclave '
+            'instead.', FutureWarning)
+        return super().main(args=args)

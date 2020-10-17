@@ -55,14 +55,14 @@ md C:\dev\ros2\sros2_demo
 
 ```bat
 cd sros2_demo
-ros2 security create_keystore demo_keys
+ros2 security create_keystore demo_keystore
 ```
 
 #### Generate keys and certificates for the talker and listener nodes
 
 ```bat
-ros2 security create_key demo_keys /talker_listener/talker
-ros2 security create_key demo_keys /talker_listener/listener
+ros2 security create_enclave demo_keystore /talker_listener/talker
+ros2 security create_enclave demo_keystore /talker_listener/listener
 ```
 
 If `unable to write 'random state'` appears then set the environment variable `RANDFILE`.
@@ -76,7 +76,7 @@ Then re-run the commands above.
 Prepare your environment by setting three following environment variables as follows
 
 ```bat
-set ROS_SECURITY_KEYSTORE=%cd%/demo_keys
+set ROS_SECURITY_KEYSTORE=%cd%/demo_keystore
 set ROS_SECURITY_ENABLE=true
 set ROS_SECURITY_STRATEGY=Enforce
 ```
@@ -102,7 +102,7 @@ Open a new terminal:
 
 ```bat
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_KEYSTORE=%cd%/demo_keys
+set ROS_SECURITY_KEYSTORE=%cd%/demo_keystore
 set ROS_SECURITY_ENABLE=true
 set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py talker --ros-args --enclave /talker_listener/talker
@@ -112,7 +112,7 @@ Open another terminal:
 
 ```bat
 call <path_to_ros2_install>/setup.bat
-set ROS_SECURITY_KEYSTORE=%cd%/demo_keys
+set ROS_SECURITY_KEYSTORE=%cd%/demo_keystore
 set ROS_SECURITY_ENABLE=true
 set ROS_SECURITY_STRATEGY=Enforce
 ros2 run demo_nodes_py listener --ros-args --enclave /talker_listener/listener
@@ -141,8 +141,8 @@ svn checkout https://github.com/ros2/sros2/trunk/sros2/test/policies
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bat
-ros2 security create_permission demo_keys /talker_listener/talker policies/sample.policy.xml
-ros2 security create_permission demo_keys /talker_listener/listener policies/sample.policy.xml
+ros2 security create_permission demo_keystore /talker_listener/talker policies/sample.policy.xml
+ros2 security create_permission demo_keystore /talker_listener/listener policies/sample.policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).

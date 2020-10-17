@@ -13,14 +13,18 @@
 # limitations under the License.
 
 import os
+import pathlib
 
 from lxml import etree
 
 from rclpy.utilities import get_rmw_implementation_identifier
 
+from sros2 import _utilities
+from sros2.api import _policy
+import sros2.errors
 from sros2.policy import get_transport_schema, get_transport_template
 
-from . import _keystore, _policy, _utilities
+from . import _keystore
 
 
 _RMW_WITH_ROS_GRAPH_INFO_TOPIC = (
@@ -30,17 +34,21 @@ _RMW_WITH_ROS_GRAPH_INFO_TOPIC = (
 )
 
 
-def create_permission(keystore_path, identity, policy_file_path):
+def create_permission(
+        keystore_path: pathlib.Path,
+        identity: str,
+        policy_file_path: pathlib.Path) -> None:
     policy_element = _policy.get_policy(identity, policy_file_path)
     create_permissions_from_policy_element(keystore_path, identity, policy_element)
-    return True
 
 
-def create_permissions_from_policy_element(keystore_path, identity, policy_element):
+def create_permissions_from_policy_element(
+        keystore_path: pathlib.Path,
+        identity: str,
+        policy_element: etree.Element) -> None:
     relative_path = os.path.normpath(identity.lstrip('/'))
-    key_dir = os.path.join(_keystore.get_keystore_enclaves_dir(keystore_path), relative_path)
-    print("creating permission file for identity: '%s'" % identity)
-    permissions_path = os.path.join(key_dir, 'permissions.xml')
+    key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
+    permissions_path = key_dir.joinpath('permissions.xml')
     create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
     signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
@@ -56,16 +64,15 @@ def create_permissions_from_policy_element(keystore_path, identity, policy_eleme
     )
 
 
-def create_permission_file(path, domain_id, policy_element):
-    print('creating permission')
+def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> None:
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
-    permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
+    permissions_xsl = etree.XSLT(etree.parse(str(permissions_xsl_path)))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
-    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+    permissions_xsd = etree.XMLSchema(etree.parse(str(permissions_xsd_path)))
 
     kwargs = {}
 
-    cert_path = os.path.join(os.path.dirname(path), 'cert.pem')
+    cert_path = path.parent.joinpath('cert.pem')
     cert_content = _utilities.load_cert(cert_path)
     kwargs['not_valid_before'] = etree.XSLT.strparam(cert_content.not_valid_before.isoformat())
     kwargs['not_valid_after'] = etree.XSLT.strparam(cert_content.not_valid_after.isoformat())
@@ -81,7 +88,7 @@ def create_permission_file(path, domain_id, policy_element):
     try:
         permissions_xsd.assertValid(permissions_xml)
     except etree.DocumentInvalid as e:
-        raise RuntimeError(str(e))
+        raise sros2.errors.InvalidPermissionsXMLError(e) from e
 
     with open(path, 'wb') as f:
         f.write(etree.tostring(permissions_xml, pretty_print=True))

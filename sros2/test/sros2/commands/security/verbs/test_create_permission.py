@@ -20,7 +20,8 @@ import pytest
 
 import rclpy
 from ros2cli import cli
-from sros2.api import _key, _keystore, _permission
+
+import sros2.keystore
 from sros2.policy import get_transport_schema
 
 
@@ -32,9 +33,10 @@ _test_identity = '/talker_listener/talker'
 def enclave_dir(tmpdir_factory, test_policy_dir) -> pathlib.Path:
     keystore_dir = pathlib.Path(str(tmpdir_factory.mktemp('keystore')))
 
-    # First, create the keystore as well as a keypair for the talker
-    assert _keystore.create_keystore(keystore_dir)
-    assert _key.create_key(keystore_dir, _test_identity)
+    # First, create the keystore as well as an enclave for the talker
+    sros2.keystore.create_keystore(keystore_dir)
+    assert keystore_dir.is_dir()
+    sros2.keystore.create_enclave(keystore_dir, _test_identity)
 
     security_files_dir = keystore_dir.joinpath(f'enclaves{_test_identity}')
     assert security_files_dir.is_dir()
@@ -58,7 +60,7 @@ def test_create_permission(enclave_dir):
 
     # Validate the schema
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
-    permissions_xsd = lxml.etree.XMLSchema(lxml.etree.parse(permissions_xsd_path))
+    permissions_xsd = lxml.etree.XMLSchema(lxml.etree.parse(str(permissions_xsd_path)))
     permissions_xsd.assertValid(tree)
 
     dds = tree.getroot()
@@ -72,7 +74,8 @@ def test_create_permission(enclave_dir):
     assert grants[0].get('name') == _test_identity
 
     allow_rules = list(grants[0].iterchildren(tag='allow_rule'))
-    if rclpy.get_rmw_implementation_identifier() in _permission._RMW_WITH_ROS_GRAPH_INFO_TOPIC:
+    if (rclpy.get_rmw_implementation_identifier() in
+            sros2.keystore._permission._RMW_WITH_ROS_GRAPH_INFO_TOPIC):
         assert len(allow_rules) == 2
     else:
         assert len(allow_rules) == 1

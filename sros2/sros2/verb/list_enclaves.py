@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pathlib
-import sys
-
 try:
     from argcomplete.completers import DirectoriesCompleter
 except ImportError:
     def DirectoriesCompleter():
         return None
 
-import sros2.errors
+import pathlib
+import sys
+import warnings
+
 import sros2.keystore
 from sros2.verb import VerbExtension
 
 
-class CreateKeystoreVerb(VerbExtension):
-    """Create keystore."""
+class ListEnclavesVerb(VerbExtension):
+    """List enclaves in keystore."""
 
     def add_arguments(self, parser, cli_name) -> None:
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
@@ -35,8 +35,22 @@ class CreateKeystoreVerb(VerbExtension):
 
     def main(self, *, args) -> int:
         try:
-            sros2.keystore.create_keystore(args.ROOT)
+            enclaves = sros2.keystore.get_enclaves(args.ROOT)
+            if enclaves:
+                # Print each enclave on its own line
+                for enclave in sorted(enclaves):
+                    print(enclave)
+            return 0
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to create keystore: {str(e)}', file=sys.stderr)
-            return 1
-        return 0
+            print(f'Unable to list enclaves: {str(e)}', file=sys.stderr)
+        return 1
+
+
+class ListKeysVerb(ListEnclavesVerb):
+    """DEPRECATED: List enclaves in keystore. Use list_enclaves instead."""
+
+    def main(self, *, args) -> int:
+        warnings.warn(
+            'list_keys is deprecated and will be removed in a future release. Use list_enclaves '
+            'instead.', FutureWarning)
+        return super().main(args=args)

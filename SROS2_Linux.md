@@ -63,20 +63,20 @@ mkdir ~/sros2_demo
 
 ```bash
 cd ~/sros2_demo
-ros2 security create_keystore demo_keys
+ros2 security create_keystore demo_keystore
 ```
 
 #### Generate keys and certificates for the talker and listener nodes
 
 ```bash
-ros2 security create_key demo_keys /talker_listener/talker
-ros2 security create_key demo_keys /talker_listener/listener
+ros2 security create_enclave demo_keystore /talker_listener/talker
+ros2 security create_enclave demo_keystore /talker_listener/listener
 ```
 
 ### Define the SROS2 environment variables
 
 ```bash
-export ROS_SECURITY_KEYSTORE=~/sros2_demo/demo_keys
+export ROS_SECURITY_KEYSTORE=~/sros2_demo/demo_keystore
 export ROS_SECURITY_ENABLE=true
 export ROS_SECURITY_STRATEGY=Enforce
 ```
@@ -130,15 +130,15 @@ First, we'll create an empty keystore on `oldschool`, which is just an empty dir
 
 ```
 ssh oldschool.local
-mkdir -p ~/sros2_demo/demo_keys
+mkdir -p ~/sros2_demo/demo_keystore
 exit
 ```
 
 Now, we'll copy the keys/certificates for the "talker" program from `feather2` to `oldschool`:
 
 ```
-cd ~/sros2_demo/demo_keys
-scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keys
+cd ~/sros2_demo/demo_keystore
+scp -r talker USERNAME@oldschool.local:~/sros2_demo/demo_keystore
 ```
 
 That will be very quick, since it's just copying some very small text files.
@@ -176,8 +176,8 @@ svn checkout https://github.com/ros2/sros2/trunk/sros2/test/policies
 And now we will use it to generate the XML permission files expected by the middleware:
 
 ```bash
-ros2 security create_permission demo_keys /talker_listener/talker policies/sample.policy.xml
-ros2 security create_permission demo_keys /talker_listener/listener policies/sample.policy.xml
+ros2 security create_permission demo_keystore /talker_listener/talker policies/sample.policy.xml
+ros2 security create_permission demo_keystore /talker_listener/listener policies/sample.policy.xml
 ```
 
 These permission files will be stricter than the ones that were used in the previous demo: the nodes will only be allowed to publish or subscribe to the `chatter` topic (and some other topics used for parameters).

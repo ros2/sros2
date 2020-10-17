@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pathlib
 
 from lxml import etree
 
@@ -27,60 +27,60 @@ except ModuleNotFoundError:
 POLICY_VERSION = '0.2.0'
 
 
-def get_policy_default(name):
+def get_policy_default(name: str) -> pathlib.Path:
     with importlib_resources.path('sros2.policy.defaults', name) as path:
-        return str(path)
+        return path
 
 
-def get_policy_schema(name):
+def get_policy_schema(name: str) -> pathlib.Path:
     with importlib_resources.path('sros2.policy.schemas', name) as path:
-        return str(path)
+        return path
 
 
-def get_policy_template(name):
+def get_policy_template(name: str) -> pathlib.Path:
     with importlib_resources.path('sros2.policy.templates', name) as path:
-        return str(path)
+        return path
 
 
-def get_transport_default(transport, name):
+def get_transport_default(transport: str, name: str) -> pathlib.Path:
     module = 'sros2.policy.defaults.' + transport
     with importlib_resources.path(module, name) as path:
-        return str(path)
+        return path
 
 
-def get_transport_schema(transport, name):
+def get_transport_schema(transport: str, name: str) -> pathlib.Path:
     module = 'sros2.policy.schemas.' + transport
     with importlib_resources.path(module, name) as path:
-        return str(path)
+        return path
 
 
-def get_transport_template(transport, name):
+def get_transport_template(transport: str, name: str) -> pathlib.Path:
     module = 'sros2.policy.templates.' + transport
     with importlib_resources.path(module, name) as path:
-        return str(path)
+        return path
 
 
-def load_policy(policy_file_path):
-    if not os.path.isfile(policy_file_path):
+def load_policy(policy_file_path: pathlib.Path) -> etree.ElementTree:
+    if not policy_file_path.is_file():
         raise FileNotFoundError("policy file '%s' does not exist" % policy_file_path)
-    policy = etree.parse(policy_file_path)
+    policy = etree.parse(str(policy_file_path))
     policy.xinclude()
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')
-        policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
+        policy_xsd = etree.XMLSchema(etree.parse(str(policy_xsd_path)))
         policy_xsd.assertValid(policy)
     except etree.DocumentInvalid as e:
         raise RuntimeError(str(e))
     return policy
 
 
-def dump_policy(policy, stream):
+def dump_policy(policy, stream) -> None:
     policy_xsl_path = get_policy_template('policy.xsl')
-    policy_xsl = etree.XSLT(etree.parse(policy_xsl_path))
+    policy_xsl = etree.XSLT(etree.parse(str(policy_xsl_path)))
     policy = policy_xsl(policy)
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')
-        policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
+        policy_xsd = etree.XMLSchema(etree.parse(str(policy_xsd_path)))
         policy_xsd.assertValid(policy)
     except etree.DocumentInvalid as e:
         raise RuntimeError(str(e))

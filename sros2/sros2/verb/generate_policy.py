@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import namedtuple
-import os
+import pathlib
 import sys
 
 try:
@@ -50,15 +50,15 @@ _TopicInfo = namedtuple('Topic', ('fqn', 'type'))
 class GeneratePolicyVerb(VerbExtension):
     """Generate XML policy file from ROS graph data."""
 
-    def add_arguments(self, parser, cli_name):
+    def add_arguments(self, parser, cli_name) -> None:
         arg = parser.add_argument(
-            'POLICY_FILE_PATH', help='path of the policy xml file')
+            'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
         arg.completer = FilesCompleter(
             allowednames=('xml'), directories=False)
         add_strategy_node_arguments(parser)
 
-    def get_policy(self, policy_file_path):
-        if os.path.isfile(policy_file_path):
+    def get_policy(self, policy_file_path: pathlib.Path):
+        if policy_file_path.is_file():
             return load_policy(policy_file_path)
         else:
             enclaves = etree.Element('enclaves')
@@ -111,7 +111,7 @@ class GeneratePolicyVerb(VerbExtension):
                 permission.text = expression.fqn
             permissions.append(permission)
 
-    def main(self, *, args):
+    def main(self, *, args) -> int:
         policy = self.get_policy(args.POLICY_FILE_PATH)
         with NodeStrategy(args) as node:
             node_names = _get_node_names(node=node, include_hidden_nodes=False)

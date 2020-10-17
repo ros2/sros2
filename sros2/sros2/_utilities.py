@@ -15,7 +15,7 @@
 
 import datetime
 import os
-import sys
+import pathlib
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -24,29 +24,30 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+import sros2.errors
+
 _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 _KEYSTORE_DIR_ENV = 'ROS_SECURITY_KEYSTORE'
 
 
-def create_symlink(*, src, dst):
-    if os.path.exists(dst):
-        src_abs_path = os.path.join(os.path.dirname(dst), src)
-        if os.path.samefile(src_abs_path, dst):
+def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
+    if dst.exists():
+        # Don't do more work than we need to
+        if dst.samefile(dst.parent.joinpath(src)):
             return
-        print(f"Existing symlink '{dst}' does not match '{src_abs_path}', overriding it!")
         os.remove(dst)
-    os.symlink(src=src, dst=dst)
+    os.symlink(src, dst)
 
 
 def domain_id() -> str:
     return os.getenv(_DOMAIN_ID_ENV, '0')
 
 
-def get_keystore_path_from_env():
+def get_keystore_path_from_env() -> pathlib.Path:
     root_keystore_path = os.getenv(_KEYSTORE_DIR_ENV)
     if root_keystore_path is None:
-        print('%s is empty' % _KEYSTORE_DIR_ENV, file=sys.stderr)
-    return root_keystore_path
+        raise sros2.errors.InvalidKeystoreEnvironmentError(_KEYSTORE_DIR_ENV)
+    return pathlib.Path(root_keystore_path)
 
 
 def create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
@@ -108,7 +109,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
 
 def write_key(
     key,
-    key_path,
+    key_path: pathlib.Path,
     *,
     encoding=serialization.Encoding.PEM,
     serialization_format=serialization.PrivateFormat.PKCS8,
@@ -121,12 +122,12 @@ def write_key(
             encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path, *, encoding=serialization.Encoding.PEM):
+def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding.PEM):
     with open(cert_path, 'wb') as f:
         f.write(cert.public_bytes(encoding=encoding))
 
 
-def load_cert(cert_path):
+def load_cert(cert_path: pathlib.Path):
     with open(cert_path, 'rb') as cert_file:
         return x509.load_pem_x509_certificate(
             cert_file.read(), cryptography_backend())

@@ -30,9 +30,9 @@ def test_policy_to_permissions():
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
 
     # Parse files
-    policy_xsd = etree.XMLSchema(etree.parse(policy_xsd_path))
-    permissions_xsl = etree.XSLT(etree.parse(permissions_xsl_path))
-    permissions_xsd = etree.XMLSchema(etree.parse(permissions_xsd_path))
+    policy_xsd = etree.XMLSchema(etree.parse(str(policy_xsd_path)))
+    permissions_xsl = etree.XSLT(etree.parse(str(permissions_xsl_path)))
+    permissions_xsd = etree.XMLSchema(etree.parse(str(permissions_xsd_path)))
 
     # Get policy
     test_dir = Path(__file__).resolve().parent
