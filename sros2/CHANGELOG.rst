@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.1 (2020-11-08)
+-------------------
 * parameter_events topic is now absolute (#233)
   Signed-off-by: Mikael Arguedas <mikael.arguedas@gmail.com>
 * Contributors: Mikael Arguedas
