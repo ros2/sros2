@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* parameter_events topic is now absolute (#233)
+  Signed-off-by: Mikael Arguedas <mikael.arguedas@gmail.com>
+* Contributors: Mikael Arguedas
+
 0.10.0 (2020-11-03)
 -------------------
 * Expose keystore operations in public API (`#241 <https://github.com/ros2/sros2/issues/241>`_)
