@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <profile>
   <topics publish="ALLOW" subscribe="ALLOW" >
-    <topic>parameter_events</topic>
+    <topic>/parameter_events</topic>
   </topics>
 
   <services reply="ALLOW" request="ALLOW" >
