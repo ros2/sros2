@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* parameter_events topic is now absolute (`#233 <https://github.com/ros2/sros2/issues/233>`_) (`#245 <https://github.com/ros2/sros2/issues/245>`_)
+* Contributors: Mikael Arguedas
+
 0.9.3 (2020-09-16)
 ------------------
 * add cyclonedds to the list of rmw using graph info topics (#231) (#238)
