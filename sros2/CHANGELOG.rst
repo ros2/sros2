@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.4 (2020-11-17)
+------------------
 * parameter_events topic is now absolute (`#233 <https://github.com/ros2/sros2/issues/233>`_) (`#245 <https://github.com/ros2/sros2/issues/245>`_)
 * Contributors: Mikael Arguedas
 
