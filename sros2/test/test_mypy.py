@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from ament_mypy.main import main
 import pytest
 
@@ -19,4 +21,23 @@ import pytest
 @pytest.mark.mypy
 @pytest.mark.linter
 def test_mypy():
+    distroname = ''
+    if os.path.exists('/etc/os-release'):
+        with open('/etc/os-release', 'r') as infp:
+            for line in infp:
+                if line.startswith('ID='):
+                    split = line.strip().split('=')
+                    if len(split) == 2:
+                        distroname = split[1].lstrip('"').rstrip('"')
+                    break
+
+    if distroname == 'centos':
+        # CentOS 7 uses a pip installation of importlib_resources to get access
+        # to the importlib_resources API.  Due to a bug
+        # (https://github.com/python/mypy/issues/1153), mypy cannot determine
+        # the API in that case and so throws a warning.  If we see we are on
+        # CentOS, skip the mypy checking; on all other platforms, run the
+        # test as usual.
+        pytest.skip('CentOS 7 does not support mypy checking of importlib properly')
+
     assert main(argv=[]) == 0, 'Found errors'
