@@ -22,6 +22,7 @@ import pytest
 @pytest.mark.linter
 def test_mypy():
     distroname = ''
+    distroversion = ''
     if os.path.exists('/etc/os-release'):
         with open('/etc/os-release', 'r') as infp:
             for line in infp:
@@ -29,9 +30,15 @@ def test_mypy():
                     split = line.strip().split('=')
                     if len(split) == 2:
                         distroname = split[1].lstrip('"').rstrip('"')
+                elif line.startswith('VERSION_ID='):
+                    split = line.strip().split('=')
+                    if len(split) == 2:
+                        distroversion = split[1].lstrip('"').rstrip('"')
+
+                if distroname != '' and distroversion != '':
                     break
 
-    if distroname == 'centos':
+    if distroname == 'centos' and distroversion == '7':
         # CentOS 7 uses a pip installation of importlib_resources to get access
         # to the importlib_resources API.  Due to a bug
         # (https://github.com/python/mypy/issues/1153), mypy cannot determine
