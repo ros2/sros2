@@ -8,7 +8,7 @@ on:
 
 jobs:
   test_latest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # 'osrf/ros2:devel' does *not* include RTI Connext or its' security plugins
     # the former gets installed via rosdep in 'action-ros-ci' but the latter do *not* get installed
     container: osrf/ros2:devel
@@ -41,7 +41,7 @@ jobs:
         name: colcon-logs
         path: ros_ws/log
   test_nightly:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # 'osrf/ros2:nightly-rmw-nonfree' includes RTI Connext but
     # does *not* include the security plugins or a license allowing the use of Security
     container: osrf/ros2:nightly-rmw-nonfree
