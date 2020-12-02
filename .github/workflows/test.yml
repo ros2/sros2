@@ -17,16 +17,15 @@ jobs:
       run: |
         apt-get -qq update
         apt-get -qq upgrade -y
-        apt-get -qq install -y curl libasio-dev libtinyxml2-dev
-    # TODO(mikaelarguedas) switch back to ros-tooling/action-ros-ci once
-    # https://github.com/ros-tooling/action-ros-ci/pull/109 is released
-    - uses: mikaelarguedas/action-ros-ci@sros2-version
+        apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev
+    - uses: ros-tooling/action-ros-ci@0.1.0
       with:
         package-name: |
           sros2
           sros2_cmake
           test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
+        target-ros2-distro: rolling
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
