@@ -18,7 +18,7 @@ jobs:
         apt-get -qq update
         apt-get -qq upgrade -y
         apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev
-    - uses: ros-tooling/action-ros-ci@0.1.0
+    - uses: ros-tooling/action-ros-ci@v0.1
       with:
         package-name: |
           sros2
