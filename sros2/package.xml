@@ -16,11 +16,13 @@
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>python3-lxml</exec_depend>
   <exec_depend>python3-cryptography</exec_depend>
+  <exec_depend>python3-importlib-resources</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_mypy</test_depend>
   <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-importlib-resources</test_depend>
   <test_depend>python3-pytest</test_depend>
   <!-- Single entrypoint to depend on launch based testing -->
   <test_depend>ros_testing</test_depend>
