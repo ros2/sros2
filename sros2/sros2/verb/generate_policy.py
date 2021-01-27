@@ -43,8 +43,8 @@ from sros2.verb import VerbExtension
 
 _HIDDEN_NODE_PREFIX = '_'
 
-_NodeName = namedtuple('NodeName', ('node', 'ns', 'fqn', 'path'))
-_TopicInfo = namedtuple('Topic', ('fqn', 'type'))
+_NodeName = namedtuple('_NodeName', ('node', 'ns', 'fqn', 'path'))
+_TopicInfo = namedtuple('_TopicInfo', ('fqn', 'type'))
 
 
 class GeneratePolicyVerb(VerbExtension):
