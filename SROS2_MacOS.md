@@ -101,7 +101,7 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
 And with Connext by setting:
 ```bash
-export RMW_IMPLEMENTATION=rmw_connext_cpp
+export RMW_IMPLEMENTATION=rmw_connextdds
 ```
 
 Note that secure communication between vendors is not supported.

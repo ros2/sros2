@@ -30,7 +30,8 @@ from . import _keystore
 _RMW_WITH_ROS_GRAPH_INFO_TOPIC = (
     'rmw_cyclonedds_cpp',
     'rmw_fastrtps_cpp',
-    'rmw_fastrtps_dynamic_cpp'
+    'rmw_fastrtps_dynamic_cpp',
+    'rmw_connextdds'
 )
 
 
