@@ -91,7 +91,7 @@ set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 ```
 And with Connext by setting:
 ```bat
-set RMW_IMPLEMENTATION=rmw_connextdds
+set RMW_IMPLEMENTATION=rmw_connext_cpp
 ```
 
 Note that secure communication between vendors is not supported.
