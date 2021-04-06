@@ -4,9 +4,9 @@
 
 ### Install from debian packages
 
-First install ROS2 from binaries following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians)
+First install ROS2 from binaries following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html).
 
-Setup your environment following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians#environment-setup)
+Setup your environment following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html#environment-setup).
 
 In the rest of these instruction we assume that every terminal setup the environment as instructed above.
 
@@ -19,7 +19,7 @@ You will need to have openssl installed on your machine:
 sudo apt update && sudo apt install libssl-dev
 ```
 
-First install ROS2 from source following [these instructions](https://index.ros.org/doc/ros2/Installation/Linux-Development-Setup/)
+First install ROS2 from source following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Development-Setup.html).
 
 Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
@@ -28,8 +28,8 @@ colcon build --symlink-install --cmake-args -DSECURITY=ON
 
 ### Additional configuration for RTI Connext
 
-Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugins (note that you also need to install RTI's version of openssl as 5.3.1 doesnt support openssl 1.1.0 provided in Ubuntu Bionic).
-See [this page](https://index.ros.org/doc/ros2/Installation/Install-Connext-Security-Plugins) for details on installing the security plugins.
+Prerequisite: to use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugins (note that you also need to install RTI's version of openssl as 5.3.1 doesn't support openssl 1.1.0 provided in Ubuntu Bionic).
+See [this page](https://docs.ros.org/en/rolling/Installation/DDS-Implementations/Install-Connext-Security-Plugins.html) for details on installing the security plugins.
 
 The RTI Connext installer allows you to choose where it lands in the filesystem.
 These instructions assume that you have prefixed the RTI paths with `$HOME/rti` so that the latest version will land in `$HOME/rti/rti_connext_dds-5.3.1`.
@@ -85,7 +85,7 @@ These variables need to be defined in each terminal used for the demo. For conve
 
 ### Run the demo
 
-ROS2 allows you to [change DDS implementation at runtime](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations).
+ROS2 allows you to [change DDS implementation at runtime](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html).
 This demo can be run with fastrtps by setting:
 ```bash
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
