@@ -18,7 +18,7 @@ For convenience you can add this export to your bash_profile.
 
 ### Install from binaries
 
-First install ROS2 from binaries following [these instructions](https://index.ros.org/doc/ros2/Installation/OSX-Install-Binary)
+First install ROS2 from binaries following [these instructions](https://docs.ros.org/en/rolling/Installation/macOS-Install-Binary.html).
 
 
 Setup your environment:
@@ -37,7 +37,7 @@ export OPENSSL_ROOT_DIR=`brew --prefix openssl`
 ```
 For convenience you can add this export to your bash_profile.
 
-Install ROS2 from source following [these instructions](https://index.ros.org/doc/ros2/Installation/OSX-Development-Setup)
+Install ROS2 from source following [these instructions](https://docs.ros.org/en/rolling/Installation/macOS-Development-Setup.html).
 
 Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
@@ -54,7 +54,7 @@ In the rest of these instructions we assume that every terminal setup the enviro
 ### Additional configuration for RTI Connext
 
 To use DDS-Security with Connext you will need to procure an RTI Licence and install the security plugin.
-See [this page](https://index.ros.org/doc/ros2/Installation/Install-Connext-Security-Plugins) for details on installing the security plugins.
+See [this page](https://docs.ros.org/en/rolling/Installation/DDS-Implementations/Install-Connext-Security-Plugins.html) for details on installing the security plugins.
 
 ## Preparing the environment for the demo
 
@@ -94,7 +94,7 @@ These variables need to be defined in each terminal used for the demo. For conve
 
 ## Run the demo
 
-ROS2 allows you to [change DDS implementation at runtime](https://index.ros.org/doc/ros2/Tutorials/Working-with-multiple-RMW-implementations).
+ROS2 allows you to [change DDS implementation at runtime](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html).
 This demo can be run with fastrtps by setting:
 ```bash
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
