@@ -29,9 +29,6 @@ import launch_testing_ros.tools
 from ros2cli.node.strategy import NodeStrategy
 
 
-MAX_DISCOVERY_DELAY = 4.0  # seconds
-
-
 def generate_sros2_cli_test_description(
     fixture_actions, rmw_implementation, use_daemon
 ) -> LaunchDescription:
@@ -66,12 +63,14 @@ class SROS2CLITestCase(unittest.TestCase):
         rmw_implementation,
         use_daemon
     ):
+        max_discovery_delay = 6.0 if 'connext' in rmw_implementation else 3.0  # seconds
+
         @contextlib.contextmanager
         def launch_sros2_command(self, arguments):
             cmd = ['ros2', 'security', *arguments]
             if not use_daemon:
                 # Wait for direct node to discover fixture nodes.
-                cmd.extend(['--no-daemon', '--spin-time', f'{MAX_DISCOVERY_DELAY}'])
+                cmd.extend(['--no-daemon', '--spin-time', str(max_discovery_delay)])
             sros2_command_action = ExecuteProcess(
                 cmd=cmd,
                 additional_env={
@@ -97,10 +96,10 @@ class SROS2CLITestCase(unittest.TestCase):
                 return True
             args = argparse.Namespace()
             args.no_daemon = not use_daemon
-            args.spin_time = MAX_DISCOVERY_DELAY
+            args.spin_time = max_discovery_delay
             with NodeStrategy(args) as node:
                 start_time = time.time()
-                while time.time() - start_time < MAX_DISCOVERY_DELAY:
+                while time.time() - start_time < max_discovery_delay:
                     topics = [name for name, _ in node.get_topic_names_and_types()]
                     services = [name for name, _ in node.get_service_names_and_types()]
                     if all(t in topics for t in expected_topics) and \
