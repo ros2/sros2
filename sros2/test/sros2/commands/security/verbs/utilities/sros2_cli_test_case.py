@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import contextlib
-import time
 import unittest
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
+from launch.actions import TimerAction
 
 import launch_testing
+from launch_testing.actions import ReadyToTest
 import launch_testing.asserts
 import launch_testing.markers
 import launch_testing.tools
 import launch_testing_ros.tools
-
-from ros2cli.node.strategy import NodeStrategy
 
 
 MAX_DISCOVERY_DELAY = 4.0  # seconds
@@ -37,13 +35,27 @@ def generate_sros2_cli_test_description(
 ) -> LaunchDescription:
     additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
     if use_daemon:
+        # Defer tests until daemon has had time
+        # to discover nodes in the fixture.
+        fixture_actions = [
+            *fixture_actions,
+            TimerAction(
+                period=MAX_DISCOVERY_DELAY,
+                actions=[ReadyToTest()]
+            )
+        ]
         # Start daemon.
-        fixture_actions = [ExecuteProcess(
-            cmd=['ros2', 'daemon', 'start'],
-            name='daemon-start',
-            on_exit=fixture_actions,
-            additional_env=additional_env
-        )]
+        fixture_actions = [
+            ExecuteProcess(
+                cmd=['ros2', 'daemon', 'start'],
+                name='daemon-start',
+                on_exit=fixture_actions,
+                additional_env=additional_env
+            )
+        ]
+    else:
+        # Start tests right after setting up the fixture.
+        fixture_actions = [*fixture_actions, ReadyToTest()]
     return LaunchDescription([
         # Always stop daemon to avoid cross-talk.
         ExecuteProcess(
@@ -70,8 +82,8 @@ class SROS2CLITestCase(unittest.TestCase):
         def launch_sros2_command(self, arguments):
             cmd = ['ros2', 'security', *arguments]
             if not use_daemon:
-                # Wait for direct node to discover fixture nodes.
-                cmd.extend(['--no-daemon', '--spin-time', f'{MAX_DISCOVERY_DELAY}'])
+                # Wait for direct node to discover nodes in the fixture.
+                cmd.extend(['--no-daemon', '--spin-time', str(MAX_DISCOVERY_DELAY)])
             sros2_command_action = ExecuteProcess(
                 cmd=cmd,
                 additional_env={
@@ -91,21 +103,3 @@ class SROS2CLITestCase(unittest.TestCase):
             ) as sros2_command:
                 yield sros2_command
         cls.launch_sros2_command = launch_sros2_command
-
-        def wait_for(self, expected_topics=[], expected_services=[]):
-            if not expected_topics and not expected_services:
-                return True
-            args = argparse.Namespace()
-            args.no_daemon = not use_daemon
-            args.spin_time = MAX_DISCOVERY_DELAY
-            with NodeStrategy(args) as node:
-                start_time = time.time()
-                while time.time() - start_time < MAX_DISCOVERY_DELAY:
-                    topics = [name for name, _ in node.get_topic_names_and_types()]
-                    services = [name for name, _ in node.get_service_names_and_types()]
-                    if all(t in topics for t in expected_topics) and \
-                       all(s in services for s in expected_services):
-                        return True
-                    time.sleep(0.1)  # this sleep time is arbitrary
-                return False
-        cls.wait_for = wait_for

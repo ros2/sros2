@@ -23,14 +23,12 @@ import unittest
 from launch_ros.actions import Node
 
 import launch_testing
-from launch_testing.actions import ReadyToTest
 import launch_testing.asserts
 import launch_testing.markers
 import launch_testing.tools
 
 import pytest
 
-from rclpy.expand_topic_name import expand_topic_name
 from rclpy.utilities import get_available_rmw_implementations
 from sros2.policy import load_policy
 
@@ -87,8 +85,7 @@ def generate_test_description(rmw_implementation: str, use_daemon: bool):
     return generate_sros2_cli_test_description(
         fixture_actions=[
             pub_sub_node,
-            client_srv_node,
-            ReadyToTest()
+            client_srv_node
         ],
         rmw_implementation=rmw_implementation,
         use_daemon=use_daemon
@@ -106,11 +103,6 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         pub_sub_node_namespace,
         pub_sub_node_enclave
     ):
-        assert self.wait_for(expected_topics=[
-            expand_topic_name('~/pub', pub_sub_node_name, pub_sub_node_namespace),
-            expand_topic_name('~/sub', pub_sub_node_name, pub_sub_node_namespace),
-        ])
-
         with tempfile.TemporaryDirectory() as tmpdir:
             test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
             with self.launch_sros2_command(
@@ -148,11 +140,6 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         client_srv_node_namespace,
         client_srv_node_enclave
     ):
-        assert self.wait_for(expected_services=[
-            expand_topic_name('~/client', client_srv_node_name, client_srv_node_namespace),
-            expand_topic_name('~/server', client_srv_node_name, client_srv_node_namespace),
-        ])
-
         with tempfile.TemporaryDirectory() as tmpdir:
             test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
             with self.launch_sros2_command(
