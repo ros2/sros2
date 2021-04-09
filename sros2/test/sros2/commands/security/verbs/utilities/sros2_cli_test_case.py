@@ -63,7 +63,7 @@ class SROS2CLITestCase(unittest.TestCase):
         rmw_implementation,
         use_daemon
     ):
-        max_discovery_delay = 6.0 if 'connext' in rmw_implementation else 3.0  # seconds
+        max_discovery_delay = 8.0 if 'connext' in rmw_implementation else 3.0  # seconds
 
         @contextlib.contextmanager
         def launch_sros2_command(self, arguments):
