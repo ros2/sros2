@@ -2,6 +2,15 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Skip mypy test on platforms using importlib_resources (`#258 <https://github.com/ros2/sros2/issues/258>`_)
+* Enable topic "ros_discovery_info" for rmw_connextdds (`#253 <https://github.com/ros2/sros2/issues/253>`_)
+* Declare missing dependency on python3-importlib-resources (`#249 <https://github.com/ros2/sros2/issues/249>`_)
+  Co-authored-by:  <mikael.arguedas@gmail.com>
+* Fix namedtuple names. (`#250 <https://github.com/ros2/sros2/issues/250>`_)
+* Contributors: Andrea Sorbini, Chris Lalancette, Scott K Logan, Mikael Arguedas
+
 0.10.1 (2020-11-08)
 -------------------
 * parameter_events topic is now absolute (#233)
