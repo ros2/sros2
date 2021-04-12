@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.2 (2021-04-12)
+-------------------
 * Skip mypy test on platforms using importlib_resources (`#258 <https://github.com/ros2/sros2/issues/258>`_)
 * Enable topic "ros_discovery_info" for rmw_connextdds (`#253 <https://github.com/ros2/sros2/issues/253>`_)
 * Declare missing dependency on python3-importlib-resources (`#249 <https://github.com/ros2/sros2/issues/249>`_)
