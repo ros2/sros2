@@ -92,20 +92,32 @@ class SROS2CLITestCase(unittest.TestCase):
                 yield sros2_command
         cls.launch_sros2_command = launch_sros2_command
 
-        def wait_for(self, expected_topics=[], expected_services=[]):
-            if not expected_topics and not expected_services:
-                return True
-            args = argparse.Namespace()
-            args.no_daemon = not use_daemon
-            args.spin_time = MAX_DISCOVERY_DELAY
-            with NodeStrategy(args) as node:
-                start_time = time.time()
-                while time.time() - start_time < MAX_DISCOVERY_DELAY:
+        if use_daemon:
+            def predicate(node, expected_nodes, expected_topics, expected_services):
+                nodes = [
+                    ns + '/' + name for name, ns in
+                    node.get_node_names_and_namespaces()]
+                if not all(name in nodes for name in expected_nodes):
+                    return False
+                if expected_topics:
                     topics = [name for name, _ in node.get_topic_names_and_types()]
+                    if not all(name in topics for name in expected_topics):
+                        return False
+                if expected_services:
                     services = [name for name, _ in node.get_service_names_and_types()]
-                    if all(t in topics for t in expected_topics) and \
-                       all(s in services for s in expected_services):
-                        return True
-                    time.sleep(0.1)  # this sleep time is arbitrary
-                return False
-        cls.wait_for = wait_for
+                    if not all(name in services for name in expected_services):
+                        return False
+                return True
+
+            def wait_for(self, expected_nodes, expected_topics=None, expected_services=None):
+                args = argparse.Namespace()
+                args.no_daemon = not use_daemon
+                args.spin_time = MAX_DISCOVERY_DELAY
+                with NodeStrategy(args) as node:
+                    start_time = time.time()
+                    while time.time() - start_time < MAX_DISCOVERY_DELAY:
+                        if predicate(node, expected_nodes, expected_topics, expected_services):
+                            return True
+                        time.sleep(0.1)  # this sleep time is arbitrary
+                    return False
+            cls.wait_for = wait_for
