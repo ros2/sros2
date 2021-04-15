@@ -104,12 +104,17 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         self,
         pub_sub_node_name,
         pub_sub_node_namespace,
-        pub_sub_node_enclave
+        pub_sub_node_enclave,
+        use_daemon
     ):
-        assert self.wait_for(expected_topics=[
-            expand_topic_name('~/pub', pub_sub_node_name, pub_sub_node_namespace),
-            expand_topic_name('~/sub', pub_sub_node_name, pub_sub_node_namespace),
-        ])
+        if use_daemon:
+            assert self.wait_for(
+                expected_nodes=[pub_sub_node_namespace + '/' + pub_sub_node_name],
+                expected_topics=[
+                    expand_topic_name('~/pub', pub_sub_node_name, pub_sub_node_namespace),
+                    expand_topic_name('~/sub', pub_sub_node_name, pub_sub_node_namespace),
+                ]
+            )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
@@ -146,12 +151,17 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
         self,
         client_srv_node_name,
         client_srv_node_namespace,
-        client_srv_node_enclave
+        client_srv_node_enclave,
+        use_daemon
     ):
-        assert self.wait_for(expected_services=[
-            expand_topic_name('~/client', client_srv_node_name, client_srv_node_namespace),
-            expand_topic_name('~/server', client_srv_node_name, client_srv_node_namespace),
-        ])
+        if use_daemon:
+            assert self.wait_for(
+                expected_nodes=[client_srv_node_namespace + '/' + client_srv_node_name],
+                expected_services=[
+                    expand_topic_name('~/client', client_srv_node_name, client_srv_node_namespace),
+                    expand_topic_name('~/server', client_srv_node_name, client_srv_node_namespace),
+                ]
+            )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
