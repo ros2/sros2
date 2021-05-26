@@ -39,8 +39,8 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
     os.symlink(src, dst)
 
 
-def domain_id() -> str:
-    return os.getenv(_DOMAIN_ID_ENV, '0')
+def domain_id() -> int:
+    return os.getenv(_DOMAIN_ID_ENV, 0)
 
 
 def get_keystore_path_from_env() -> pathlib.Path:

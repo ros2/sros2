@@ -32,12 +32,15 @@ from sros2.policy import get_policy_default
 from . import _keystore, _permission
 
 
-def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
+def create_enclave(keystore_path: pathlib.Path, identity: str, domain_id: int) -> None:
     if not _keystore.is_valid_keystore(keystore_path):
         raise sros2.errors.InvalidKeystoreError(keystore_path)
 
     if not _is_enclave_name_valid(identity):
         raise sros2.errors.InvalidEnclaveNameError(identity)
+    
+    if domain_id is None:
+        domain_id = _utilities.domain_id()
 
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
@@ -86,7 +89,7 @@ def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
     enclave_element.attrib['path'] = identity
 
     permissions_path = key_dir.joinpath('permissions.xml')
-    _permission.create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
+    _permission.create_permission_file(permissions_path, domain_id, policy_element)
 
     signed_permissions_path = key_dir.joinpath('permissions.p7s')
     keystore_permissions_ca_cert_path = _keystore.get_keystore_public_dir(

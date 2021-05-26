@@ -33,10 +33,12 @@ class CreateEnclaveVerb(VerbExtension):
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
         parser.add_argument('NAME', help='enclave name')
+        parser.add_argument('--domain_id', '-d', dest='domain_id', type=int,
+            help='domain id for rules', default=None, required=False, nargs=1)
 
     def main(self, *, args) -> int:
         try:
-            sros2.keystore.create_enclave(args.ROOT, args.NAME)
+            sros2.keystore.create_enclave(args.ROOT, args.NAME, args.domain_id)
         except sros2.errors.SROS2Error as e:
             print(f'Unable to create enclave: {str(e)}', file=sys.stderr)
             return 1

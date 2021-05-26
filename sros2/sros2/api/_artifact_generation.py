@@ -24,18 +24,19 @@ from . import _policy
 def generate_artifacts(
         keystore_path: pathlib.Path = None,
         identity_names: List[str] = [],
-        policy_files: List[pathlib.Path] = []) -> None:
+        policy_files: List[pathlib.Path] = [],
+        domain_id: int = None) -> None:
     if keystore_path is None:
         keystore_path = _utilities.get_keystore_path_from_env()
         if keystore_path is None:
             return False
     if not keystore.is_valid_keystore(keystore_path):
         print('%s is not a valid keystore, creating new keystore' % keystore_path)
-        keystore.create_keystore(keystore_path)
+        keystore.create_keystore(keystore_path, domain_id)
 
     # Create enclaves for all provided identities
     for identity in identity_names:
-        keystore.create_enclave(keystore_path, identity)
+        keystore.create_enclave(keystore_path, identity, domain_id)
     for policy_file in policy_files:
         policy_tree = load_policy(policy_file)
         enclaves_element = policy_tree.find('enclaves')

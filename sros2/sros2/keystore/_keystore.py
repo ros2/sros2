@@ -30,7 +30,7 @@ _KS_PRIVATE = 'private'
 _DEFAULT_COMMON_NAME = 'sros2CA'
 
 
-def create_keystore(keystore_path: pathlib.Path) -> None:
+def create_keystore(keystore_path: pathlib.Path, domain_id: int) -> None:
     if is_valid_keystore(keystore_path):
         raise sros2.errors.KeystoreExistsError(keystore_path)
 
@@ -74,7 +74,7 @@ def create_keystore(keystore_path: pathlib.Path) -> None:
     # Create governance file if it doesn't already exist
     gov_path = keystore_path.joinpath(_KS_ENCLAVES, 'governance.xml')
     if not gov_path.is_file():
-        _create_governance_file(gov_path, _utilities.domain_id())
+        _create_governance_file(gov_path, domain_id)
 
     # Sign governance file if it hasn't already been signed
     signed_gov_path = keystore_path.joinpath(_KS_ENCLAVES, 'governance.p7s')
@@ -117,7 +117,7 @@ def _create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
     _utilities.write_cert(cert, ca_cert_out_path)
 
 
-def _create_governance_file(path: pathlib.Path, domain_id: str):
+def _create_governance_file(path: pathlib.Path, domain_id: int):
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     governance_xml_path = get_transport_default('dds', 'governance.xml')
@@ -129,7 +129,7 @@ def _create_governance_file(path: pathlib.Path, domain_id: str):
     domain_id_elements = governance_xml.findall(
         'domain_access_rules/domain_rule/domains/id')
     for domain_id_element in domain_id_elements:
-        domain_id_element.text = domain_id
+        domain_id_element.text = str(domain_id)
 
     try:
         governance_xsd.assertValid(governance_xml)
