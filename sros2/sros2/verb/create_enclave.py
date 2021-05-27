@@ -34,7 +34,7 @@ class CreateEnclaveVerb(VerbExtension):
         arg.completer = DirectoriesCompleter()
         parser.add_argument('NAME', help='enclave name')
         parser.add_argument('--domain_id', '-d', dest='domain_id', type=int,
-            help='domain id for rules', default=None, required=False, nargs=1)
+            help='domain id for rules', default=-1, required=False, nargs=1)
 
     def main(self, *, args) -> int:
         try:

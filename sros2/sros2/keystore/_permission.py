@@ -90,7 +90,7 @@ def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> Non
 
     domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
     for domain_id_element in domain_id_elements:
-        domain_id_element.text = domain_id
+        domain_id_element.text = str(domain_id)
 
     try:
         permissions_xsd.assertValid(permissions_xml)
