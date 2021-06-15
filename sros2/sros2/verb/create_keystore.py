@@ -24,6 +24,7 @@ except ImportError:
 import sros2.errors
 import sros2.keystore
 from sros2.verb import VerbExtension
+from sros2 import _utilities
 
 
 class CreateKeystoreVerb(VerbExtension):
@@ -33,9 +34,12 @@ class CreateKeystoreVerb(VerbExtension):
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
 
+        parser.add_argument('--domain', dest='DOMAIN_ID', type=_utilities.get_domain_id,
+            default=_utilities.get_domain_id(), required=False, help='domain ID of keystore')
+
     def main(self, *, args) -> int:
         try:
-            sros2.keystore.create_keystore(args.ROOT)
+            sros2.keystore.create_keystore(args.ROOT, args.DOMAIN_ID)
         except sros2.errors.SROS2Error as e:
             print(f'Unable to create keystore: {str(e)}', file=sys.stderr)
             return 1

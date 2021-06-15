@@ -40,7 +40,7 @@ def create_enclave(keystore_path: pathlib.Path, identity: str, domain_id: int) -
         raise sros2.errors.InvalidEnclaveNameError(identity)
     
     if domain_id <= 0:
-        domain_id = _utilities.environment_domain_id()
+        domain_id = _utilities.get_domain_id(domain_id)
 
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
