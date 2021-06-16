@@ -31,11 +31,17 @@ class CreateKeystoreVerb(VerbExtension):
     """Create keystore."""
 
     def add_arguments(self, parser, cli_name) -> None:
+        parser.add_argument('--domain', dest='DOMAIN_ID', type=self._validate_domain_id, default=self._validate_domain_id(),
+            required=False, help='domain ID of keystore')
+
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
         arg.completer = DirectoriesCompleter()
-
-        parser.add_argument('--domain', dest='DOMAIN_ID', type=_utilities.get_domain_id,
-            default=_utilities.get_domain_id(), required=False, help='domain ID of keystore')
+    
+    def _validate_domain_id(self, domain_id: int = None) -> int:
+        if domain_id is None:
+            return _utilities.get_domain_id()
+        else:
+            return _utilities.get_domain_id(int(domain_id))
 
     def main(self, *, args) -> int:
         try:
