@@ -25,7 +25,7 @@ def generate_artifacts(
         keystore_path: pathlib.Path = None,
         identity_names: List[str] = [],
         policy_files: List[pathlib.Path] = [],
-        domain_id: int = 0) -> None:
+        domain_id: int = None) -> None:
     if keystore_path is None:
         keystore_path = _utilities.get_keystore_path_from_env()
         if keystore_path is None:

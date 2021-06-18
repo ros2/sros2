@@ -30,9 +30,13 @@ _KS_PRIVATE = 'private'
 _DEFAULT_COMMON_NAME = 'sros2CA'
 
 
-def create_keystore(keystore_path: pathlib.Path, domain_id: int) -> None:
+def create_keystore(keystore_path: pathlib.Path, domain_id: int = None) -> None:
     if is_valid_keystore(keystore_path):
         raise sros2.errors.KeystoreExistsError(keystore_path)
+
+    # Get the domain ID if it has not been set. This will return the
+    # existing value if it is already valid
+    domain_id = _utilities.get_domain_id(domain_id)
 
     for path in (
             keystore_path,
