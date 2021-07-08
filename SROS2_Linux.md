@@ -204,3 +204,62 @@ For example, the following attempt for the `listener` node to subscribe to a top
 # This will fail because the node is not permitted to subscribe to topics other than chatter.
 ros2 run demo_nodes_py listener --ros-args -r chatter:=not_chatter -e /talker_listener/listener
 ```
+
+### Certificate Revocation Lists
+
+In some circumstances, it may be necessary to revoke certificates before they have expired.
+This is accomplished with Certificate Revocation Lists (CRLs), and is supported by SROS2 security enclaves.
+
+Following on from the previous demo, let's assume that we want to revoke the certificate for the listener.
+To do this, we first need to generate a crl.pem file in the security enclave:
+
+```bash
+cd ~/sros2_demo/demo_keystore
+cat > crl_openssl.conf << EOF
+# OpenSSL configuration for CRL generation
+
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+database = index.txt
+crlnumber = crlnumber
+
+default_days = 365  # how long to certify for
+default_crl_days = 30  # how long before next CRL
+default_md = default  # use public key default MD
+preserve = no  # keep passed DN ordering
+
+[ crl_ext ]
+# CRL extensions.
+# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
+# issuerAltName=issuer:copy
+authorityKeyIdentifier = keyid:always,issuer:always
+EOF
+echo 00 > crlnumber
+touch index.txt
+openssl ca -revoke enclaves/talker_listener/listener/cert.pem -keyfile private/identity_ca.key.pem -cert public/identity_ca.cert.pem -config crl_openssl.conf
+openssl ca -gencrl -keyfile private/identity_ca.key.pem -cert public/identity_ca.cert.pem -out public/crl.pem -config crl_openssl.conf
+```
+
+Now we need to link it into the talker enclave (so it will reject connection attempts by the listener):
+
+```bash
+ln -s ../../../public/crl.pem enclaves/talker_listener/talker
+```
+
+Now we can run the talker demo as above (after preparing the terminal as previously described):
+```bash
+ros2 run demo_nodes_cpp talker --ros-args --enclave /talker_listener/talker
+```
+
+You'll notice that this is operating just like before.
+
+In another terminal (after preparing the terminal as previously described), we will do the same thing with the `listener` program.
+
+```bash
+ros2 run demo_nodes_py listener --ros-args --enclave /talker_listener/listener
+```
+
+Here you'll notice that the listener is not getting any data.
+That's because the talker is explicitly rejecting the listener revoked certificate of the listener, so no communication is possible.
