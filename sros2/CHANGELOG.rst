@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.3 (2022-01-13)
+-------------------
+* Wait for node discovery in test_generate_policy. (`#262 <https://github.com/ros2/sros2/issues/262>`_)
+* Contributors: Michel Hidalgo
+
 0.10.2 (2021-04-12)
 -------------------
 * Skip mypy test on platforms using importlib_resources (`#258 <https://github.com/ros2/sros2/issues/258>`_)
