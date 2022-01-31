@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.5 (2022-01-31)
+------------------
+* Make use of ros_testing to test policy generation. (`#214 <https://github.com/ros2/sros2/issues/214>`_) (`#254 <https://github.com/ros2/sros2/issues/254>`_)
+* Contributors: Mikael Arguedas
+
 0.9.4 (2020-11-17)
 ------------------
 * parameter_events topic is now absolute (`#233 <https://github.com/ros2/sros2/issues/233>`_) (`#245 <https://github.com/ros2/sros2/issues/245>`_)
