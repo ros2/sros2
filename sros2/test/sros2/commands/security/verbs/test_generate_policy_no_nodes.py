@@ -15,6 +15,7 @@
 
 import itertools
 import os
+import pathlib
 import sys
 import tempfile
 
@@ -46,20 +47,24 @@ def generate_test_description(rmw_implementation, use_daemon):
     ), locals()
 
 
+GENERATE_POLICY_TIMEOUT = 10 if os.name != 'nt' else 30  # seconds
+
+
 class TestSROS2GeneratePolicyVerbWithNoNodes(SROS2CLITestCase):
 
     def test_generate_policy_no_nodes(self):
         with tempfile.TemporaryDirectory() as tmpdir:
+            test_policy = pathlib.Path(tmpdir).joinpath('test-policy.xml')
             with self.launch_sros2_command(
-                arguments=['generate_policy', os.path.join(tmpdir, 'test-policy.xml')]
+                arguments=['generate_policy', str(test_policy)]
             ) as gen_command:
-                assert gen_command.wait_for_shutdown(timeout=10)
+                assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
             assert gen_command.exit_code != launch_testing.asserts.EXIT_OK
             assert 'No nodes detected in the ROS graph. No policy file was generated.' \
                 in gen_command.output
 
     def test_generate_policy_no_policy_file(self):
         with self.launch_sros2_command(arguments=['generate_policy']) as gen_command:
-            assert gen_command.wait_for_shutdown(timeout=2)
+            assert gen_command.wait_for_shutdown(timeout=GENERATE_POLICY_TIMEOUT)
         assert gen_command.exit_code != launch_testing.asserts.EXIT_OK
         assert 'following arguments are required: POLICY_FILE_PATH' in gen_command.output
