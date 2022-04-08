@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Increase the shutdown timeout for test_generate_policy_no_nodes. (`#278 <https://github.com/ros2/sros2/issues/278>`_)
+* Contributors: Chris Lalancette
+
 0.10.3 (2022-01-13)
 -------------------
 * Wait for node discovery in test_generate_policy. (`#262 <https://github.com/ros2/sros2/issues/262>`_)

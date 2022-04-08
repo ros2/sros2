@@ -2,6 +2,9 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.10.3 (2022-01-13)
 -------------------
 * Fix variables in sros2_cmake (`#274 <https://github.com/ros2/sros2/issues/274>`_)
