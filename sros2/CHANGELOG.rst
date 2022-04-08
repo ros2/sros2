@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.4 (2022-04-08)
+-------------------
 * Increase the shutdown timeout for test_generate_policy_no_nodes. (`#278 <https://github.com/ros2/sros2/issues/278>`_)
 * Contributors: Chris Lalancette
 
