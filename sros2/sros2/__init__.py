@@ -23,7 +23,7 @@ _xml_cache_path = urllib.parse.urljoin(
     'file:',
     urllib.request.pathname2url(
         os.path.join(
-            ament_index_python.get_package_share_directory('sros2'),
+            str(ament_index_python.get_package_share_directory('sros2')),
             'xml_cache',
             'xhtml-cache.xml'
         )
