@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make type of get_package_share_directory apparent for sphinx (`#284 <https://github.com/ros2/sros2/issues/284>`_)
+* Contributors: Yadu
+
 0.11.1 (2022-09-13)
 -------------------
 
