@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.12.1 (2023-05-19)
+-------------------
 * Fix SSH commands in SROS2_Linux.md (`#286 <https://github.com/ros2/sros2/issues/286>`_)
 * Contributors: Boris Boutillier
 
