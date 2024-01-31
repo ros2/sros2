@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from argcomplete.completers import DirectoriesCompleter
-except ImportError:
-    def DirectoriesCompleter():
-        return None
-
 import pathlib
 import sys
 import warnings
+
+from argcomplete.completers import DirectoriesCompleter
 
 import sros2.keystore
 from sros2.verb import VerbExtension

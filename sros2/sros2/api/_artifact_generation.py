@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pathlib
-from typing import List
+from typing import List, Optional
 
 from sros2 import _utilities, keystore
 from sros2.policy import load_policy
@@ -22,7 +22,7 @@ from . import _policy
 
 
 def generate_artifacts(
-        keystore_path: pathlib.Path = None,
+        keystore_path: Optional[pathlib.Path] = None,
         identity_names: List[str] = [],
         policy_files: List[pathlib.Path] = []) -> None:
     if keystore_path is None:

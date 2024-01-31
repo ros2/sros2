@@ -15,16 +15,8 @@
 import pathlib
 import sys
 
-try:
-    from argcomplete.completers import DirectoriesCompleter
-except ImportError:
-    def DirectoriesCompleter():
-        return None
-try:
-    from argcomplete.completers import FilesCompleter
-except ImportError:
-    def FilesCompleter(*, allowednames, directories):
-        return None
+from argcomplete.completers import DirectoriesCompleter
+from argcomplete.completers import FilesCompleter
 
 import sros2.keystore
 from sros2.verb import VerbExtension

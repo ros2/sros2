@@ -16,11 +16,7 @@ import pathlib
 import sys
 import warnings
 
-try:
-    from argcomplete.completers import DirectoriesCompleter
-except ImportError:
-    def DirectoriesCompleter():
-        return None
+from argcomplete.completers import DirectoriesCompleter
 
 import sros2.keystore
 from sros2.verb import VerbExtension
