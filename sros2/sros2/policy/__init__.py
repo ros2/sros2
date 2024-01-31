@@ -32,7 +32,7 @@ def _get_path(template, name):
         return importlib_resources.files(template).joinpath(name)
     else:
         with importlib_resources.path(template, name) as path:
-            return str(path)
+            return path
 
 
 def get_policy_default(name: str) -> pathlib.Path:
