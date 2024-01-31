@@ -22,7 +22,6 @@ from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.serialization import pkcs7
 
 import sros2.errors
 
@@ -133,7 +132,9 @@ def load_cert(cert_path: pathlib.Path):
             cert_file.read(), cryptography_backend())
 
 
-def _sign_bytes(cert, key, byte_string):
+def _sign_bytes_pkcs7(cert, key, byte_string):
+    from cryptography.hazmat.primitives.serialization import pkcs7
+
     builder = (
         pkcs7.PKCS7SignatureBuilder()
         .set_data(byte_string)
@@ -141,3 +142,53 @@ def _sign_bytes(cert, key, byte_string):
     )
     options = [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.DetachedSignature]
     return builder.sign(serialization.Encoding.SMIME, options)
+
+
+def _sign_bytes_ssl_binding(cert, key, byte_string):
+    from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
+
+    # Using two flags here to get the output required:
+    #   - PKCS7_DETACHED: Use cleartext signing
+    #   - PKCS7_TEXT: Set the MIME headers for text/plain
+    flags = SSLBinding.lib.PKCS7_DETACHED
+    flags |= SSLBinding.lib.PKCS7_TEXT
+
+    # Convert the byte string into a buffer for SSL
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        pkcs7 = SSLBinding.lib.PKCS7_sign(
+            cert._x509, key._evp_pkey, SSLBinding.ffi.NULL, bio_in, flags)
+    finally:
+        # Free the memory allocated for the buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    # PKCS7_sign consumes the buffer; allocate a new one again to get it into the final document
+    bio_in = SSLBinding.lib.BIO_new_mem_buf(byte_string, len(byte_string))
+    try:
+        # Allocate a buffer for the output document
+        bio_out = SSLBinding.lib.BIO_new(SSLBinding.lib.BIO_s_mem())
+        try:
+            # Write the final document out to the buffer
+            SSLBinding.lib.SMIME_write_PKCS7(bio_out, pkcs7, bio_in, flags)
+
+            # Copy the output document back to python-managed memory
+            result_buffer = SSLBinding.ffi.new('char**')
+            buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
+            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
+        finally:
+            # Free the memory required for the output buffer
+            SSLBinding.lib.BIO_free(bio_out)
+    finally:
+        # Free the memory allocated for the input buffer
+        SSLBinding.lib.BIO_free(bio_in)
+
+    return output
+
+
+def _sign_bytes(cert, key, byte_string):
+    try:
+        return _sign_bytes_pkcs7(cert, key, byte_string)
+    except ImportError:
+        pass
+
+    return _sign_bytes_ssl_binding(cert, key, byte_string)
