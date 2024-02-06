@@ -19,7 +19,6 @@ import pathlib
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
-from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -133,7 +132,21 @@ def load_cert(cert_path: pathlib.Path):
             cert_file.read(), cryptography_backend())
 
 
-def _sign_bytes(cert, key, byte_string):
+def _sign_bytes_pkcs7(cert, key, byte_string):
+    from cryptography.hazmat.primitives.serialization import pkcs7
+
+    builder = (
+        pkcs7.PKCS7SignatureBuilder()
+        .set_data(byte_string)
+        .add_signer(cert, key, hashes.SHA256())
+    )
+    options = [pkcs7.PKCS7Options.Text, pkcs7.PKCS7Options.DetachedSignature]
+    return builder.sign(serialization.Encoding.SMIME, options)
+
+
+def _sign_bytes_ssl_binding(cert, key, byte_string):
+    from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
+
     # Using two flags here to get the output required:
     #   - PKCS7_DETACHED: Use cleartext signing
     #   - PKCS7_TEXT: Set the MIME headers for text/plain
@@ -170,3 +183,12 @@ def _sign_bytes(cert, key, byte_string):
         SSLBinding.lib.BIO_free(bio_in)
 
     return output
+
+
+def _sign_bytes(cert, key, byte_string):
+    try:
+        return _sign_bytes_pkcs7(cert, key, byte_string)
+    except ImportError:
+        pass
+
+    return _sign_bytes_ssl_binding(cert, key, byte_string)
