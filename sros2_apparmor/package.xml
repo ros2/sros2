@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+    <package format="2">
+    <name>sros2_apparmor</name>
+    <version>0.0.0</version>
+    <description>AppArmor profile library for ROS 2</description>
+    <author email="roxfoxpox@gmail.com">Ruffin White</author>
+    <maintainer email="roxfoxpox@gmail.com">Ruffin White</maintainer>
+    <license>Apache 2.0</license>
+
+    <!-- TODO: Audit all included or missing dependency -->
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <build_depend>ament_cmake_test</build_depend>
+
+    <!-- TODO: Add AppArmor key from rosdistro as runtime dependency -->
+    <!-- TODO: https://github.com/ros/rosdistro/pull/21906 -->
+    <!-- <exec_depend>apparmor</exec_depend> -->
+
+    <!-- <build_export_depend>sros2</build_export_depend> -->
+    <!-- <build_export_depend>ros2cli</build_export_depend> -->
+
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

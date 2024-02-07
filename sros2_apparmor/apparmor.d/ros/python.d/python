@@ -1,0 +1,25 @@
+# Include python abstractions needed for ros with python
+#include <abstractions/python>
+
+# CHECKME: Which are general for other languages?
+/bin/dash mrix,
+/bin/uname mrix,
+
+# CHECKME: Is this already in abstractions somewhere?
+owner @{PROC}/@{pid}/cgroup r,
+owner @{PROC}/@{pid}/cmdline r,
+owner @{PROC}/@{pid}/fd/ r,
+
+/usr/bin/python3.[0-9]* rix,
+/usr/local/lib/python3.[0-9]*/dist-packages/{,**} mr,
+
+@{ROS_INSTALL_PYTHON}/site-packages/{,**} mr,
+deny @{ROS_INSTALL_PYTHON}/site-packages/**/__pycache__/{,**} w,
+owner @{HOME}/.local/lib/python3.[0-9]*/site-packages/{,**} mr,
+deny owner @{HOME}/.local/lib/python3.[0-9]*/site-packages/**/__pycache__/{,**} w,
+
+# CHECKME: why are each of these needed?
+/etc/apt/apt.conf.d/{,**} r,
+/etc/default/apport r,
+/usr/share/dpkg/cputable r,
+/usr/share/dpkg/tupletable r,

@@ -1,0 +1,5 @@
+# @{ROS_HOME} is a space-separated list of all user's local .ros directories.
+# While it doesn't refer to a specific home directory (AppArmor doesn't
+# enforce discretionary access controls) it can be used as if it did
+# refer to a specific home directory.
+@{ROS_HOME}=@{HOME}/.ros
