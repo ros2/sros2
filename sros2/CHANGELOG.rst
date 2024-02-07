@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.13.0 (2024-02-07)
+-------------------
 * Use modern PKCS7 to sign the certificate bytes. (`#290 <https://github.com/ros2/sros2/issues/290>`_)
 * Fix a number of warnings on Ubuntu 24.04. (`#289 <https://github.com/ros2/sros2/issues/289>`_)
 * Contributors: Chris Lalancette
