@@ -18,6 +18,7 @@
             <topic>rq/minimal_action_server/list_parametersRequest</topic>
             <topic>rq/minimal_action_server/set_parametersRequest</topic>
             <topic>rq/minimal_action_server/set_parameters_atomicallyRequest</topic>
+            <topic>rq/minimal_action_server/get_type_descriptionRequest</topic>
             <topic>rr/fibonacci/_action/cancel_goalReply</topic>
             <topic>rr/fibonacci/_action/get_resultReply</topic>
             <topic>rr/fibonacci/_action/send_goalReply</topic>
@@ -29,6 +30,7 @@
             <topic>rr/minimal_action_server/list_parametersReply</topic>
             <topic>rr/minimal_action_server/set_parametersReply</topic>
             <topic>rr/minimal_action_server/set_parameters_atomicallyReply</topic>
+            <topic>rr/minimal_action_server/get_type_descriptionReply</topic>
             <topic>rt/parameter_events</topic>
             <topic>rt/rosout</topic>
           </topics>
@@ -44,12 +46,14 @@
             <topic>rq/minimal_action_server/list_parametersRequest</topic>
             <topic>rq/minimal_action_server/set_parametersRequest</topic>
             <topic>rq/minimal_action_server/set_parameters_atomicallyRequest</topic>
+            <topic>rq/minimal_action_server/get_type_descriptionRequest</topic>
             <topic>rr/minimal_action_server/describe_parametersReply</topic>
             <topic>rr/minimal_action_server/get_parameter_typesReply</topic>
             <topic>rr/minimal_action_server/get_parametersReply</topic>
             <topic>rr/minimal_action_server/list_parametersReply</topic>
             <topic>rr/minimal_action_server/set_parametersReply</topic>
             <topic>rr/minimal_action_server/set_parameters_atomicallyReply</topic>
+            <topic>rr/minimal_action_server/get_type_descriptionReply</topic>
             <topic>rt/clock</topic>
             <topic>rt/parameter_events</topic>
           </topics>
@@ -78,12 +82,14 @@
             <topic>rq/minimal_action_client/list_parametersRequest</topic>
             <topic>rq/minimal_action_client/set_parametersRequest</topic>
             <topic>rq/minimal_action_client/set_parameters_atomicallyRequest</topic>
+            <topic>rq/minimal_action_client/get_type_descriptionRequest</topic>
             <topic>rr/minimal_action_client/describe_parametersReply</topic>
             <topic>rr/minimal_action_client/get_parameter_typesReply</topic>
             <topic>rr/minimal_action_client/get_parametersReply</topic>
             <topic>rr/minimal_action_client/list_parametersReply</topic>
             <topic>rr/minimal_action_client/set_parametersReply</topic>
             <topic>rr/minimal_action_client/set_parameters_atomicallyReply</topic>
+            <topic>rr/minimal_action_client/get_type_descriptionReply</topic>
             <topic>rt/parameter_events</topic>
             <topic>rt/rosout</topic>
           </topics>
@@ -96,6 +102,7 @@
             <topic>rq/minimal_action_client/list_parametersRequest</topic>
             <topic>rq/minimal_action_client/set_parametersRequest</topic>
             <topic>rq/minimal_action_client/set_parameters_atomicallyRequest</topic>
+            <topic>rq/minimal_action_client/get_type_descriptionRequest</topic>
             <topic>rr/fibonacci/_action/cancel_goalReply</topic>
             <topic>rr/fibonacci/_action/get_resultReply</topic>
             <topic>rr/fibonacci/_action/send_goalReply</topic>
@@ -107,6 +114,7 @@
             <topic>rr/minimal_action_client/list_parametersReply</topic>
             <topic>rr/minimal_action_client/set_parametersReply</topic>
             <topic>rr/minimal_action_client/set_parameters_atomicallyReply</topic>
+            <topic>rr/minimal_action_client/get_type_descriptionReply</topic>
             <topic>rt/clock</topic>
             <topic>rt/parameter_events</topic>
           </topics>
