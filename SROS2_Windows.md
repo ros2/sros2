@@ -124,6 +124,39 @@ Note: You can switch between the C++ (demo_nodes_cpp) and Python (demo_nodes_py)
 
 These nodes are able to communicate because we have created the appropriate keys and certificates for them.
 
+To be able to use the ros2 CLI tools to interact with your secured system, you need to provide it with an override enclave:
+```bat
+set ROS_SECURITY_ENCLAVE_OVERRIDE=/talker_listener/listener
+```
+
+Then use the CLI as usual:
+
+```bat
+ros2 node list
+```
+```
+/talker
+```
+```bat
+ros2 topic list
+```
+```
+/chatter
+/parameter_events
+/rosout
+```
+```bat
+ros2 topic echo /chatter
+```
+```
+[INFO] [1714897092.882384995] [rcl]: Found security directory: /root/sros2_demo/demo_keystore/enclaves/talker_listener/listener
+data: 'Hello World: 257'
+---
+data: 'Hello World: 258'
+---
+
+```
+
 ### Access Control
 
 The previous demo used authentication and encryption, but not access control, which means that any authenticated node would be able to publish and subscribe to any data stream (aka topic).
