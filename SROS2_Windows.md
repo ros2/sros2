@@ -85,12 +85,11 @@ set ROS_SECURITY_STRATEGY=Enforce
 ## Run the demo
 
 ROS2 allows you to [change DDS implementation at runtime](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html).
-This demo can be run with fastrtps by setting:
+This demo can be run with FastDDS / CycloneDDS / ConnextDDS by setting the `RMW_IMPLEMENTATION` variable, e.g.:
+
 ```bat
-set RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-```
-And with Connext by setting:
-```bat
+set RMW_IMPLEMENTATION=rmw_fastrtps_cpp  # or
+set RMW_IMPLEMENTATION=rmw_cyclonedds_cpp  # or
 set RMW_IMPLEMENTATION=rmw_connextdds
 ```
 
