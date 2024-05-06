@@ -18,6 +18,7 @@
             <topic>rq/add_two_ints_server/list_parametersRequest</topic>
             <topic>rq/add_two_ints_server/set_parametersRequest</topic>
             <topic>rq/add_two_ints_server/set_parameters_atomicallyRequest</topic>
+            <topic>rq/add_two_ints_server/get_type_descriptionRequest</topic>
             <topic>rr/add_two_intsReply</topic>
             <topic>rr/add_two_ints_server/describe_parametersReply</topic>
             <topic>rr/add_two_ints_server/get_parameter_typesReply</topic>
@@ -25,6 +26,7 @@
             <topic>rr/add_two_ints_server/list_parametersReply</topic>
             <topic>rr/add_two_ints_server/set_parametersReply</topic>
             <topic>rr/add_two_ints_server/set_parameters_atomicallyReply</topic>
+            <topic>rr/add_two_ints_server/get_type_descriptionReply</topic>
             <topic>rt/parameter_events</topic>
             <topic>rt/rosout</topic>
           </topics>
@@ -70,12 +72,14 @@
             <topic>rq/add_two_ints_client/list_parametersRequest</topic>
             <topic>rq/add_two_ints_client/set_parametersRequest</topic>
             <topic>rq/add_two_ints_client/set_parameters_atomicallyRequest</topic>
+            <topic>rq/add_two_ints_client/get_type_descriptionRequest</topic>
             <topic>rr/add_two_ints_client/describe_parametersReply</topic>
             <topic>rr/add_two_ints_client/get_parameter_typesReply</topic>
             <topic>rr/add_two_ints_client/get_parametersReply</topic>
             <topic>rr/add_two_ints_client/list_parametersReply</topic>
             <topic>rr/add_two_ints_client/set_parametersReply</topic>
             <topic>rr/add_two_ints_client/set_parameters_atomicallyReply</topic>
+            <topic>rr/add_two_ints_client/get_type_descriptionReply</topic>
             <topic>rt/parameter_events</topic>
             <topic>rt/rosout</topic>
           </topics>
@@ -88,6 +92,7 @@
             <topic>rq/add_two_ints_client/list_parametersRequest</topic>
             <topic>rq/add_two_ints_client/set_parametersRequest</topic>
             <topic>rq/add_two_ints_client/set_parameters_atomicallyRequest</topic>
+            <topic>rq/add_two_ints_client/get_type_descriptionRequest</topic>
             <topic>rr/add_two_intsReply</topic>
             <topic>rr/add_two_ints_client/describe_parametersReply</topic>
             <topic>rr/add_two_ints_client/get_parameter_typesReply</topic>
@@ -95,6 +100,7 @@
             <topic>rr/add_two_ints_client/list_parametersReply</topic>
             <topic>rr/add_two_ints_client/set_parametersReply</topic>
             <topic>rr/add_two_ints_client/set_parameters_atomicallyReply</topic>
+            <topic>rr/add_two_ints_client/get_type_descriptionReply</topic>
             <topic>rt/clock</topic>
             <topic>rt/parameter_events</topic>
           </topics>
