@@ -94,7 +94,7 @@ These variables need to be defined in each terminal used for the demo. For conve
 
 ## Run the demo
 
-ROS2 allows you to [change DDS implementation at runtime](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html).
+ROS 2 allows you to [change DDS implementation at runtime](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html).
 This demo can be run with FastDDS / CycloneDDS / ConnextDDS by setting the `RMW_IMPLEMENTATION` variable, e.g.:
 
 ```bash
