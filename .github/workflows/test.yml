@@ -39,7 +39,8 @@ jobs:
           }
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         target-ros2-distro: rolling
-          # rosdep-skip-keys: rti-connext-dds-6.0.1
+        vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/rolling')
