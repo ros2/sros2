@@ -18,7 +18,7 @@ jobs:
         apt-get -qq update
         apt-get -qq upgrade -y
         apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev python3-colcon-coveragepy-result
-    - uses: ros-tooling/action-ros-ci@v0.1
+    - uses: ros-tooling/action-ros-ci@v0.3
       with:
         package-name: |
           sros2
@@ -26,6 +26,7 @@ jobs:
           test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
         target-ros2-distro: rolling
+        rosdep-skip-keys: rti-connext-dds-6.0.1
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/rolling')
