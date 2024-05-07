@@ -28,6 +28,16 @@ jobs:
           sros2_cmake
           test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
+        colcon-defaults: |
+          {
+            "build": {
+              "mixin": ["coverage-pytest"]
+            },
+            "test": {
+              "mixin": ["coverage-pytest"]
+            }
+          }
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         target-ros2-distro: rolling
           # rosdep-skip-keys: rti-connext-dds-6.0.1
     - name: Upload coverage to Codecov
