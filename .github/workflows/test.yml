@@ -2,6 +2,8 @@ name: SROS2 CI
 on:
   pull_request:
   push:
+    branches:
+      rolling
   schedule:
     # Run daily
     - cron:  '0 20 * * *'
