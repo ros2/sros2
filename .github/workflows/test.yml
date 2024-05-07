@@ -21,6 +21,8 @@ jobs:
         apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev python3-colcon-coveragepy-result
     - uses: ros-tooling/action-ros-ci@v0.3
       with:
+        # TODO remove once https://github.com/ros-tooling/action-ros-ci/pull/869 is released
+        rosdep-skip-keys: rti-connext-dds-6.0.1
         package-name: |
           sros2
           sros2_cmake
