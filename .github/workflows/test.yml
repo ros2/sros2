@@ -15,15 +15,13 @@ jobs:
     # the former gets installed via rosdep in 'action-ros-ci' but the latter do *not* get installed
     container: osrf/ros2:devel
     steps:
-    - uses: ros-tooling/setup-ros@v0.7
     - name: Install prerequisites for action-ros-ci and FastRTPS
       run: |
         apt-get -qq update
         apt-get -qq upgrade -y
-        apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev python3-colcon-coveragepy-result
+        apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev python3-colcon-coveragepy-result python3-pytest-cov
     - uses: ros-tooling/action-ros-ci@v0.3
       with:
-        # TODO remove once https://github.com/ros-tooling/action-ros-ci/pull/869 is released
         rosdep-skip-keys: rti-connext-dds-6.0.1
         package-name: |
           sros2
