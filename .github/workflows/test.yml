@@ -26,7 +26,6 @@ jobs:
         package-name: |
           sros2
           sros2_cmake
-          test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
         colcon-defaults: |
           {
