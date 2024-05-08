@@ -1,2 +1,2 @@
 fixes:
-  - "ros_ws/src/*/sros2::"
+  - "/__w/sros2/sros2/ros_ws/src/*/sros2::"
