@@ -60,10 +60,6 @@ enhance the security of ROS 2 deployments.""",
             'sros2.verb = sros2.verb:VerbExtension',
         ],
         'sros2.verb': [
-            # These are deprecated
-            'create_key = sros2.verb.create_enclave:CreateKeyVerb',
-            'list_keys = sros2.verb.list_enclaves:ListKeysVerb',
-
             'create_enclave = sros2.verb.create_enclave:CreateEnclaveVerb',
             'create_keystore = sros2.verb.create_keystore:CreateKeystoreVerb',
             'create_permission = sros2.verb.create_permission'

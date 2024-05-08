@@ -14,7 +14,6 @@
 
 import pathlib
 import sys
-import warnings
 
 from argcomplete.completers import DirectoriesCompleter
 
@@ -40,13 +39,3 @@ class ListEnclavesVerb(VerbExtension):
         except sros2.errors.SROS2Error as e:
             print(f'Unable to list enclaves: {str(e)}', file=sys.stderr)
         return 1
-
-
-class ListKeysVerb(ListEnclavesVerb):
-    """DEPRECATED: List enclaves in keystore. Use list_enclaves instead."""
-
-    def main(self, *, args) -> int:
-        warnings.warn(
-            'list_keys is deprecated and will be removed in a future release. Use list_enclaves '
-            'instead.', FutureWarning)
-        return super().main(args=args)
