@@ -75,8 +75,15 @@ def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> Non
 
     cert_path = path.parent.joinpath('cert.pem')
     cert_content = _utilities.load_cert(cert_path)
-    kwargs['not_valid_before'] = etree.XSLT.strparam(cert_content.not_valid_before.isoformat())
-    kwargs['not_valid_after'] = etree.XSLT.strparam(cert_content.not_valid_after.isoformat())
+    # TODO replace "not_valid_before"/"not_valid_after" functions by
+    # "not_valid_before_utc"/"not_valid_after_utc"
+    # once cryptography 42 is supported on all target platforms
+    kwargs['not_valid_before'] = etree.XSLT.strparam(
+        cert_content.not_valid_before.replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
+    kwargs['not_valid_after'] = etree.XSLT.strparam(
+        cert_content.not_valid_after.replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
 
     if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
