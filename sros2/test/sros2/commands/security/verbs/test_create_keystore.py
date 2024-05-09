@@ -24,6 +24,7 @@ import pytest
 from ros2cli import cli
 
 from sros2 import _utilities
+from sros2.errors import KeystoreExistsError
 from sros2.keystore import _keystore
 
 
@@ -95,3 +96,12 @@ def test_governance_p7s(keystore_dir):
 def test_governance_xml(keystore_dir):
     # Validates valid XML
     ElementTree.parse(str(keystore_dir / 'enclaves' / 'governance.xml'))
+
+
+def test_create_keystore_twice_fails(tmp_path):
+    keystore_dir = tmp_path / 'keystore'
+    keystore_dir.mkdir()
+
+    # Create the keystore
+    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) == 0
+    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) != 0
