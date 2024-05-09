@@ -30,8 +30,8 @@ _test_identity = '/talker_listener/talker'
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def enclave_dir(tmpdir_factory, test_policy_dir) -> pathlib.Path:
-    keystore_dir = pathlib.Path(str(tmpdir_factory.mktemp('keystore')))
+def enclave_dir(tmp_path_factory, test_policy_dir) -> pathlib.Path:
+    keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # First, create the keystore as well as an enclave for the talker
     sros2.keystore.create_keystore(keystore_dir)

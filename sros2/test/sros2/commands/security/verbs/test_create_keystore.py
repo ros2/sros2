@@ -29,14 +29,14 @@ from sros2.keystore import _keystore
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def keystore_dir(tmpdir_factory) -> Path:
-    keystore_dir = str(tmpdir_factory.mktemp('keystore'))
+def keystore_dir(tmp_path_factory) -> Path:
+    keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # Create the keystore
-    assert cli.main(argv=['security', 'create_keystore', keystore_dir]) == 0
+    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) == 0
 
     # Return path to keystore directory
-    return Path(keystore_dir)
+    return keystore_dir
 
 
 def test_create_keystore(keystore_dir):
