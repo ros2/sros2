@@ -57,7 +57,7 @@ def test_list_enclaves_no_keys(capsys):
 def test_list_enclaves_uninitialized_keystore(capsys):
     with tempfile.TemporaryDirectory() as keystore_dir:
         # Verify that list_enclaves properly handles an uninitialized keystore
-        assert cli.main(argv=['security', 'list_enclaves', keystore_dir]) != 0
+        assert cli.main(argv=['security', 'list_enclaves', keystore_dir]) == 1
         assert (capsys.readouterr().err.strip() ==
                 f"Unable to list enclaves: '{keystore_dir}' is not a valid keystore")
 
@@ -65,6 +65,6 @@ def test_list_enclaves_uninitialized_keystore(capsys):
 def test_list_enclaves_no_keystore(capsys):
     # Verify that list_enclaves properly handles a non-existent keystore
     keystore = os.path.join(tempfile.gettempdir(), 'non-existent')
-    assert cli.main(argv=['security', 'list_enclaves', keystore]) != 0
+    assert cli.main(argv=['security', 'list_enclaves', keystore]) == 1
     assert (capsys.readouterr().err.strip() ==
             f"Unable to list enclaves: '{keystore}' is not a valid keystore")

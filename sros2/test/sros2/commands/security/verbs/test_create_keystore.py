@@ -104,4 +104,4 @@ def test_create_keystore_twice_fails(tmp_path):
 
     # Create the keystore
     assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) == 0
-    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) != 0
+    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) == 1
