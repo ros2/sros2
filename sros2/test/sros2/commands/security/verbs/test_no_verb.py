@@ -18,4 +18,4 @@ from ros2cli import cli
 def test_no_verb(capsys):
     assert cli.main(argv=['security']) == 0
     output = capsys.readouterr().out.rstrip()
-    assert "Call `ros2 security <command> -h` for more detailed usage." in output
+    assert 'Call `ros2 security <command> -h` for more detailed usage.' in output

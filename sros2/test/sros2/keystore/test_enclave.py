@@ -13,15 +13,16 @@
 # limitations under the License.
 
 from pathlib import Path
+
 import pytest
 
 from ros2cli import cli
 
-from sros2.keystore import _enclave
 from sros2.errors import (
-    InvalidKeystoreError,
     InvalidEnclaveNameError,
+    InvalidKeystoreError,
 )
+from sros2.keystore import _enclave
 
 
 def test_is_key_name_valid():

@@ -40,7 +40,7 @@ def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
     # invalid keystore
     assert cli.main(argv=['security', 'generate_artifacts', '-k', str(tmp_path)]) == 0
     output = capsys.readouterr().out.rstrip()
-    assert "is not a valid keystore, creating new keystore" in output
+    assert 'is not a valid keystore, creating new keystore' in output
 
     assert cli.main(argv=['security', 'generate_artifacts', '-k', str(keystore_dir)]) == 0
 
@@ -55,14 +55,18 @@ def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
         m.setenv(_utilities._KEYSTORE_DIR_ENV, str(tmp_keystore_folder / 'bar'))
         assert cli.main(argv=['security', 'generate_artifacts']) == 0
         output = capsys.readouterr().out.rstrip()
-        assert "is not a valid keystore, creating new keystore" in output
+        assert 'is not a valid keystore, creating new keystore' in output
 
     # no keystore in args or in env
     with monkeypatch.context() as m:
         m.delenv(_utilities._KEYSTORE_DIR_ENV, raising=False)
         assert cli.main(argv=['security', 'generate_artifacts']) == 1
         output = capsys.readouterr().err.rstrip()
-        assert "Unable to generate artifacts: 'ROS_SECURITY_KEYSTORE' isn't pointing at a valid keystore" in output
+        assert (
+            "Unable to generate artifacts: "
+            "'ROS_SECURITY_KEYSTORE' isn't pointing at a valid keystore"
+            in output
+        )
 
 
 def test_cli_enclave_args(keystore_dir):
@@ -83,7 +87,7 @@ def test_cli_enclave_args(keystore_dir):
         'permissions.xml', 'permissions_ca.cert.pem'
     )
     for enclave in enclave_list:
-        enclave_keys_dir = keystore_dir / 'enclaves'  / enclave.lstrip('/')
+        enclave_keys_dir = keystore_dir / 'enclaves' / enclave.lstrip('/')
         assert len(list(enclave_keys_dir.iterdir())) == len(expected_files)
 
         for expected_file in expected_files:
@@ -97,16 +101,26 @@ def test_cli_policies_args(capsys, keystore_dir, test_policy_dir):
         command_args.append('-e')
         command_args.append(name)
     # Test an invalid policy file
-    retcode = cli.main(argv=command_args + ['-p', str(test_policy_dir / 'invalid_policy_missing_topics_tag.xml')])
+    retcode = cli.main(
+        argv=command_args + [
+            '-p', str(test_policy_dir / 'invalid_policy_missing_topics_tag.xml')
+        ]
+    )
     assert "Element 'topic': This element is not expected." in retcode
     # Test a valid policy file
-    assert cli.main(argv=command_args + ['-p', str(test_policy_dir / 'minimal_action.policy.xml')]) == 0
+    assert cli.main(
+        argv=command_args + [
+            '-p', str(test_policy_dir / 'minimal_action.policy.xml')
+        ]
+    ) == 0
     # ensure that missing enclaves have been created on the fly
     for name in enclave_list:
         assert Path(keystore_dir / 'enclaves' / name.lstrip('/')).is_dir()
     # Test a valid set of policy files
-    assert cli.main(argv=command_args + [
-        '-p', str(test_policy_dir / 'minimal_action.policy.xml'),
-        '-p', str(test_policy_dir / 'add_two_ints.policy.xml'),
-        '-p', str(test_policy_dir / 'talker_listener.policy.xml'),
-    ]) == 0
+    assert cli.main(
+        argv=command_args + [
+            '-p', str(test_policy_dir / 'minimal_action.policy.xml'),
+            '-p', str(test_policy_dir / 'add_two_ints.policy.xml'),
+            '-p', str(test_policy_dir / 'talker_listener.policy.xml'),
+        ]
+    ) == 0

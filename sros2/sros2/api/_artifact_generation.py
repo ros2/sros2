@@ -39,7 +39,8 @@ def generate_artifacts(
     for identity in identity_names:
         keystore.create_enclave(keystore_path, identity)
     for policy_file in policy_files:
-        # FIXME load_policy should raise something else that RUntime Error and should be caught here
+        # FIXME load_policy should raise something else
+        # than RuntimeError and it should be caught here
         policy_tree = load_policy(policy_file)
         enclaves_element = policy_tree.find('enclaves')
         for enclave in enclaves_element:
