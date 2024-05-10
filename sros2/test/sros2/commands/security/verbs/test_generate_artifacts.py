@@ -63,7 +63,7 @@ def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
         assert cli.main(argv=['security', 'generate_artifacts']) == 1
         output = capsys.readouterr().err.rstrip()
         assert (
-            "Unable to generate artifacts: "
+            'Unable to generate artifacts: '
             "'ROS_SECURITY_KEYSTORE' isn't pointing at a valid keystore"
             in output
         )
