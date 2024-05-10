@@ -50,6 +50,7 @@ def keystore_dir(tmp_path_factory) -> Path:
     # Return path to keystore directory
     return keystore_dir
 
+
 def test_create_enclave_invalid_arguments(keystore_dir):
     with pytest.raises(InvalidKeystoreError):
         _enclave.create_enclave(Path('foo/bar'), '/baz/foobar')

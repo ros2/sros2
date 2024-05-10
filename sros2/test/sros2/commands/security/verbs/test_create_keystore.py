@@ -24,7 +24,6 @@ import pytest
 from ros2cli import cli
 
 from sros2 import _utilities
-from sros2.errors import KeystoreExistsError
 from sros2.keystore import _keystore
 
 
