@@ -97,7 +97,6 @@ def test_create_enclave(enclave_keys_dir):
 
 
 def test_create_enclave_twice(tmp_path):
-
     # First, create the keystore
     sros2.keystore.create_keystore(tmp_path)
     assert tmp_path.is_dir()

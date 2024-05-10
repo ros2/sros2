@@ -21,7 +21,8 @@ from ros2cli import cli
 from sros2 import _utilities
 
 
-# Here we provide only very high level testing as this vers is just a combination of callin the others ones covered by by precise tests
+# Here we provide only very high level testing as this verb
+# is just a combination of calls to the others ones covered by precise tests
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
@@ -56,9 +57,9 @@ def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
         output = capsys.readouterr().out.rstrip()
         assert "is not a valid keystore, creating new keystore" in output
 
+    # no keystore in args or in env
     with monkeypatch.context() as m:
         m.delenv(_utilities._KEYSTORE_DIR_ENV, raising=False)
-        # no keystore in args or in env
         assert cli.main(argv=['security', 'generate_artifacts']) == 1
         output = capsys.readouterr().err.rstrip()
         assert "Unable to generate artifacts: 'ROS_SECURITY_KEYSTORE' isn't pointing at a valid keystore" in output
