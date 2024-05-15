@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
+import pytest
+
+from ros2cli import cli
+
+from sros2.errors import (
+    InvalidEnclaveNameError,
+    InvalidKeystoreError,
+)
 from sros2.keystore import _enclave
 
 
@@ -29,3 +39,23 @@ def test_is_key_name_valid():
     assert not _enclave._is_enclave_name_valid('foo/bar')
     assert not _enclave._is_enclave_name_valid('/42foo')
     assert not _enclave._is_enclave_name_valid('/foo/42bar')
+
+
+@pytest.fixture()
+def keystore_dir(tmp_path_factory) -> Path:
+    keystore_dir = tmp_path_factory.mktemp('keystore')
+
+    # Create the keystore
+    assert cli.main(argv=['security', 'create_keystore', str(keystore_dir)]) == 0
+
+    # Return path to keystore directory
+    return keystore_dir
+
+
+def test_create_enclave_invalid_arguments(keystore_dir):
+    with pytest.raises(InvalidKeystoreError):
+        _enclave.create_enclave(Path('foo/bar'), '/baz/foobar')
+    with pytest.raises(InvalidKeystoreError):
+        _enclave.create_enclave(Path('foo/bar'), 'baz/foobar')
+    with pytest.raises(InvalidEnclaveNameError):
+        _enclave.create_enclave(keystore_dir, 'baz/foobar')

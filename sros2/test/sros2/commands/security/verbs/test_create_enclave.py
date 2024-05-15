@@ -34,8 +34,8 @@ from sros2.policy import get_transport_schema
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def enclave_keys_dir(tmpdir_factory) -> Path:
-    keystore_dir = Path(str(tmpdir_factory.mktemp('keystore')))
+def enclave_keys_dir(tmp_path_factory) -> Path:
+    keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # First, create the keystore
     sros2.keystore.create_keystore(keystore_dir)
@@ -96,12 +96,11 @@ def test_create_enclave(enclave_keys_dir):
         assert (enclave_keys_dir / expected_file).is_file()
 
 
-def test_create_enclave_twice(tmpdir):
-    keystore_dir = Path(tmpdir)
-
+def test_create_enclave_twice(tmp_path):
     # First, create the keystore
-    sros2.keystore.create_keystore(keystore_dir)
-    assert keystore_dir.is_dir()
+    sros2.keystore.create_keystore(tmp_path)
+    assert tmp_path.is_dir()
+    keystore_dir = tmp_path
 
     # Now using that keystore, create an enclave
     assert cli.main(
