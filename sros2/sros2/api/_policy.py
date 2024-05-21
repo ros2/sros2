@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from copy import deepcopy
+
 from lxml import etree
 
 from sros2.policy import load_policy
@@ -28,7 +30,7 @@ def get_policy_from_tree(name, policy_tree):
     if enclave_element is None:
         raise RuntimeError(f'unable to find enclave "{name}"')
     enclaves_element = etree.Element('enclaves')
-    enclaves_element.append(enclave_element)
+    enclaves_element.append(deepcopy(enclave_element))
     policy_element = etree.Element('policy')
     policy_element.append(enclaves_element)
     return policy_element
