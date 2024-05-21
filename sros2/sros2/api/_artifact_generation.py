@@ -21,16 +21,15 @@ from sros2.policy import load_policy
 from . import _policy
 
 
-# FIXME move away from mutable default (linter should complain about it)
 def generate_artifacts(
-    keystore_path: Optional[pathlib.Path] = None,
-    identity_names: List[str] = [],
-    policy_files: List[pathlib.Path] = []
+    keystore_path: Optional[pathlib.Path],
+    identity_names: List[str],
+    policy_files: List[pathlib.Path]
 ) -> None:
     if keystore_path is None:
         keystore_path = _utilities.get_keystore_path_from_env()
         if keystore_path is None:
-            return False
+            return
     if not keystore.is_valid_keystore(keystore_path):
         print('%s is not a valid keystore, creating new keystore' % keystore_path)
         keystore.create_keystore(keystore_path)
