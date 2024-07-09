@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 import test_msgs.srv
@@ -34,17 +35,12 @@ class ClientServiceNode(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args)
-
-    node = ClientServiceNode()
-
     try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
+        with rclpy.init(args=args):
+            node = ClientServiceNode()
+            rclpy.spin(node)
+    except (KeyboardInterrupt, ExternalShutdownException):
         print('node stopped cleanly')
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
 
 
 if __name__ == '__main__':
