@@ -23,6 +23,10 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from cryptography.x509.oid import (
+    ExtendedKeyUsageOID)
+
+
 import sros2.errors
 
 _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
@@ -71,12 +75,12 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         issuer_name = subject_name
 
     # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
-    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    private_key = ec.generate_private_key(ec.SECP384R1, cryptography_backend())
     if not ca_key:
         ca_key = private_key
 
     if ca:
-        extension = x509.BasicConstraints(ca=True, path_length=1)
+        extension = x509.BasicConstraints(ca=True, path_length=0)
     else:
         extension = x509.BasicConstraints(ca=False, path_length=None)
 
@@ -98,10 +102,44 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
             private_key.public_key()
         ).subject_name(
             subject_name
-        ).add_extension(
-            extension, critical=ca
         )
-    cert = builder.sign(ca_key, hashes.SHA256(), cryptography_backend())
+
+    zenoh_config = True
+    if zenoh_config:
+        subject_key = x509.SubjectKeyIdentifier.from_public_key(private_key.public_key())
+        authority_key = x509.AuthorityKeyIdentifier.from_issuer_public_key(private_key.public_key())
+
+        builder = builder.add_extension(
+            x509.ExtendedKeyUsage(
+                [
+                    ExtendedKeyUsageOID.SERVER_AUTH,
+                    ExtendedKeyUsageOID.CLIENT_AUTH,
+                ]
+            ),
+            False
+        ).add_extension(extension, critical=True)
+        if ca:
+            key_usage = x509.KeyUsage(digital_signature=True, key_encipherment=False, key_cert_sign=True,
+                                    key_agreement=False, content_commitment=False, data_encipherment=False,
+                                    crl_sign=False, encipher_only=False, decipher_only=False)
+
+            builder = builder.add_extension(key_usage, True) \
+            .add_extension(authority_key, False) \
+            .add_extension(subject_key, False)
+        else:
+            key_usage = x509.KeyUsage(digital_signature=True, key_encipherment=True, key_cert_sign=False,
+                                    key_agreement=False, content_commitment=False, data_encipherment=False,
+                                    crl_sign=False, encipher_only=False, decipher_only=False)
+            builder = builder.add_extension(key_usage, True) \
+            .add_extension(authority_key, False) \
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName(subject_name.rfc4514_string().split('=')[1])]),
+                critical=False
+            )
+    else:
+        builder = builder.add_extension(extension, critical=True)
+
+    cert = builder.sign(ca_key, hashes.SHA384(), cryptography_backend())
 
     return (cert, private_key)
 
