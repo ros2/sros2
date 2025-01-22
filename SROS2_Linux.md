@@ -4,7 +4,7 @@
 
 ### Install from debian packages
 
-First install ROS2 from binaries following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html).
+First install ROS 2 from binaries following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html).
 
 Setup your environment following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html#environment-setup).
 
@@ -19,7 +19,7 @@ You will need to have openssl installed on your machine:
 sudo apt update && sudo apt install libssl-dev
 ```
 
-First install ROS2 from source following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Development-Setup.html).
+First install ROS 2 from source following [these instructions](https://docs.ros.org/en/rolling/Installation/Ubuntu-Development-Setup.html).
 
 Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
