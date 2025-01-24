@@ -147,4 +147,4 @@ bool get_security_files(
   return true;
 }
 
-}  // namespace rmw_dds_common
+}  // namespace rmw_security_common

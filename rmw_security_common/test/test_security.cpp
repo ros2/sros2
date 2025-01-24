@@ -310,7 +310,8 @@ TEST_P(test_security, only_pkcs11_present)
 
   if (GetParam()) {
     ASSERT_TRUE(
-      rmw_security_common::get_security_files(GetParam(), "", dir.generic_string(), security_files));
+      rmw_security_common::get_security_files(GetParam(), "", dir.generic_string(),
+      security_files));
     EXPECT_EQ(
       security_files["IDENTITY_CA"],
       "pkcs11://identity_ca.cert.p11");
@@ -331,7 +332,8 @@ TEST_P(test_security, only_pkcs11_present)
       std::filesystem::path("./test_folder/permissions.p7s").generic_string());
   } else {
     ASSERT_FALSE(
-      rmw_security_common::get_security_files(GetParam(), "", dir.generic_string(), security_files));
+      rmw_security_common::get_security_files(GetParam(), "", dir.generic_string(),
+      security_files));
     ASSERT_EQ(security_files.size(), 0UL);
   }
 }

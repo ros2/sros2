@@ -29,7 +29,7 @@ target_include_directories(${PROJECT_NAME}_library
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
 target_compile_definitions(${PROJECT_NAME}_library
-  PRIVATE "RMW_SECUTIRY_COMMON_BUILDING_LIBRARY")
+  PRIVATE "RMW_SECURITY_COMMON_BUILDING_LIBRARY")
 
 install(
   TARGETS ${PROJECT_NAME}_library EXPORT ${PROJECT_NAME}_library

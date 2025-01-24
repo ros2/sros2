@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_SECUTIRY_COMMON__SECURITY_HPP_
-#define RMW_SECUTIRY_COMMON__SECURITY_HPP_
+#ifndef RMW_SECURITY_COMMON__SECURITY_HPP_
+#define RMW_SECURITY_COMMON__SECURITY_HPP_
 
 #include <string>
 #include <unordered_map>
@@ -84,6 +84,6 @@ bool get_security_files(
   const std::string & secure_root,
   std::unordered_map<std::string, std::string> & result);
 
-}  // namespace rmw_dds_common
+}  // namespace rmw_security_common
 
-#endif  // RMW_SECUTIRY_COMMON__SECURITY_HPP_
+#endif  // RMW_SECURITY_COMMON__SECURITY_HPP_
