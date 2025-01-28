@@ -4,17 +4,17 @@
 
 ### Install ROS2
 
-#### Install ROS2 from binaries
+#### Install ROS 2 from binaries
 
 Please follow [these instructions](https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html).
 
-#### Install ROS2 from source
+#### Install ROS 2 from source
 
 Please follow [these instructions](https://docs.ros.org/en/rolling/Installation/Windows-Development-Setup.html) and stop at the beginning of "Build the code" section
 
-To build the ROS2 code with security extensions, call:
+To build the ROS 2 code with security extensions, call:
 ```bat
-colcon build --cmake-args -DSECURITY=ON
+colcon build --cmake-args -DSECURITY=ON --packages-select fastrtps rmw_fastrtps_cpp rmw_fastrtps_dynamic_cpp rmw_fastrtps_shared_cpp
 ```
 
 ### Install OpenSSL
