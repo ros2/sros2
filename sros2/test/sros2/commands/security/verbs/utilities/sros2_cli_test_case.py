@@ -42,7 +42,7 @@ def generate_sros2_cli_test_description(
             cmd=['ros2', 'daemon', 'start'],
             name='daemon-start',
             on_exit=fixture_actions,
-            additional_env=additional_env
+            additional_env={k: str(v) for k, v in additional_env.items()}
         )]
     return LaunchDescription([
         # Always stop daemon to avoid cross-talk.
@@ -50,7 +50,7 @@ def generate_sros2_cli_test_description(
             cmd=['ros2', 'daemon', 'stop'],
             name='daemon-stop',
             on_exit=fixture_actions,
-            additional_env=additional_env
+            additional_env={k: str(v) for k, v in additional_env.items()}
         ),
     ])
 
