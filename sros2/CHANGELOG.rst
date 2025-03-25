@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.6 (2025-03-25)
+-------------------
+* fix github-workflow mypy error. (`#336 <https://github.com/ros2/sros2/issues/336>`_) (`#338 <https://github.com/ros2/sros2/issues/338>`_)
+* Contributors: mergify[bot]
+
 0.10.5 (2024-05-15)
 -------------------
 
