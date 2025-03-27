@@ -26,6 +26,7 @@ import launch_testing.markers
 import launch_testing.tools
 import launch_testing_ros.tools
 
+from ros2cli.helpers import get_rmw_additional_env
 from ros2cli.node.strategy import NodeStrategy
 
 
@@ -35,7 +36,7 @@ MAX_DISCOVERY_DELAY = 4.0  # seconds
 def generate_sros2_cli_test_description(
     fixture_actions, rmw_implementation, use_daemon
 ) -> LaunchDescription:
-    additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
+    additional_env = get_rmw_additional_env(rmw_implementation)
     if use_daemon:
         # Start daemon.
         fixture_actions = [ExecuteProcess(
@@ -72,12 +73,11 @@ class SROS2CLITestCase(unittest.TestCase):
             if not use_daemon:
                 # Wait for direct node to discover fixture nodes.
                 cmd.extend(['--no-daemon', '--spin-time', f'{MAX_DISCOVERY_DELAY}'])
+            additional_env = get_rmw_additional_env(rmw_implementation)
+            additional_env['PYTHONUNBUFFERED'] = '1'
             sros2_command_action = ExecuteProcess(
                 cmd=cmd,
-                additional_env={
-                    'RMW_IMPLEMENTATION': rmw_implementation,
-                    'PYTHONUNBUFFERED': '1'
-                },
+                additional_env=additional_env,
                 name='ros2security-cli',
                 output='screen'
             )

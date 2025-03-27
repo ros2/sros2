@@ -32,6 +32,7 @@ import pytest
 
 from rclpy.expand_topic_name import expand_topic_name
 from rclpy.utilities import get_available_rmw_implementations
+from ros2cli.helpers import get_rmw_additional_env
 from sros2.policy import load_policy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -49,7 +50,7 @@ def generate_test_description(rmw_implementation: str, use_daemon: bool):
             f'Using {rmw_implementation} w/o a daemon makes tests flaky'
         )
 
-    additional_env = {'RMW_IMPLEMENTATION': rmw_implementation}
+    additional_env = get_rmw_additional_env(rmw_implementation)
     path_to_pub_sub_node_script = os.path.join(
         os.path.dirname(__file__), 'fixtures', 'pub_sub_node.py'
     )
