@@ -2,6 +2,13 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix github-workflow mypy error. (`#336 <https://github.com/ros2/sros2/issues/336>`_) (`#337 <https://github.com/ros2/sros2/issues/337>`_)
+  (cherry picked from commit 8fd7b70df5d91b19a76a6025cb32e6f44c4d7cdd)
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Contributors: mergify[bot]
+
 0.13.2 (2024-06-27)
 -------------------
 * Fix sros2 tests on Windows Debug. (`#317 <https://github.com/ros2/sros2/issues/317>`_) (`#320 <https://github.com/ros2/sros2/issues/320>`_)
