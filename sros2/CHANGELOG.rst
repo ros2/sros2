@@ -2,6 +2,9 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.16.0 (2025-04-25)
+-------------------
+
 0.15.2 (2025-04-25)
 -------------------
 * Switch to get_rmw_additional_env (`#339 <https://github.com/ros2/sros2/issues/339>`_)
