@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.2 (2025-04-25)
+-------------------
+* Switch to get_rmw_additional_env (`#339 <https://github.com/ros2/sros2/issues/339>`_)
+* Fix github-workflow mypy error (`#336 <https://github.com/ros2/sros2/issues/336>`_)
+* Contributors: Tomoya Fujita, yadunund
+
 0.15.1 (2024-07-29)
 -------------------
 * Give more time to generate policies in tests (`#323 <https://github.com/ros2/sros2/issues/323>`_)
