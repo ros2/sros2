@@ -71,6 +71,8 @@ def check_common_name(entity, expected_value):
 
 def _datetimes_are_close(actual, expected):
     # We can't check exact times, but an hour's resolution is fine for testing purposes
+    actual = actual.replace(tzinfo=datetime.timezone.utc)
+    expected = expected.replace(tzinfo=datetime.timezone.utc)
     return actual <= expected and actual >= (expected - datetime.timedelta(hours=1))
 
 
@@ -122,7 +124,7 @@ def test_cert_pem(enclave_keys_dir):
     assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
 
     # Verify the cert is valid for the expected timespan
-    utcnow = datetime.datetime.utcnow()
+    utcnow = datetime.datetime.now(datetime.UTC)
 
     # Using a day earlier here to prevent Connext (5.3.1) from complaining
     # when extracting it from the permissions file and thinking it's in the future
