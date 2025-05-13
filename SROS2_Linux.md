@@ -23,7 +23,7 @@ First install ROS 2 from source following [these instructions](https://docs.ros.
 
 Note: Fast-RTPS requires an additional CMake flag to build the security plugins so the colcon invocation needs to be modified to pass:
 ```bash
-colcon build --symlink-install --cmake-args -DSECURITY=ON --packages-select fastrtps rmw_fastrtps_cpp rmw_fastrtps_dynamic_cpp rmw_fastrtps_shared_cpp
+colcon build --symlink-install --cmake-args -DSECURITY=ON --packages-select fastdds rmw_fastrtps_cpp rmw_fastrtps_dynamic_cpp rmw_fastrtps_shared_cpp
 ```
 
 ### Additional configuration for RTI Connext
