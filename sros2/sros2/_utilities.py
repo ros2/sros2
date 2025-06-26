@@ -71,7 +71,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         issuer_name = subject_name
 
     # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
-    private_key = ec.generate_private_key(ec.SECP256R1, cryptography_backend())
+    private_key = ec.generate_private_key(ec.SECP256R1(), cryptography_backend())
     if not ca_key:
         ca_key = private_key
 
