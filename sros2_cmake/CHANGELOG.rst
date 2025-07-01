@@ -2,6 +2,11 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update CMakeLists.txt (`#344 <https://github.com/ros2/sros2/issues/344>`_)
+* Contributors: mosfet80
+
 0.16.0 (2025-04-25)
 -------------------
 

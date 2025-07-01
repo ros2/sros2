@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update utilities to pass instance not class of ec.SECP256R1 (`#352 <https://github.com/ros2/sros2/issues/352>`_)
+* suppress multi-threaded warnings. (`#346 <https://github.com/ros2/sros2/issues/346>`_)
+* Contributors: Tomoya Fujita, cdisco
+
 0.16.0 (2025-04-25)
 -------------------
 
