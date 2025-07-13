@@ -20,7 +20,7 @@ jobs:
         apt-get -qq update
         apt-get -qq upgrade -y
         apt-get -qq install -y curl libasio-dev libssl-dev libtinyxml2-dev python3-colcon-coveragepy-result
-    - uses: ros-tooling/action-ros-ci@v0.3
+    - uses: ros-tooling/action-ros-ci@v0.4
       with:
         rosdep-skip-keys: rti-connext-dds-6.0.1
         package-name: |
