@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.10.7 (2025-07-16)
+-------------------
 * suppress multi-threaded warnings. (`#346 <https://github.com/ros2/sros2/issues/346>`_) (`#351 <https://github.com/ros2/sros2/issues/351>`_)
 * Contributors: mergify[bot]
 
