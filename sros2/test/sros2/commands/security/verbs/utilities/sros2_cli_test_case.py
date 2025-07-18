@@ -19,11 +19,13 @@ import unittest
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
+from launch.actions import SetEnvironmentVariable
 
 import launch_testing
 import launch_testing.asserts
 import launch_testing.markers
 import launch_testing.tools
+from launch_testing_ros.actions import EnableRmwIsolation
 import launch_testing_ros.tools
 
 from ros2cli.helpers import get_rmw_additional_env
@@ -37,21 +39,25 @@ def generate_sros2_cli_test_description(
     fixture_actions, rmw_implementation, use_daemon
 ) -> LaunchDescription:
     additional_env = get_rmw_additional_env(rmw_implementation)
+    set_env_actions = [SetEnvironmentVariable(k, v) for k, v in additional_env.items()]
     if use_daemon:
         # Start daemon.
         fixture_actions = [ExecuteProcess(
             cmd=['ros2', 'daemon', 'start'],
             name='daemon-start',
             on_exit=fixture_actions,
-            additional_env={k: str(v) for k, v in additional_env.items()}
         )]
+    fixture_actions = [
+        *set_env_actions,
+        EnableRmwIsolation(),
+        *fixture_actions,
+    ]
     return LaunchDescription([
         # Always stop daemon to avoid cross-talk.
         ExecuteProcess(
             cmd=['ros2', 'daemon', 'stop'],
             name='daemon-stop',
             on_exit=fixture_actions,
-            additional_env={k: str(v) for k, v in additional_env.items()}
         ),
     ])
 
@@ -73,8 +79,9 @@ class SROS2CLITestCase(unittest.TestCase):
             if not use_daemon:
                 # Wait for direct node to discover fixture nodes.
                 cmd.extend(['--no-daemon', '--spin-time', f'{MAX_DISCOVERY_DELAY}'])
-            additional_env = get_rmw_additional_env(rmw_implementation)
-            additional_env['PYTHONUNBUFFERED'] = '1'
+            additional_env = {
+                'PYTHONUNBUFFERED': '1',
+            }
             sros2_command_action = ExecuteProcess(
                 cmd=cmd,
                 additional_env=additional_env,

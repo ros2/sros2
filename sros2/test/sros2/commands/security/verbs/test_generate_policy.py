@@ -32,7 +32,6 @@ import pytest
 
 from rclpy.expand_topic_name import expand_topic_name
 from rclpy.utilities import get_available_rmw_implementations
-from ros2cli.helpers import get_rmw_additional_env
 from sros2.policy import load_policy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -50,7 +49,6 @@ def generate_test_description(rmw_implementation: str, use_daemon: bool):
             f'Using {rmw_implementation} w/o a daemon makes tests flaky'
         )
 
-    additional_env = get_rmw_additional_env(rmw_implementation)
     path_to_pub_sub_node_script = os.path.join(
         os.path.dirname(__file__), 'fixtures', 'pub_sub_node.py'
     )
@@ -66,7 +64,6 @@ def generate_test_description(rmw_implementation: str, use_daemon: bool):
         ],
         name=pub_sub_node_name,
         namespace=pub_sub_node_namespace,
-        additional_env=additional_env
     )
     path_to_client_srv_node_script = os.path.join(
         os.path.dirname(__file__), 'fixtures', 'client_service_node.py'
@@ -83,7 +80,6 @@ def generate_test_description(rmw_implementation: str, use_daemon: bool):
         ],
         name=client_srv_node_name,
         namespace=client_srv_node_namespace,
-        additional_env=additional_env
     )
     return generate_sros2_cli_test_description(
         fixture_actions=[
