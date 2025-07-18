@@ -27,11 +27,14 @@ class CreateKeystoreVerb(VerbExtension):
 
     def add_arguments(self, parser, cli_name) -> None:
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
+        arg = parser.add_argument('--split-CA', action='store_true', default=False,
+                                  help='splits the Certificate Authority structure to \
+                                    use multiple CAs instead of a single self-signed root CA')
         arg.completer = DirectoriesCompleter()
 
     def main(self, *, args) -> int:
         try:
-            sros2.keystore.create_keystore(args.ROOT)
+            sros2.keystore.create_keystore(args.ROOT, args.split_CA)
         except sros2.errors.SROS2Error as e:
             print(f'Unable to create keystore: {str(e)}', file=sys.stderr)
             return 1

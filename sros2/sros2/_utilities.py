@@ -29,6 +29,34 @@ _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 _KEYSTORE_DIR_ENV = 'ROS_SECURITY_KEYSTORE'
 
 
+def create_signed_cert(
+        keystore_ca_cert_path: pathlib.Path,
+        keystore_ca_key_path: pathlib.Path,
+        identity: str,
+        cert_path: pathlib.Path,
+        key_path: pathlib.Path,
+        **kwargs):
+    # Load the CA cert and key from disk
+    ca_cert = load_cert(keystore_ca_cert_path)
+
+    with open(keystore_ca_key_path, 'rb') as f:
+        ca_key = serialization.load_pem_private_key(f.read(), None, cryptography_backend())
+
+    ca_pub_key = ca_cert.public_key()
+    # Calculate the key ID from the issuer's public key
+    key_id = x509.SubjectKeyIdentifier.from_public_key(ca_pub_key).digest
+
+    cert, private_key = build_key_and_cert(
+        x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, identity)]),
+        issuer_name=ca_cert.subject,
+        ca_key=ca_key,
+        key_id=key_id,
+        **kwargs)
+
+    write_key(private_key, key_path)
+    write_cert(cert, cert_path, chain_ca=[ca_cert])  # Store the full chain aswell
+
+
 def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
     if dst.exists():
         # Don't do more work than we need to
@@ -66,7 +94,8 @@ def create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_fil
         f.write(_sign_bytes(cert, private_key, content))
 
 
-def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
+def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name='',
+                       key_id=None, path_length=None, duration_days=3650):
     if not issuer_name:
         issuer_name = subject_name
 
@@ -75,11 +104,11 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
     if not ca_key:
         ca_key = private_key
 
-    if ca:
-        extension = x509.BasicConstraints(ca=True, path_length=1)
-    else:
-        extension = x509.BasicConstraints(ca=False, path_length=None)
+    # Verify path_length is >= 1 if creating a CA
+    if ca and not path_length:
+        path_length = 1
 
+    extension = x509.BasicConstraints(ca=ca, path_length=path_length)
     utcnow = datetime.datetime.utcnow()
     builder = x509.CertificateBuilder(
         ).issuer_name(
@@ -92,14 +121,29 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
             # https://github.com/ros2/ci/pull/436#issuecomment-624874296
             utcnow - datetime.timedelta(days=1)
         ).not_valid_after(
-            # TODO: This should not be hard-coded
-            utcnow + datetime.timedelta(days=3650)
+            utcnow + datetime.timedelta(days=duration_days)
         ).public_key(
             private_key.public_key()
         ).subject_name(
             subject_name
         ).add_extension(
             extension, critical=ca
+        )
+    # Add extension for when it's not a self signed certificate
+    if issuer_name != subject_name and ca:
+        builder = builder.add_extension(
+            x509.KeyUsage(
+                key_agreement=False,
+                digital_signature=True,
+                key_encipherment=False,
+                key_cert_sign=True,
+                crl_sign=False,
+                content_commitment=False,
+                data_encipherment=False,
+                encipher_only=False,
+                decipher_only=False
+            ),
+            critical=True
         )
     cert = builder.sign(ca_key, hashes.SHA256(), cryptography_backend())
 
@@ -121,9 +165,15 @@ def write_key(
             encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding.PEM):
+def write_cert(cert, cert_path: pathlib.Path, *,
+               chain_ca=None,
+               encoding=serialization.Encoding.PEM):
     with open(cert_path, 'wb') as f:
         f.write(cert.public_bytes(encoding=encoding))
+        # Write the full chain with the certificate
+        if chain_ca:
+            for ca in chain_ca:
+                f.write(ca.public_bytes(encoding=encoding))
 
 
 def load_cert(cert_path: pathlib.Path):
