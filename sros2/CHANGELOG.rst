@@ -2,6 +2,13 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Timezone aware datetimes + remove hack from `#209 <https://github.com/ros2/sros2/issues/209>`_ (`#300 <https://github.com/ros2/sros2/issues/300>`_)
+* fix setuptools deprecations (`#357 <https://github.com/ros2/sros2/issues/357>`_)
+* Use rmw_test_fixture to isolate ros2cli tests (`#356 <https://github.com/ros2/sros2/issues/356>`_)
+* Contributors: Mikael Arguedas, Scott K Logan, mosfet80
+
 0.16.1 (2025-07-01)
 -------------------
 * update utilities to pass instance not class of ec.SECP256R1 (`#352 <https://github.com/ros2/sros2/issues/352>`_)
