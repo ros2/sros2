@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import os
 import pathlib
 
@@ -75,8 +76,26 @@ def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> Non
 
     cert_path = path.parent.joinpath('cert.pem')
     cert_content = _utilities.load_cert(cert_path)
-    kwargs['not_valid_before'] = etree.XSLT.strparam(cert_content.not_valid_before.isoformat())
-    kwargs['not_valid_after'] = etree.XSLT.strparam(cert_content.not_valid_after.isoformat())
+    # TODO use `not_valid_before_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert_content, 'not_valid_before_utc'):
+        kwargs['not_valid_before'] = etree.XSLT.strparam(
+            cert_content.not_valid_before_utc.isoformat()
+        )
+    else:
+        kwargs['not_valid_before'] = etree.XSLT.strparam(
+            cert_content.not_valid_before.replace(tzinfo=datetime.timezone.utc).isoformat()
+        )
+    # TODO use `not_valid_after_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert_content, 'not_valid_after_utc'):
+        kwargs['not_valid_after'] = etree.XSLT.strparam(
+            cert_content.not_valid_after_utc.isoformat()
+        )
+    else:
+        kwargs['not_valid_after'] = etree.XSLT.strparam(
+            cert_content.not_valid_after.replace(tzinfo=datetime.timezone.utc).isoformat()
+        )
 
     if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
