@@ -17,14 +17,11 @@ import datetime
 import os
 import pathlib
 
-import cryptography
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-
-import semver
 
 import sros2.errors
 
@@ -39,10 +36,6 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
             return
         os.remove(dst)
     os.symlink(src, dst)
-
-
-def cryptography_version() -> semver.VersionInfo:
-    return semver.parse_version_info(cryptography.__version__)
 
 
 def domain_id() -> str:

@@ -76,17 +76,23 @@ def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> Non
 
     cert_path = path.parent.joinpath('cert.pem')
     cert_content = _utilities.load_cert(cert_path)
-    if _utilities.cryptography_version().major >= 42:
+    # TODO use `not_valid_before_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert_content, 'not_valid_before_utc'):
         kwargs['not_valid_before'] = etree.XSLT.strparam(
-            cert_content.not_valid_before_utc
-        )
-        kwargs['not_valid_after'] = etree.XSLT.strparam(
-            cert_content.not_valid_after_utc
+            cert_content.not_valid_before_utc.isoformat()
         )
     else:
         kwargs['not_valid_before'] = etree.XSLT.strparam(
             cert_content.not_valid_before.replace(tzinfo=datetime.timezone.utc).isoformat()
         )
+    # TODO use `not_valid_after_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert_content, 'not_valid_after_utc'):
+        kwargs['not_valid_after'] = etree.XSLT.strparam(
+            cert_content.not_valid_after_utc.isoformat()
+        )
+    else:
         kwargs['not_valid_after'] = etree.XSLT.strparam(
             cert_content.not_valid_after.replace(tzinfo=datetime.timezone.utc).isoformat()
         )

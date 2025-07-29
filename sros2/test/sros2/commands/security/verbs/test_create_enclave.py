@@ -124,11 +124,18 @@ def test_cert_pem(enclave_keys_dir):
     # Verify the cert is valid for the expected timespan
     utcnow = datetime.datetime.now(datetime.timezone.utc)
 
-    if _utilities.cryptography_version().major >= 42:
+    # TODO use `not_valid_before_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert, 'not_valid_before_utc'):
         cert_not_valid_before_value = cert.not_valid_before_utc
-        cert_not_valid_after_value = cert.not_valid_after_utc
     else:
         cert_not_valid_before_value = cert.not_valid_before.replace(tzinfo=datetime.timezone.utc)
+
+    # TODO use `not_valid_after_utc` unconditionally once cryptography 42 is available
+    # on all target platforms
+    if hasattr(cert, 'not_valid_after_utc'):
+        cert_not_valid_after_value = cert.not_valid_after_utc
+    else:
         cert_not_valid_after_value = cert.not_valid_after.replace(tzinfo=datetime.timezone.utc)
 
     assert _datetimes_are_close(
