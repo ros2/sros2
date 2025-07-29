@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.2 (2025-07-29)
+-------------------
 * Timezone aware datetimes + remove hack from `#209 <https://github.com/ros2/sros2/issues/209>`_ (`#300 <https://github.com/ros2/sros2/issues/300>`_)
 * fix setuptools deprecations (`#357 <https://github.com/ros2/sros2/issues/357>`_)
 * Use rmw_test_fixture to isolate ros2cli tests (`#356 <https://github.com/ros2/sros2/issues/356>`_)
