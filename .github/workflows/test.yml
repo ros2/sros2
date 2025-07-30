@@ -27,30 +27,8 @@ jobs:
           sros2_cmake
           test_security
         extra-cmake-args: '-DSECURITY=ON --no-warn-unused-cli'
-        colcon-defaults: |
-          {
-            "build": {
-              "mixin": ["coverage-pytest"]
-            },
-            "test": {
-              "mixin": ["coverage-pytest"]
-            }
-          }
-        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         target-ros2-distro: rolling
         vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/rolling')
-      with:
-        file: ros_ws/build/sros2/coverage.xml
-        flags: unittests
-        name: sros2-coverage
-        fail_ci_if_error: true
-        codecov_yml_path: codecov.yml
     - name: Upload Logs
       uses: actions/upload-artifact@v4
       if: failure()
@@ -71,12 +49,27 @@ jobs:
         . /opt/ros/$ROS_DISTRO/setup.sh
         rosdep update
         DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths . --ignore-src --rosdistro $ROS_DISTRO
+    - name: Setup mixins
+      run: |
+        colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        colcon mixin update
     - name: Build workspace
-      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build
+      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon build --mixin coverage-pytest
     - name: Test workspace
-      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+
+      run: . /opt/ros/$ROS_DISTRO/setup.sh && colcon test --executor sequential --event-handlers console_direct+ --mixin coverage-pytest
     - name: Check test results
       run: colcon test-result
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/rolling')
+      with:
+        file: ros_ws/build/sros2/coverage.xml
+        flags: unittests
+        name: sros2-coverage
+        fail_ci_if_error: true
+        codecov_yml_path: codecov.yml
     - name: Upload Logs
       uses: actions/upload-artifact@v4
       if: failure()
