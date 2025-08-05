@@ -2,6 +2,13 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* suppress multi-threaded warnings. (`#346 <https://github.com/ros2/sros2/issues/346>`_) (`#350 <https://github.com/ros2/sros2/issues/350>`_)
+  (cherry picked from commit 06ab5aafad9c15ff2a01a268f5cd1cc6134abf3a)
+  Co-authored-by: Tomoya Fujita <Tomoya.Fujita@sony.com>
+* Contributors: mergify[bot]
+
 0.13.3 (2025-04-02)
 -------------------
 * fix github-workflow mypy error. (`#336 <https://github.com/ros2/sros2/issues/336>`_) (`#337 <https://github.com/ros2/sros2/issues/337>`_)
