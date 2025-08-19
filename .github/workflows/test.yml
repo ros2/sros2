@@ -63,7 +63,7 @@ jobs:
     # does *not* include the security plugins or a license allowing the use of Security
     container: osrf/ros2:nightly-rmw-nonfree
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Installing dependencies
       run: |
         apt-get -qq update
