@@ -41,7 +41,6 @@ setup(
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Topic :: Software Development',
     ],
@@ -51,7 +50,11 @@ SROS2 provides command-line tools to help generate keys and \
 certificates which are then used by supported middleware implementations to \
 enhance the security of ROS 2 deployments.""",
     license='Apache License, Version 2.0',
-    tests_require=['pytest'],
+    extras_require={
+        'test': [
+            'pytest',
+        ],
+    },
     entry_points={
         'ros2cli.command': [
             'security = sros2.command.security:SecurityCommand',
