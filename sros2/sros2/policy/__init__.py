@@ -20,8 +20,9 @@ from lxml import etree
 POLICY_VERSION = '0.2.0'
 
 
-def _get_path(template, name):
-    with resources.path(template, name) as path:
+def _get_path(template: str, name: str) -> pathlib.Path:
+    resource = resources.files(template).joinpath(name)
+    with resources.as_file(resource) as path:
         return path
 
 
