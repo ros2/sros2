@@ -12,27 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from importlib import resources
 import pathlib
 
 from lxml import etree
 
-try:
-    import importlib.resources as importlib_resources
-except ModuleNotFoundError:
-    # (clalancette): This fallback is necessary when importlib-resources is installed from pip.
-    # Note that we have to ignore the type, otherwise mypy throws a warning.
-    # See https://github.com/python/mypy/issues/1153 for details.
-    import importlib_resources  # type: ignore
-
 POLICY_VERSION = '0.2.0'
 
 
-def _get_path(template, name):
-    if hasattr(importlib_resources, 'files'):
-        return importlib_resources.files(template).joinpath(name)
-    else:
-        with importlib_resources.path(template, name) as path:
-            return path
+def _get_path(template: str, name: str):
+    return resources.files(template).joinpath(name)
 
 
 def get_policy_default(name: str) -> pathlib.Path:
