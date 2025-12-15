@@ -53,7 +53,7 @@ jobs:
         fail_ci_if_error: true
         codecov_yml_path: codecov.yml
     - name: Upload Logs
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: colcon-logs
@@ -79,7 +79,7 @@ jobs:
     - name: Check test results
       run: colcon test-result
     - name: Upload Logs
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: colcon-logs
