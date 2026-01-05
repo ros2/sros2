@@ -43,6 +43,19 @@ def generate_sros2_cli_test_description(
 ) -> LaunchDescription:
     additional_env = get_rmw_additional_env(rmw_implementation)
     set_env_actions = [SetEnvironmentVariable(k, v) for k, v in additional_env.items()]
+    # Build shutdown actions based on whether daemon is used
+    shutdown_actions = []
+    if use_daemon:
+        # Stop daemon in isolated environment with proper ROS_DOMAIN_ID
+        shutdown_actions = [
+            ExecuteProcess(
+                cmd=['ros2', 'daemon', 'stop'],
+                name='daemon-stop-isolated',
+                # Use the same isolated environment
+                additional_env=dict(additional_env),
+            ),
+        ]
+    shutdown_actions.append(ResetEnvironment())
     if use_daemon:
         # Start daemon.
         fixture_actions = [ExecuteProcess(
@@ -53,17 +66,7 @@ def generate_sros2_cli_test_description(
     fixture_actions = [
         *set_env_actions,
         EnableRmwIsolation(),
-        RegisterEventHandler(OnShutdown(on_shutdown=[
-            # Stop daemon in isolated environment with proper ROS_DOMAIN_ID
-            ExecuteProcess(
-                cmd=['ros2', 'daemon', 'stop'],
-                name='daemon-stop-isolated',
-                # Use the same isolated environment
-                additional_env=dict(additional_env),
-            ),
-            # This must be done after stopping the daemon in the isolated environment
-            ResetEnvironment(),
-        ])),
+        RegisterEventHandler(OnShutdown(on_shutdown=shutdown_actions)),
         *fixture_actions,
     ]
     return LaunchDescription([
