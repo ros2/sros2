@@ -19,7 +19,10 @@ import unittest
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
+from launch.actions import RegisterEventHandler
+from launch.actions import ResetEnvironment
 from launch.actions import SetEnvironmentVariable
+from launch.event_handlers import OnShutdown
 
 import launch_testing
 import launch_testing.asserts
@@ -50,6 +53,17 @@ def generate_sros2_cli_test_description(
     fixture_actions = [
         *set_env_actions,
         EnableRmwIsolation(),
+        RegisterEventHandler(OnShutdown(on_shutdown=[
+            # Stop daemon in isolated environment with proper ROS_DOMAIN_ID
+            ExecuteProcess(
+                cmd=['ros2', 'daemon', 'stop'],
+                name='daemon-stop-isolated',
+                # Use the same isolated environment
+                additional_env=dict(additional_env),
+            ),
+            # This must be done after stopping the daemon in the isolated environment
+            ResetEnvironment(),
+        ])),
         *fixture_actions,
     ]
     return LaunchDescription([
