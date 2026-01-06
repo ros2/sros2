@@ -15,11 +15,17 @@
 import argparse
 import contextlib
 import time
+from typing import cast
 import unittest
 
+
+from launch import Action
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
+from launch.actions import RegisterEventHandler
+from launch.actions import ResetEnvironment
 from launch.actions import SetEnvironmentVariable
+from launch.event_handlers import OnShutdown
 
 import launch_testing
 import launch_testing.asserts
@@ -40,6 +46,19 @@ def generate_sros2_cli_test_description(
 ) -> LaunchDescription:
     additional_env = get_rmw_additional_env(rmw_implementation)
     set_env_actions = [SetEnvironmentVariable(k, v) for k, v in additional_env.items()]
+    # Build shutdown actions based on whether daemon is used
+    shutdown_actions: list[Action] = []
+    if use_daemon:
+        # Stop daemon in isolated environment with proper ROS_DOMAIN_ID
+        shutdown_actions = [
+            ExecuteProcess(
+                cmd=['ros2', 'daemon', 'stop'],
+                name='daemon-stop-isolated',
+                # Use the same isolated environment
+                additional_env=cast(dict, additional_env),
+            ),
+        ]
+    shutdown_actions.append(ResetEnvironment())
     if use_daemon:
         # Start daemon.
         fixture_actions = [ExecuteProcess(
@@ -50,6 +69,7 @@ def generate_sros2_cli_test_description(
     fixture_actions = [
         *set_env_actions,
         EnableRmwIsolation(),
+        RegisterEventHandler(OnShutdown(on_shutdown=shutdown_actions)),
         *fixture_actions,
     ]
     return LaunchDescription([
