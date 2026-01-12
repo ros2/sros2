@@ -2,6 +2,14 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.3 (2025-01-12)
+-------------------
+* Remove importlib (`#368 <https://github.com/ros2/sros2/issues/368>`_) (`#369 <https://github.com/ros2/sros2/issues/369>`_)
+* fix setuptools deprecations (`#357 <https://github.com/ros2/sros2/issues/357>`_) (`#363 <https://github.com/ros2/sros2/issues/363>`_)
+* update utilities to pass instance not class of ec.SECP256R1 (`#352 <https://github.com/ros2/sros2/issues/352>`_) (`#353 <https://github.com/ros2/sros2/issues/353>`_)
+* suppress multi-threaded warnings. (`#346 <https://github.com/ros2/sros2/issues/346>`_) (`#349 <https://github.com/ros2/sros2/issues/349>`_)
+* Contributors: mergify[bot]
+
 0.15.2 (2025-04-25)
 -------------------
 * Switch to get_rmw_additional_env (`#339 <https://github.com/ros2/sros2/issues/339>`_)
