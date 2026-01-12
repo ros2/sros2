@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.5 (2026-01-12)
+-------------------
+* fix setuptools deprecations (`#357 <https://github.com/ros2/sros2/issues/357>`_) (`#364 <https://github.com/ros2/sros2/issues/364>`_)
+* Contributors: mergify[bot]
+
 0.13.4 (2025-08-05)
 -------------------
 * suppress multi-threaded warnings. (`#346 <https://github.com/ros2/sros2/issues/346>`_) (`#350 <https://github.com/ros2/sros2/issues/350>`_)
