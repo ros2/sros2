@@ -2,6 +2,12 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.16.3 (2026-01-12)
+-------------------
+* Clean up isolated ros2 daemon process for tests. (`#375 <https://github.com/ros2/sros2/issues/375>`_)
+* Remove importlib (`#368 <https://github.com/ros2/sros2/issues/368>`_)
+* Contributors: Michael Carlstrom, Tomoya Fujita
+
 0.16.2 (2025-07-29)
 -------------------
 * Timezone aware datetimes + remove hack from `#209 <https://github.com/ros2/sros2/issues/209>`_ (`#300 <https://github.com/ros2/sros2/issues/300>`_)
