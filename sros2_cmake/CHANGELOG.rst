@@ -2,6 +2,9 @@
 Changelog for package sros2_cmake
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.4 (2026-01-19)
+-------------------
+
 0.15.3 (2025-01-12)
 -------------------
 * Update CMakeLists.txt (`#344 <https://github.com/ros2/sros2/issues/344>`_) (`#345 <https://github.com/ros2/sros2/issues/345>`_)

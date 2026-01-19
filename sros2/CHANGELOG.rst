@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.4 (2026-01-19)
+-------------------
+* kilted backports of rmw_test_fixture (`#376 <https://github.com/ros2/sros2/issues/376>`_)
+* Contributors: Tomoya Fujita
+
 0.15.3 (2025-01-12)
 -------------------
 * Remove importlib (`#368 <https://github.com/ros2/sros2/issues/368>`_) (`#369 <https://github.com/ros2/sros2/issues/369>`_)
