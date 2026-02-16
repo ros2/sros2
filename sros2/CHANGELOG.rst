@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.6 (2026-02-16)
+-------------------
+* python3-pytest-timeout is missing for test dependency. (`#377 <https://github.com/ros2/sros2/issues/377>`_) (`#379 <https://github.com/ros2/sros2/issues/379>`_)
+* Contributors: mergify[bot]
+
 0.13.5 (2026-01-12)
 -------------------
 * fix setuptools deprecations (`#357 <https://github.com/ros2/sros2/issues/357>`_) (`#364 <https://github.com/ros2/sros2/issues/364>`_)
