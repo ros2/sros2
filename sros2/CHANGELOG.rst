@@ -2,6 +2,11 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.16.4 (2026-02-16)
+-------------------
+* python3-pytest-timeout is missing for test dependency. (`#377 <https://github.com/ros2/sros2/issues/377>`_)
+* Contributors: Tomoya Fujita
+
 0.16.3 (2026-01-12)
 -------------------
 * Clean up isolated ros2 daemon process for tests. (`#375 <https://github.com/ros2/sros2/issues/375>`_)
