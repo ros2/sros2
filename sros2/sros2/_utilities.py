@@ -37,7 +37,6 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
         if dst.samefile(dst.parent.joinpath(src)):
             return
         os.remove(dst)
-    os.symlink(src, dst)
     if platform.system() == 'Windows':
         # Resolve the absolute path for the source file
         actual_src = dst.parent.joinpath(src).resolve()
