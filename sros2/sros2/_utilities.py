@@ -39,8 +39,7 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
         os.remove(dst)
     if platform.system() == 'Windows':
         # Resolve the absolute path for the source file
-        actual_src = dst.parent.joinpath(src).resolve()
-        
+        actual_src = dst.parent.joinpath(src).resolve() 
         try:
             # Create a hard link. To OpenSSL, this looks like a physical file.
             os.link(actual_src, dst)
