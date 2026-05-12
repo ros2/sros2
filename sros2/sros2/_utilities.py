@@ -16,6 +16,8 @@
 import datetime
 import os
 import pathlib
+import platform
+import shutil
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
@@ -35,7 +37,19 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
         if dst.samefile(dst.parent.joinpath(src)):
             return
         os.remove(dst)
-    os.symlink(src, dst)
+    if platform.system() == 'Windows':
+        # Resolve the absolute path for the source file
+        actual_src = dst.parent.joinpath(src).resolve()
+        try:
+            # Create a hard link. To OpenSSL, this looks like a physical file.
+            os.link(actual_src, dst)
+        except OSError:
+            # Failsafe: If the CI environment mounts enclaves on a different volume
+            # than the public keystore, hard links will fail. Fallback to copy.
+            shutil.copy2(actual_src, dst)
+    else:
+        # Retain standard, lightweight symlink behavior for Unix/macOS
+        os.symlink(src, dst)
 
 
 def domain_id() -> str:
