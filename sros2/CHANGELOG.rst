@@ -2,8 +2,8 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.16.6 (2026-05-12)
+-------------------
 * Fix `load_file_into_BIO: File could not be found, opened or is empty` error on Windows (`#386 <https://github.com/ros2/sros2/issues/386>`_) (`#387 <https://github.com/ros2/sros2/issues/387>`_)
 * Contributors: mergify[bot]
 
