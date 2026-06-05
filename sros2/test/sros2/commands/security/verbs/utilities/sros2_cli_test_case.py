@@ -148,3 +148,16 @@ class SROS2CLITestCase(unittest.TestCase):
                         time.sleep(0.1)  # this sleep time is arbitrary
                     return False
             cls.wait_for = wait_for
+
+    @classmethod
+    def tearDownClass(cls):
+        # Safely shut down any daemon spawned during NodeStrategy usage
+        try:
+            from ros2cli.node.daemon import is_daemon_running
+            from ros2cli.node.daemon import shutdown_daemon
+            import argparse
+            args = argparse.Namespace()
+            if is_daemon_running(args):
+                shutdown_daemon(args, timeout=5.0)
+        except Exception:
+            pass
