@@ -44,12 +44,20 @@ jobs:
       uses: codecov/codecov-action@v6
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/rolling')
+      # Skip when CODECOV_TOKEN is unavailable (Dependabot PRs and PRs from forks
+      # do not receive Actions secrets), otherwise the upload fails with
+      # "Token required because branch is protected".
+      if: >-
+        env.CODECOV_TOKEN != '' &&
+        ((github.event_name == 'push' && github.ref == 'refs/heads/rolling') ||
+         (github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository))
       with:
         files: ros_ws/build/sros2/coverage.xml
         flags: unittests
         name: sros2-coverage
-        fail_ci_if_error: true
+        # Don't fail the whole CI run on transient Codecov outages.
+        fail_ci_if_error: false
         codecov_yml_path: codecov.yml
     - name: Upload Logs
       uses: actions/upload-artifact@v7
