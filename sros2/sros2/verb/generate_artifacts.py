@@ -37,7 +37,7 @@ class GenerateArtifactsVerb(VerbExtension):
             '-p', '--policy-files', nargs='*', type=pathlib.Path, default=[],
             help='list of policy xml file paths')
         arg.completer = FilesCompleter(
-            allowednames=('xml'), directories=False)
+            allowednames=('xml',), directories=False)
 
     def main(self, *, args) -> int:
         try:

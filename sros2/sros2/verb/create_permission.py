@@ -32,7 +32,7 @@ class CreatePermissionVerb(VerbExtension):
         arg = parser.add_argument(
             'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
         arg.completer = FilesCompleter(
-            allowednames=('xml'), directories=False)
+            allowednames=('xml',), directories=False)
 
     def main(self, *, args) -> int:
         try:

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 import pathlib
 import sys
+from typing import NamedTuple
 
 from argcomplete.completers import FilesCompleter
 
@@ -34,8 +34,17 @@ from sros2.verb import VerbExtension
 
 _HIDDEN_NODE_PREFIX = '_'
 
-_NodeName = namedtuple('_NodeName', ('node', 'ns', 'fqn', 'path'))
-_TopicInfo = namedtuple('_TopicInfo', ('fqn', 'type'))
+
+class _NodeName(NamedTuple):
+    node: str
+    ns: str
+    fqn: str
+    path: str
+
+
+class _TopicInfo(NamedTuple):
+    fqn: str
+    types: str
 
 
 class GeneratePolicyVerb(VerbExtension):
@@ -45,7 +54,7 @@ class GeneratePolicyVerb(VerbExtension):
         arg = parser.add_argument(
             'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
         arg.completer = FilesCompleter(
-            allowednames=('xml'), directories=False)
+            allowednames=('xml',), directories=False)
         add_strategy_node_arguments(parser)
 
     def get_policy(self, policy_file_path: pathlib.Path):
@@ -157,7 +166,7 @@ def _get_topics(node_name, func):
     return [
         _TopicInfo(
             fqn=t[0],
-            type=t[1])
+            types=t[1])
         for t in names_and_types]
 
 

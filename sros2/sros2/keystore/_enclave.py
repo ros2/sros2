@@ -15,10 +15,8 @@
 
 import os
 import pathlib
-from typing import Set
 
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives import serialization
 
 from rclpy.exceptions import InvalidNamespaceException
@@ -41,7 +39,7 @@ def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
 
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
-    os.makedirs(key_dir, exist_ok=True)
+    key_dir.mkdir(parents=True, exist_ok=True)
 
     # symlink the CA cert in there
     public_certs = ['identity_ca.cert.pem', 'permissions_ca.cert.pem']
@@ -101,12 +99,12 @@ def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
     )
 
 
-def get_enclaves(keystore_path: pathlib.Path) -> Set[str]:
+def get_enclaves(keystore_path: pathlib.Path) -> set[str]:
     if not _keystore.is_valid_keystore(keystore_path):
         raise sros2.errors.InvalidKeystoreError(keystore_path)
 
     enclaves_path = _keystore.get_keystore_enclaves_dir(keystore_path)
-    enclaves: Set[str] = set()
+    enclaves: set[str] = set()
     if enclaves_path.is_dir():
         key_file_paths = enclaves_path.glob('**/key.pem')
 
@@ -136,8 +134,7 @@ def _create_key_and_cert(
     # Load the CA cert and key from disk
     ca_cert = _utilities.load_cert(keystore_ca_cert_path)
 
-    with open(keystore_ca_key_path, 'rb') as f:
-        ca_key = serialization.load_pem_private_key(f.read(), None, cryptography_backend())
+    ca_key = serialization.load_pem_private_key(keystore_ca_key_path.read_bytes(), None)
 
     cert, private_key = _utilities.build_key_and_cert(
         x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, identity)]),

@@ -108,7 +108,7 @@ def get_keystore_private_dir(keystore_path: pathlib.Path) -> pathlib.Path:
     return keystore_path.joinpath(_KS_PRIVATE)
 
 
-def _create_ca_key_cert(ca_key_out_path, ca_cert_out_path):
+def _create_ca_key_cert(ca_key_out_path: pathlib.Path, ca_cert_out_path: pathlib.Path):
     cert, private_key = _utilities.build_key_and_cert(
         x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)]),
         ca=True)
@@ -136,5 +136,4 @@ def _create_governance_file(path: pathlib.Path, domain_id: str):
     except lxml.etree.DocumentInvalid as e:
         raise sros2.errors.InvalidGovernanceXMLError(e) from e
 
-    with open(path, 'wb') as f:
-        f.write(lxml.etree.tostring(governance_xml, pretty_print=True))
+    path.write_bytes(lxml.etree.tostring(governance_xml, pretty_print=True))
