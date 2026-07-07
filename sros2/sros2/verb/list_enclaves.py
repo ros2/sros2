@@ -37,5 +37,5 @@ class ListEnclavesVerb(VerbExtension):
                     print(enclave)
             return 0
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to list enclaves: {str(e)}', file=sys.stderr)
+            print(f'Unable to list enclaves: {e}', file=sys.stderr)
         return 1

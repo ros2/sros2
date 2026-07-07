@@ -33,6 +33,6 @@ class CreateEnclaveVerb(VerbExtension):
         try:
             sros2.keystore.create_enclave(args.ROOT, args.NAME)
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to create enclave: {str(e)}', file=sys.stderr)
+            print(f'Unable to create enclave: {e}', file=sys.stderr)
             return 1
         return 0

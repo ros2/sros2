@@ -33,6 +33,6 @@ class CreateKeystoreVerb(VerbExtension):
         try:
             sros2.keystore.create_keystore(args.ROOT)
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to create keystore: {str(e)}', file=sys.stderr)
+            print(f'Unable to create keystore: {e}', file=sys.stderr)
             return 1
         return 0

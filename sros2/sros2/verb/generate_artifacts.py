@@ -44,6 +44,6 @@ class GenerateArtifactsVerb(VerbExtension):
             _artifact_generation.generate_artifacts(
                 args.keystore_root_path, args.enclaves, args.policy_files)
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to generate artifacts: {str(e)}', file=sys.stderr)
+            print(f'Unable to generate artifacts: {e}', file=sys.stderr)
             return 1
         return 0
