@@ -30,7 +30,7 @@ _DOMAIN_ID_ENV = 'ROS_DOMAIN_ID'
 _KEYSTORE_DIR_ENV = 'ROS_SECURITY_KEYSTORE'
 
 
-def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
+def create_symlink(*, src: pathlib.Path, dst: pathlib.Path) -> None:
     if dst.exists():
         # Don't do more work than we need to
         if dst.samefile(dst.parent.joinpath(src)):
@@ -80,7 +80,9 @@ def create_smime_signed_file(
     signed_file_path.write_bytes(_sign_bytes(cert, private_key, content))
 
 
-def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
+def build_key_and_cert(
+    subject_name: x509.Name, *, ca: bool = False, ca_key=None, issuer_name=''
+) -> tuple[x509.Certificate, ec.EllipticCurvePrivateKey]:
     if not issuer_name:
         issuer_name = subject_name
 
@@ -135,11 +137,11 @@ def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding
     cert_path.write_bytes(cert.public_bytes(encoding=encoding))
 
 
-def load_cert(cert_path: pathlib.Path):
+def load_cert(cert_path: pathlib.Path) -> x509.Certificate:
     return x509.load_pem_x509_certificate(cert_path.read_bytes())
 
 
-def _sign_bytes_pkcs7(cert, key, byte_string):
+def _sign_bytes_pkcs7(cert, key, byte_string: bytes) -> bytes:
     from cryptography.hazmat.primitives.serialization import pkcs7
 
     builder = (
@@ -151,7 +153,7 @@ def _sign_bytes_pkcs7(cert, key, byte_string):
     return builder.sign(serialization.Encoding.SMIME, options)
 
 
-def _sign_bytes_ssl_binding(cert, key, byte_string):
+def _sign_bytes_ssl_binding(cert, key, byte_string: bytes) -> bytes:
     from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
 
     # Using two flags here to get the output required:
@@ -192,7 +194,7 @@ def _sign_bytes_ssl_binding(cert, key, byte_string):
     return output
 
 
-def _sign_bytes(cert, key, byte_string):
+def _sign_bytes(cert, key, byte_string: bytes) -> bytes:
     try:
         return _sign_bytes_pkcs7(cert, key, byte_string)
     except ImportError:

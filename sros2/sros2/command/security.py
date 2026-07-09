@@ -19,13 +19,13 @@ from ros2cli.command import CommandExtension
 class SecurityCommand(CommandExtension):
     """Various security related sub-commands."""
 
-    def add_arguments(self, parser, cli_name, *, argv=None):
+    def add_arguments(self, parser, cli_name, *, argv=None) -> None:
         self._subparser = parser
         # get verb extensions and let them add their arguments
         add_subparsers_on_demand(
             parser, cli_name, '_verb', 'sros2.verb', required=False, argv=argv)
 
-    def main(self, *, parser, args):
+    def main(self, *, parser, args) -> int:
         if not hasattr(args, '_verb'):
             # in case no verb was passed
             self._subparser.print_help()

@@ -67,7 +67,7 @@ class GeneratePolicyVerb(VerbExtension):
             policy.append(enclaves)
             return policy
 
-    def get_profile(self, policy, node_name):
+    def get_profile(self, policy, node_name: _NodeName) -> etree.Element:
         enclave = policy.find(
             path=f'enclaves/enclave[@path="{node_name.path}"]')
         if enclave is None:
@@ -87,7 +87,9 @@ class GeneratePolicyVerb(VerbExtension):
             profiles.append(profile)
         return profile
 
-    def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
+    def get_permissions(
+            self, profile, permission_type: str, rule_type: str,
+            rule_qualifier: str) -> etree.Element:
         permissions = profile.find(
             path=f'{permission_type}s[@{rule_type}="{rule_qualifier}"]')
         if permissions is None:
@@ -97,7 +99,8 @@ class GeneratePolicyVerb(VerbExtension):
         return permissions
 
     def add_permission(
-            self, profile, permission_type, rule_type, rule_qualifier, expressions, node_name):
+            self, profile, permission_type: str, rule_type: str, rule_qualifier: str,
+            expressions: list[_TopicInfo], node_name: _NodeName) -> None:
         permissions = self.get_permissions(profile, permission_type, rule_type, rule_qualifier)
         for expression in expressions:
             permission = etree.Element(permission_type)
@@ -145,7 +148,7 @@ class GeneratePolicyVerb(VerbExtension):
         return 0
 
 
-def _get_node_names(*, node, include_hidden_nodes=False):
+def _get_node_names(*, node, include_hidden_nodes: bool = False) -> list[_NodeName]:
     node_names_and_namespaces_with_enclaves = node.get_node_names_and_namespaces_with_enclaves()
     return [
         _NodeName(
@@ -161,7 +164,7 @@ def _get_node_names(*, node, include_hidden_nodes=False):
     ]
 
 
-def _get_topics(node_name, func):
+def _get_topics(node_name: _NodeName, func) -> list[_TopicInfo]:
     names_and_types = func(node_name.node, node_name.ns)
     return [
         _TopicInfo(
@@ -170,17 +173,17 @@ def _get_topics(node_name, func):
         for t in names_and_types]
 
 
-def _get_subscriber_info(node, node_name):
+def _get_subscriber_info(node, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_subscriber_names_and_types_by_node)
 
 
-def _get_publisher_info(node, node_name):
+def _get_publisher_info(node, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_publisher_names_and_types_by_node)
 
 
-def _get_service_info(node, node_name):
+def _get_service_info(node, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
-def _get_client_info(node, node_name):
+def _get_client_info(node, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_client_names_and_types_by_node)

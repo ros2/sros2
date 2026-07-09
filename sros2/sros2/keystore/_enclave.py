@@ -130,7 +130,7 @@ def _create_key_and_cert(
         keystore_ca_key_path: pathlib.Path,
         identity: str,
         cert_path: pathlib.Path,
-        key_path: pathlib.Path):
+        key_path: pathlib.Path) -> None:
     # Load the CA cert and key from disk
     ca_cert = _utilities.load_cert(keystore_ca_cert_path)
 
