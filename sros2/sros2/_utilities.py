@@ -20,7 +20,6 @@ import platform
 import shutil
 
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend as cryptography_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -36,7 +35,7 @@ def create_symlink(*, src: pathlib.Path, dst: pathlib.Path):
         # Don't do more work than we need to
         if dst.samefile(dst.parent.joinpath(src)):
             return
-        os.remove(dst)
+        dst.unlink()
     if platform.system() == 'Windows':
         # Resolve the absolute path for the source file
         actual_src = dst.parent.joinpath(src).resolve()
@@ -63,21 +62,22 @@ def get_keystore_path_from_env() -> pathlib.Path:
     return pathlib.Path(root_keystore_path)
 
 
-def create_smime_signed_file(cert_path, key_path, unsigned_file_path, signed_file_path):
+def create_smime_signed_file(
+    cert_path: pathlib.Path,
+    key_path: pathlib.Path,
+    unsigned_file_path: pathlib.Path,
+    signed_file_path: pathlib.Path,
+) -> None:
     # Load the CA cert and key from disk
     cert = load_cert(cert_path)
 
-    with open(key_path, 'rb') as key_file:
-        private_key = serialization.load_pem_private_key(
-            key_file.read(), None, cryptography_backend())
+    private_key = serialization.load_pem_private_key(key_path.read_bytes(), None)
 
     # Get the contents of the unsigned file, which we're about to sign
-    with open(unsigned_file_path, 'rb') as f:
-        content = f.read()
+    content = unsigned_file_path.read_bytes()
 
     # Sign the contents, and write the result to the appropriate place
-    with open(signed_file_path, 'wb') as f:
-        f.write(_sign_bytes(cert, private_key, content))
+    signed_file_path.write_bytes(_sign_bytes(cert, private_key, content))
 
 
 def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
@@ -85,7 +85,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         issuer_name = subject_name
 
     # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
-    private_key = ec.generate_private_key(ec.SECP256R1(), cryptography_backend())
+    private_key = ec.generate_private_key(ec.SECP256R1())
     if not ca_key:
         ca_key = private_key
 
@@ -112,7 +112,7 @@ def build_key_and_cert(subject_name, *, ca=False, ca_key=None, issuer_name=''):
         ).add_extension(
             extension, critical=ca
         )
-    cert = builder.sign(ca_key, hashes.SHA256(), cryptography_backend())
+    cert = builder.sign(ca_key, hashes.SHA256())
 
     return (cert, private_key)
 
@@ -124,23 +124,19 @@ def write_key(
     encoding=serialization.Encoding.PEM,
     serialization_format=serialization.PrivateFormat.PKCS8,
     encryption_algorithm=serialization.NoEncryption()
-):
-    with open(key_path, 'wb') as f:
-        f.write(key.private_bytes(
-            encoding=encoding,
-            format=serialization_format,
-            encryption_algorithm=encryption_algorithm))
+) -> None:
+    key_path.write_bytes(key.private_bytes(
+        encoding=encoding,
+        format=serialization_format,
+        encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding.PEM):
-    with open(cert_path, 'wb') as f:
-        f.write(cert.public_bytes(encoding=encoding))
+def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding.PEM) -> None:
+    cert_path.write_bytes(cert.public_bytes(encoding=encoding))
 
 
 def load_cert(cert_path: pathlib.Path):
-    with open(cert_path, 'rb') as cert_file:
-        return x509.load_pem_x509_certificate(
-            cert_file.read(), cryptography_backend())
+    return x509.load_pem_x509_certificate(cert_path.read_bytes())
 
 
 def _sign_bytes_pkcs7(cert, key, byte_string):

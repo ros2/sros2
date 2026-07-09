@@ -30,7 +30,7 @@ class InvalidKeystoreError(KeystoreError):
 
     def __init__(self, path: pathlib.Path):
         self.path = path
-        super().__init__(f"'{str(path)}' is not a valid keystore")
+        super().__init__(f"'{path}' is not a valid keystore")
 
 
 class KeystoreExistsError(KeystoreError):
@@ -38,7 +38,7 @@ class KeystoreExistsError(KeystoreError):
 
     def __init__(self, path: pathlib.Path):
         self.path = path
-        super().__init__(f"keystore '{str(path)}' already exists")
+        super().__init__(f"keystore '{path}' already exists")
 
 
 class EnclaveError(SROS2Error):
@@ -62,7 +62,7 @@ class InvalidGovernanceXMLError(XmlError):
 
     def __init__(self, error: lxml.etree.DocumentInvalid):
         self.error = error
-        super().__init__(f'invalid governance XML: {str(error)}')
+        super().__init__(f'invalid governance XML: {error}')
 
 
 class InvalidPermissionsXMLError(XmlError):
@@ -70,7 +70,7 @@ class InvalidPermissionsXMLError(XmlError):
 
     def __init__(self, error: lxml.etree.DocumentInvalid):
         self.error = error
-        super().__init__(f'invalid permissions XML: {str(error)}')
+        super().__init__(f'invalid permissions XML: {error}')
 
 
 class SROS2EnvironmentError(SROS2Error):

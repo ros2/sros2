@@ -32,12 +32,12 @@ class CreatePermissionVerb(VerbExtension):
         arg = parser.add_argument(
             'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
         arg.completer = FilesCompleter(
-            allowednames=('xml'), directories=False)
+            allowednames=('xml',), directories=False)
 
     def main(self, *, args) -> int:
         try:
             sros2.keystore.create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
         except sros2.errors.SROS2Error as e:
-            print(f'Unable to create permission: {str(e)}', file=sys.stderr)
+            print(f'Unable to create permission: {e}', file=sys.stderr)
             return 1
         return 0

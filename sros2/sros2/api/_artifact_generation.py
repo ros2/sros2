@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pathlib
-from typing import List, Optional
 
 from sros2 import _utilities, keystore
 from sros2.policy import load_policy
@@ -22,16 +21,14 @@ from . import _policy
 
 
 def generate_artifacts(
-    keystore_path: Optional[pathlib.Path],
-    identity_names: List[str],
-    policy_files: List[pathlib.Path]
+    keystore_path: pathlib.Path | None,
+    identity_names: list[str],
+    policy_files: list[pathlib.Path]
 ) -> None:
     if keystore_path is None:
         keystore_path = _utilities.get_keystore_path_from_env()
-        if keystore_path is None:
-            return
     if not keystore.is_valid_keystore(keystore_path):
-        print('%s is not a valid keystore, creating new keystore' % keystore_path)
+        print(f'{keystore_path} is not a valid keystore, creating new keystore')
         keystore.create_keystore(keystore_path)
 
     # Create enclaves for all provided identities

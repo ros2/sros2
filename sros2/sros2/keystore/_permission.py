@@ -53,11 +53,11 @@ def create_permissions_from_policy_element(
     permissions_path = key_dir.joinpath('permissions.xml')
     create_permission_file(permissions_path, _utilities.domain_id(), policy_element)
 
-    signed_permissions_path = os.path.join(key_dir, 'permissions.p7s')
-    keystore_permissions_ca_cert_path = os.path.join(
-        _keystore.get_keystore_public_dir(keystore_path), 'permissions_ca.cert.pem')
-    keystore_permissions_ca_key_path = os.path.join(
-        _keystore.get_keystore_private_dir(keystore_path), 'permissions_ca.key.pem')
+    signed_permissions_path = key_dir.joinpath('permissions.p7s')
+    keystore_permissions_ca_cert_path = _keystore.get_keystore_public_dir(
+        keystore_path).joinpath('permissions_ca.cert.pem')
+    keystore_permissions_ca_key_path = _keystore.get_keystore_private_dir(
+        keystore_path).joinpath('permissions_ca.key.pem')
     _utilities.create_smime_signed_file(
         keystore_permissions_ca_cert_path,
         keystore_permissions_ca_key_path,
@@ -66,7 +66,8 @@ def create_permissions_from_policy_element(
     )
 
 
-def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> None:
+def create_permission_file(
+        path: pathlib.Path, domain_id: str, policy_element: etree.Element) -> None:
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(str(permissions_xsl_path)))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
@@ -110,5 +111,4 @@ def create_permission_file(path: pathlib.Path, domain_id, policy_element) -> Non
     except etree.DocumentInvalid as e:
         raise sros2.errors.InvalidPermissionsXMLError(e) from e
 
-    with open(path, 'wb') as f:
-        f.write(etree.tostring(permissions_xml, pretty_print=True))
+    path.write_bytes(etree.tostring(permissions_xml, pretty_print=True))
