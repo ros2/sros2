@@ -39,8 +39,12 @@ def generate_artifacts(
         # than RuntimeError and it should be caught here
         policy_tree = load_policy(policy_file)
         enclaves_element = policy_tree.find('enclaves')
+        if enclaves_element is None:
+            raise RuntimeError(f"policy file '{policy_file}' has no 'enclaves' element")
         for enclave in enclaves_element:
             identity_name = enclave.get('path')
+            if identity_name is None:
+                continue
             if identity_name not in identity_names:
                 keystore.create_enclave(keystore_path, identity_name)
             policy_element = _policy.get_policy_from_tree(identity_name, policy_tree)

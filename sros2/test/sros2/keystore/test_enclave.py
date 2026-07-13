@@ -25,7 +25,7 @@ from sros2.errors import (
 from sros2.keystore import _enclave
 
 
-def test_is_key_name_valid():
+def test_is_key_name_valid() -> None:
     # Valid cases
     assert _enclave._is_enclave_name_valid('/foo')
     assert _enclave._is_enclave_name_valid('/foo/bar')
@@ -42,7 +42,7 @@ def test_is_key_name_valid():
 
 
 @pytest.fixture()
-def keystore_dir(tmp_path_factory) -> Path:
+def keystore_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # Create the keystore
@@ -52,7 +52,7 @@ def keystore_dir(tmp_path_factory) -> Path:
     return keystore_dir
 
 
-def test_create_enclave_invalid_arguments(keystore_dir):
+def test_create_enclave_invalid_arguments(keystore_dir: Path) -> None:
     with pytest.raises(InvalidKeystoreError):
         _enclave.create_enclave(Path('foo/bar'), '/baz/foobar')
     with pytest.raises(InvalidKeystoreError):

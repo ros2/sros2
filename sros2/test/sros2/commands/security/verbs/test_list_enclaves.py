@@ -16,45 +16,47 @@ import os
 import pathlib
 import tempfile
 
+import pytest
+
 from ros2cli import cli
 
 import sros2.keystore
 
 
-def test_list_enclaves(capsys):
+def test_list_enclaves(capsys: pytest.CaptureFixture[str]) -> None:
     enclave_names = ['/test_enclave', '/test/nested_enclave', '/sky/is/the/limit']
     with tempfile.TemporaryDirectory() as keystore_dir:
-        keystore_dir = pathlib.Path(keystore_dir)
+        keystore_path = pathlib.Path(keystore_dir)
 
         with capsys.disabled():
             # First, create the keystore
-            sros2.keystore.create_keystore(keystore_dir)
-            assert keystore_dir.is_dir()
+            sros2.keystore.create_keystore(keystore_path)
+            assert keystore_path.is_dir()
 
             # Now using that keystore, create an enclave
             for enclave_name in enclave_names:
-                sros2.keystore.create_enclave(keystore_dir, enclave_name)
+                sros2.keystore.create_enclave(keystore_path, enclave_name)
 
         # Now verify that the enclave we just created is included in the list
-        assert cli.main(argv=['security', 'list_enclaves', str(keystore_dir)]) == 0
+        assert cli.main(argv=['security', 'list_enclaves', str(keystore_path)]) == 0
         assert capsys.readouterr().out.strip() == '\n'.join(sorted(enclave_names))
 
 
-def test_list_enclaves_no_keys(capsys):
+def test_list_enclaves_no_keys(capsys: pytest.CaptureFixture[str]) -> None:
     with tempfile.TemporaryDirectory() as keystore_dir:
-        keystore_dir = pathlib.Path(keystore_dir)
+        keystore_path = pathlib.Path(keystore_dir)
 
         with capsys.disabled():
             # First, create the keystore
-            sros2.keystore.create_keystore(keystore_dir)
-            assert keystore_dir.is_dir()
+            sros2.keystore.create_keystore(keystore_path)
+            assert keystore_path.is_dir()
 
         # Now verify that empty keystore we just created contains no enclaves
-        assert cli.main(argv=['security', 'list_enclaves', str(keystore_dir)]) == 0
+        assert cli.main(argv=['security', 'list_enclaves', str(keystore_path)]) == 0
         assert len(capsys.readouterr().out.strip()) == 0
 
 
-def test_list_enclaves_uninitialized_keystore(capsys):
+def test_list_enclaves_uninitialized_keystore(capsys: pytest.CaptureFixture[str]) -> None:
     with tempfile.TemporaryDirectory() as keystore_dir:
         # Verify that list_enclaves properly handles an uninitialized keystore
         assert cli.main(argv=['security', 'list_enclaves', keystore_dir]) == 1
@@ -62,7 +64,7 @@ def test_list_enclaves_uninitialized_keystore(capsys):
                 f"Unable to list enclaves: '{keystore_dir}' is not a valid keystore")
 
 
-def test_list_enclaves_no_keystore(capsys):
+def test_list_enclaves_no_keystore(capsys: pytest.CaptureFixture[str]) -> None:
     # Verify that list_enclaves properly handles a non-existent keystore
     keystore = os.path.join(tempfile.gettempdir(), 'non-existent')
     assert cli.main(argv=['security', 'list_enclaves', keystore]) == 1

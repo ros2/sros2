@@ -47,7 +47,7 @@ def create_permission(
 def create_permissions_from_policy_element(
         keystore_path: pathlib.Path,
         identity: str,
-        policy_element: etree.Element) -> None:
+        policy_element: etree._Element) -> None:
     relative_path = os.path.normpath(identity.lstrip('/'))
     key_dir = _keystore.get_keystore_enclaves_dir(keystore_path).joinpath(relative_path)
     permissions_path = key_dir.joinpath('permissions.xml')
@@ -67,7 +67,7 @@ def create_permissions_from_policy_element(
 
 
 def create_permission_file(
-        path: pathlib.Path, domain_id: str, policy_element: etree.Element) -> None:
+        path: pathlib.Path, domain_id: str, policy_element: etree._Element) -> None:
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')
     permissions_xsl = etree.XSLT(etree.parse(str(permissions_xsl_path)))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
@@ -100,7 +100,9 @@ def create_permission_file(
 
     if get_rmw_implementation_identifier() in _RMW_WITH_ROS_GRAPH_INFO_TOPIC:
         kwargs['allow_ros_discovery_topic'] = etree.XSLT.strparam('1')
-    permissions_xml = permissions_xsl(policy_element, **kwargs)
+    # The XSLT stub declares a positional 'profile_run: bool' before **kwargs, so
+    # unpacking our string-valued kwargs is (incorrectly) matched against it.
+    permissions_xml = permissions_xsl(policy_element, **kwargs)  # type: ignore[arg-type]
 
     domain_id_elements = permissions_xml.findall('permissions/grant/*/domains/id')
     for domain_id_element in domain_id_elements:

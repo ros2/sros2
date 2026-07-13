@@ -23,7 +23,7 @@ from sros2.policy import (
 )
 
 
-def test_policy_to_permissions():
+def test_policy_to_permissions() -> None:
     # Get paths
     policy_xsd_path = get_policy_schema('policy.xsd')
     permissions_xsl_path = get_transport_template('dds', 'permissions.xsl')

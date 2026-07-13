@@ -20,6 +20,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
 
 from lxml import etree
 
@@ -34,7 +35,7 @@ from sros2.policy import get_transport_schema
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def enclave_keys_dir(tmp_path_factory) -> Path:
+def enclave_keys_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # First, create the keystore
@@ -51,41 +52,47 @@ def enclave_keys_dir(tmp_path_factory) -> Path:
     return enclave_dir
 
 
-def load_csr(path):
+def load_csr(path: Path) -> x509.CertificateSigningRequest:
     with open(path, 'rb') as f:
         pem_data = f.read()
     return x509.load_pem_x509_csr(pem_data, default_backend())
 
 
-def load_private_key(path):
+def load_private_key(path: Path) -> PrivateKeyTypes:
     with open(path, 'rb') as f:
         pem_data = f.read()
     return serialization.load_pem_private_key(pem_data, password=None, backend=default_backend())
 
 
-def check_common_name(entity, expected_value):
+def check_common_name(entity: x509.Name, expected_value: str) -> None:
     names = entity.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
     assert len(names) == 1
     assert names[0].value == expected_value
 
 
-def _datetimes_are_close(actual, expected):
+def _datetimes_are_close(
+    actual: datetime.datetime, expected: datetime.datetime
+) -> bool:
     # We can't check exact times, but an hour's resolution is fine for testing purposes
     return actual <= expected and actual >= (expected - datetime.timedelta(hours=1))
 
 
-def verify_signature(cert, signatory):
+def verify_signature(cert: x509.Certificate, signatory: x509.Certificate) -> bool:
     try:
-        signatory.public_key().verify(
+        public_key = signatory.public_key()
+        assert isinstance(public_key, ec.EllipticCurvePublicKey)
+        hash_algorithm = cert.signature_hash_algorithm
+        assert hash_algorithm is not None
+        public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
-            ec.ECDSA(cert.signature_hash_algorithm))
+            ec.ECDSA(hash_algorithm))
     except cryptography.exceptions.InvalidSignature:
         return False
     return True
 
 
-def test_create_enclave(enclave_keys_dir):
+def test_create_enclave(enclave_keys_dir: Path) -> None:
     expected_files = (
         'cert.pem', 'governance.p7s', 'identity_ca.cert.pem', 'key.pem', 'permissions.p7s',
         'permissions.xml', 'permissions_ca.cert.pem'
@@ -96,7 +103,7 @@ def test_create_enclave(enclave_keys_dir):
         assert (enclave_keys_dir / expected_file).is_file()
 
 
-def test_create_enclave_twice(tmp_path):
+def test_create_enclave_twice(tmp_path: Path) -> None:
     # First, create the keystore
     sros2.keystore.create_keystore(tmp_path)
     assert tmp_path.is_dir()
@@ -113,7 +120,7 @@ def test_create_enclave_twice(tmp_path):
         argv=['security', 'create_enclave', str(keystore_dir), '/test_enclave']) == 0
 
 
-def test_cert_pem(enclave_keys_dir):
+def test_cert_pem(enclave_keys_dir: Path) -> None:
     cert = _utilities.load_cert(enclave_keys_dir / 'cert.pem')
     check_common_name(cert.subject, u'/test_enclave')
     check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
@@ -161,7 +168,7 @@ def test_cert_pem(enclave_keys_dir):
     assert verify_signature(cert, signatory)
 
 
-def test_governance_p7s(enclave_keys_dir):
+def test_governance_p7s(enclave_keys_dir: Path) -> None:
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
     with open(enclave_keys_dir / 'governance.p7s') as f:
@@ -171,13 +178,13 @@ def test_governance_p7s(enclave_keys_dir):
             'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
 
 
-def test_identity_ca_cert_pem(enclave_keys_dir):
+def test_identity_ca_cert_pem(enclave_keys_dir: Path) -> None:
     cert = _utilities.load_cert(enclave_keys_dir / 'identity_ca.cert.pem')
     check_common_name(cert.subject, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
 
 
-def test_key_pem(enclave_keys_dir):
+def test_key_pem(enclave_keys_dir: Path) -> None:
     private_key = load_private_key(enclave_keys_dir / 'key.pem')
     assert isinstance(private_key, ec.EllipticCurvePrivateKey)
     assert private_key.key_size == 256
@@ -187,7 +194,7 @@ def test_key_pem(enclave_keys_dir):
     assert public_key.key_size == 256
 
 
-def test_permissions_p7s(enclave_keys_dir):
+def test_permissions_p7s(enclave_keys_dir: Path) -> None:
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
     with open(enclave_keys_dir / 'permissions.p7s') as f:
@@ -197,14 +204,14 @@ def test_permissions_p7s(enclave_keys_dir):
             'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
 
 
-def test_permissions_xml(enclave_keys_dir):
+def test_permissions_xml(enclave_keys_dir: Path) -> None:
     permissions_xml = etree.parse(str(enclave_keys_dir / 'permissions.xml'))
     permissions_xsd_path = get_transport_schema('dds', 'permissions.xsd')
     permissions_xsd = etree.XMLSchema(etree.parse(str(permissions_xsd_path)))
     permissions_xsd.assertValid(permissions_xml)
 
 
-def test_permissions_ca_cert_pem(enclave_keys_dir):
+def test_permissions_ca_cert_pem(enclave_keys_dir: Path) -> None:
     cert = _utilities.load_cert(enclave_keys_dir / 'permissions_ca.cert.pem')
     check_common_name(cert.subject, sros2.keystore._keystore._DEFAULT_COMMON_NAME)
     check_common_name(cert.issuer, sros2.keystore._keystore._DEFAULT_COMMON_NAME)

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Optional
+
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
@@ -21,20 +23,20 @@ import test_msgs.srv
 
 class ClientServiceNode(Node):
 
-    def __init__(self, name='client_srv_node'):
+    def __init__(self, name: str = 'client_srv_node') -> None:
         super().__init__(name)
         self.client = self.create_client(test_msgs.srv.Empty, '~/client')
         self.service = self.create_service(
             test_msgs.srv.Empty, '~/server', lambda request, response: response
         )
 
-    def destroy_node(self):
+    def destroy_node(self) -> None:
         self.client.destroy()
         self.service.destroy()
         super().destroy_node()
 
 
-def main(args=None):
+def main(args: Optional[List[str]] = None) -> None:
     try:
         with rclpy.init(args=args):
             node = ClientServiceNode()

@@ -13,18 +13,19 @@
 # limitations under the License.
 
 from copy import deepcopy
+import pathlib
 
 from lxml import etree
 
 from sros2.policy import load_policy
 
 
-def get_policy(name, policy_file_path):
+def get_policy(name: str, policy_file_path: pathlib.Path) -> etree._Element:
     policy_tree = load_policy(policy_file_path)
     return get_policy_from_tree(name, policy_tree)
 
 
-def get_policy_from_tree(name, policy_tree):
+def get_policy_from_tree(name: str, policy_tree: etree._ElementTree) -> etree._Element:
     enclave_element = policy_tree.find(
         path=f'enclaves/enclave[@path="{name}"]')
     if enclave_element is None:

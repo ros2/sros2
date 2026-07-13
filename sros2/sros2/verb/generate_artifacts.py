@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import pathlib
 import sys
 
@@ -26,20 +27,20 @@ from sros2.verb import VerbExtension
 class GenerateArtifactsVerb(VerbExtension):
     """Generate keys and permission files from a list of identities and policy files."""
 
-    def add_arguments(self, parser, cli_name) -> None:
+    def add_arguments(self, parser: argparse.ArgumentParser, cli_name: str) -> None:
         arg = parser.add_argument(
             '-k', '--keystore-root-path', type=pathlib.Path, help='root path of keystore')
-        arg.completer = DirectoriesCompleter()
+        arg.completer = DirectoriesCompleter()  # type: ignore[attr-defined]
         parser.add_argument(
             '-e', '--enclaves', nargs='*', default=[],
             help='list of identities, aka ROS security enclave names')
         arg = parser.add_argument(
             '-p', '--policy-files', nargs='*', type=pathlib.Path, default=[],
             help='list of policy xml file paths')
-        arg.completer = FilesCompleter(
+        arg.completer = FilesCompleter(  # type: ignore[attr-defined]
             allowednames=('xml',), directories=False)
 
-    def main(self, *, args) -> int:
+    def main(self, *, args: argparse.Namespace) -> int:
         try:
             _artifact_generation.generate_artifacts(
                 args.keystore_root_path, args.enclaves, args.policy_files)

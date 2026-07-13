@@ -81,6 +81,8 @@ def create_enclave(keystore_path: pathlib.Path, identity: str) -> None:
     policy_file_path = get_policy_default('policy.xml')
     policy_element = _policy.get_policy('/', policy_file_path)
     enclave_element = policy_element.find('enclaves/enclave')
+    if enclave_element is None:
+        raise RuntimeError("default policy is missing an 'enclaves/enclave' element")
     enclave_element.attrib['path'] = identity
 
     permissions_path = key_dir.joinpath('permissions.xml')
@@ -119,7 +121,7 @@ def _is_enclave_name_valid(name: str) -> bool:
     #   This is not to bad for the moment.
     #   Related with https://github.com/ros2/rclpy/issues/528.
     try:
-        return validate_namespace(name)
+        return bool(validate_namespace(name))
     except InvalidNamespaceException as e:
         print(e)
         return False
@@ -130,7 +132,7 @@ def _create_key_and_cert(
         keystore_ca_key_path: pathlib.Path,
         identity: str,
         cert_path: pathlib.Path,
-        key_path: pathlib.Path):
+        key_path: pathlib.Path) -> None:
     # Load the CA cert and key from disk
     ca_cert = _utilities.load_cert(keystore_ca_cert_path)
 

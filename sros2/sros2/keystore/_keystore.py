@@ -108,7 +108,7 @@ def get_keystore_private_dir(keystore_path: pathlib.Path) -> pathlib.Path:
     return keystore_path.joinpath(_KS_PRIVATE)
 
 
-def _create_ca_key_cert(ca_key_out_path: pathlib.Path, ca_cert_out_path: pathlib.Path):
+def _create_ca_key_cert(ca_key_out_path: pathlib.Path, ca_cert_out_path: pathlib.Path) -> None:
     cert, private_key = _utilities.build_key_and_cert(
         x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, _DEFAULT_COMMON_NAME)]),
         ca=True)
@@ -117,7 +117,7 @@ def _create_ca_key_cert(ca_key_out_path: pathlib.Path, ca_cert_out_path: pathlib
     _utilities.write_cert(cert, ca_cert_out_path)
 
 
-def _create_governance_file(path: pathlib.Path, domain_id: str):
+def _create_governance_file(path: pathlib.Path, domain_id: str) -> None:
     # for this application we are only looking to authenticate and encrypt;
     # we do not need/want access control at this point.
     governance_xml_path = get_transport_default('dds', 'governance.xml')

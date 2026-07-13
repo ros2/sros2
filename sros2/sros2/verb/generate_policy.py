@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import pathlib
 import sys
-from typing import NamedTuple
+from typing import Any, Callable, List, NamedTuple, Union
 
 from argcomplete.completers import FilesCompleter
 
@@ -50,14 +51,16 @@ class _TopicInfo(NamedTuple):
 class GeneratePolicyVerb(VerbExtension):
     """Generate XML policy file from ROS graph data."""
 
-    def add_arguments(self, parser, cli_name) -> None:
+    def add_arguments(self, parser: argparse.ArgumentParser, cli_name: str) -> None:
         arg = parser.add_argument(
             'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
-        arg.completer = FilesCompleter(
+        arg.completer = FilesCompleter(  # type: ignore[attr-defined]
             allowednames=('xml',), directories=False)
         add_strategy_node_arguments(parser)
 
-    def get_policy(self, policy_file_path: pathlib.Path):
+    def get_policy(
+            self, policy_file_path: pathlib.Path
+    ) -> Union[etree._Element, etree._ElementTree]:
         if policy_file_path.is_file():
             return load_policy(policy_file_path)
         else:
@@ -67,7 +70,9 @@ class GeneratePolicyVerb(VerbExtension):
             policy.append(enclaves)
             return policy
 
-    def get_profile(self, policy, node_name):
+    def get_profile(
+            self, policy: Union[etree._Element, etree._ElementTree],
+            node_name: _NodeName) -> etree._Element:
         enclave = policy.find(
             path=f'enclaves/enclave[@path="{node_name.path}"]')
         if enclave is None:
@@ -76,6 +81,8 @@ class GeneratePolicyVerb(VerbExtension):
             profiles = etree.Element('profiles')
             enclave.append(profiles)
             enclaves = policy.find('enclaves')
+            if enclaves is None:
+                raise RuntimeError("policy is missing an 'enclaves' element")
             enclaves.append(enclave)
         profile = enclave.find(
             path=f'profiles/profile[@ns="{node_name.ns}"][@node="{node_name.node}"]')
@@ -83,11 +90,15 @@ class GeneratePolicyVerb(VerbExtension):
             profile = etree.Element('profile')
             profile.attrib['ns'] = node_name.ns
             profile.attrib['node'] = node_name.node
-            profiles = enclave.find('profiles')
-            profiles.append(profile)
+            profiles_element = enclave.find('profiles')
+            if profiles_element is None:
+                raise RuntimeError("enclave is missing a 'profiles' element")
+            profiles_element.append(profile)
         return profile
 
-    def get_permissions(self, profile, permission_type, rule_type, rule_qualifier):
+    def get_permissions(
+            self, profile: etree._Element, permission_type: str, rule_type: str,
+            rule_qualifier: str) -> etree._Element:
         permissions = profile.find(
             path=f'{permission_type}s[@{rule_type}="{rule_qualifier}"]')
         if permissions is None:
@@ -97,7 +108,9 @@ class GeneratePolicyVerb(VerbExtension):
         return permissions
 
     def add_permission(
-            self, profile, permission_type, rule_type, rule_qualifier, expressions, node_name):
+            self, profile: etree._Element, permission_type: str, rule_type: str,
+            rule_qualifier: str, expressions: list[_TopicInfo],
+            node_name: _NodeName) -> None:
         permissions = self.get_permissions(profile, permission_type, rule_type, rule_qualifier)
         for expression in expressions:
             permission = etree.Element(permission_type)
@@ -111,7 +124,7 @@ class GeneratePolicyVerb(VerbExtension):
                 permission.text = expression.fqn
             permissions.append(permission)
 
-    def main(self, *, args) -> int:
+    def main(self, *, args: argparse.Namespace) -> int:
         policy = self.get_policy(args.POLICY_FILE_PATH)
         with NodeStrategy(args) as node:
             node_names = _get_node_names(node=node, include_hidden_nodes=False)
@@ -145,7 +158,7 @@ class GeneratePolicyVerb(VerbExtension):
         return 0
 
 
-def _get_node_names(*, node, include_hidden_nodes=False):
+def _get_node_names(*, node: Any, include_hidden_nodes: bool = False) -> list[_NodeName]:
     node_names_and_namespaces_with_enclaves = node.get_node_names_and_namespaces_with_enclaves()
     return [
         _NodeName(
@@ -161,7 +174,9 @@ def _get_node_names(*, node, include_hidden_nodes=False):
     ]
 
 
-def _get_topics(node_name, func):
+def _get_topics(
+    node_name: _NodeName, func: Callable[[str, str], List[Any]]
+) -> list[_TopicInfo]:
     names_and_types = func(node_name.node, node_name.ns)
     return [
         _TopicInfo(
@@ -170,17 +185,17 @@ def _get_topics(node_name, func):
         for t in names_and_types]
 
 
-def _get_subscriber_info(node, node_name):
+def _get_subscriber_info(node: Any, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_subscriber_names_and_types_by_node)
 
 
-def _get_publisher_info(node, node_name):
+def _get_publisher_info(node: Any, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_publisher_names_and_types_by_node)
 
 
-def _get_service_info(node, node_name):
+def _get_service_info(node: Any, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_service_names_and_types_by_node)
 
 
-def _get_client_info(node, node_name):
+def _get_client_info(node: Any, node_name: _NodeName) -> list[_TopicInfo]:
     return _get_topics(node_name, node.get_client_names_and_types_by_node)

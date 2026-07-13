@@ -15,7 +15,7 @@
 import argparse
 import contextlib
 import time
-from typing import cast
+from typing import Any, Callable, cast, Iterator, Optional
 import unittest
 
 
@@ -42,7 +42,7 @@ MAX_DISCOVERY_DELAY = 4.0  # seconds
 
 
 def generate_sros2_cli_test_description(
-    fixture_actions, rmw_implementation, use_daemon
+    fixture_actions: list[Action], rmw_implementation: str, use_daemon: bool
 ) -> LaunchDescription:
     additional_env = get_rmw_additional_env(rmw_implementation)
     set_env_actions = [SetEnvironmentVariable(k, v) for k, v in additional_env.items()]
@@ -55,7 +55,7 @@ def generate_sros2_cli_test_description(
                 cmd=['ros2', 'daemon', 'stop'],
                 name='daemon-stop-isolated',
                 # Use the same isolated environment
-                additional_env=cast(dict, additional_env),
+                additional_env=cast('dict[str, str]', additional_env),
             ),
         ]
     shutdown_actions.append(ResetEnvironment())
@@ -84,17 +84,21 @@ def generate_sros2_cli_test_description(
 
 class SROS2CLITestCase(unittest.TestCase):
 
+    # These are attached dynamically in setUpClass (they close over the launch fixtures).
+    launch_sros2_command: Callable[..., Any]
+    wait_for: Callable[..., Any]
+
     @classmethod
-    def setUpClass(
+    def setUpClass(  # type: ignore[override]
         cls,
-        launch_service,
-        proc_info,
-        proc_output,
-        rmw_implementation,
-        use_daemon
-    ):
+        launch_service: Any,
+        proc_info: Any,
+        proc_output: Any,
+        rmw_implementation: str,
+        use_daemon: bool
+    ) -> None:
         @contextlib.contextmanager
-        def launch_sros2_command(self, arguments):
+        def launch_sros2_command(self: Any, arguments: list[str]) -> Iterator[Any]:
             cmd = ['ros2', 'security', *arguments]
             if not use_daemon:
                 # Wait for direct node to discover fixture nodes.
@@ -120,7 +124,12 @@ class SROS2CLITestCase(unittest.TestCase):
         cls.launch_sros2_command = launch_sros2_command
 
         if use_daemon:
-            def predicate(node, expected_nodes, expected_topics, expected_services):
+            def predicate(
+                node: Any,
+                expected_nodes: list[str],
+                expected_topics: Optional[list[str]],
+                expected_services: Optional[list[str]]
+            ) -> bool:
                 nodes = [
                     ns + '/' + name for name, ns in
                     node.get_node_names_and_namespaces()]
@@ -136,7 +145,12 @@ class SROS2CLITestCase(unittest.TestCase):
                         return False
                 return True
 
-            def wait_for(self, expected_nodes, expected_topics=None, expected_services=None):
+            def wait_for(
+                self: Any,
+                expected_nodes: list[str],
+                expected_topics: Optional[list[str]] = None,
+                expected_services: Optional[list[str]] = None
+            ) -> bool:
                 args = argparse.Namespace()
                 args.no_daemon = not use_daemon
                 args.spin_time = MAX_DISCOVERY_DELAY

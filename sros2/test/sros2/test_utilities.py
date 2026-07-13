@@ -20,12 +20,12 @@ from sros2 import _utilities
 import sros2.errors
 
 
-def test_get_keystore_path_from_env(monkeypatch):
+def test_get_keystore_path_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(_utilities._KEYSTORE_DIR_ENV, '/keystore/path')
     assert _utilities.get_keystore_path_from_env() == pathlib.Path('/keystore/path')
 
 
-def test_get_keystore_path_from_env_error(monkeypatch):
+def test_get_keystore_path_from_env_error(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(_utilities._KEYSTORE_DIR_ENV, raising=False)
 
     with pytest.raises(sros2.errors.InvalidKeystoreEnvironmentError) as e:
