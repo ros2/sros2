@@ -1,0 +1,37 @@
+# Strict mypy configuration for the sros2 package (used by test/test_mypy.py).
+#
+# This is equivalent to ament_mypy's --ament-strict profile (strict = true) for
+# sros2's own code, with two accommodations for ROS 2 dependencies that do not
+# yet ship type information:
+#   * disallow_subclassing_any / disallow_untyped_decorators are disabled because
+#     our classes must subclass untyped ROS base classes (rclpy Node, ros2cli
+#     CommandExtension) and the test suite uses untyped launch_testing decorators.
+#   * the listed third-party modules are treated as untyped so that calling their
+#     functions does not fail the strict check.
+# Every other strict check remains enabled for the sros2 sources and tests.
+
+[tool.mypy]
+strict = true
+pretty = true
+warn_unused_ignores = false
+warn_unused_configs = false
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "setup"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "argcomplete.*",
+    "launch.*",
+    "launch_ros.*",
+    "launch_testing.*",
+    "launch_testing_ros.*",
+    "rclpy.*",
+    "ros2cli.*",
+    "test_msgs.*",
+]
+ignore_missing_imports = true
+follow_imports = "skip"

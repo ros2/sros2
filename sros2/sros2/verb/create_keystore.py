@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import pathlib
 import sys
 
@@ -25,11 +26,11 @@ from sros2.verb import VerbExtension
 class CreateKeystoreVerb(VerbExtension):
     """Create keystore."""
 
-    def add_arguments(self, parser, cli_name) -> None:
+    def add_arguments(self, parser: argparse.ArgumentParser, cli_name: str) -> None:
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
-        arg.completer = DirectoriesCompleter()
+        arg.completer = DirectoriesCompleter()  # type: ignore[attr-defined]
 
-    def main(self, *, args) -> int:
+    def main(self, *, args: argparse.Namespace) -> int:
         try:
             sros2.keystore.create_keystore(args.ROOT)
         except sros2.errors.SROS2Error as e:

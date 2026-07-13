@@ -26,7 +26,7 @@ from sros2 import _utilities
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def keystore_dir(tmp_path_factory) -> Path:
+def keystore_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # Create the keystore
@@ -36,7 +36,12 @@ def keystore_dir(tmp_path_factory) -> Path:
     return keystore_dir
 
 
-def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
+def test_cli_keystore_args(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    keystore_dir: Path,
+) -> None:
     # invalid keystore
     assert cli.main(argv=['security', 'generate_artifacts', '-k', str(tmp_path)]) == 0
     output = capsys.readouterr().out.rstrip()
@@ -69,7 +74,7 @@ def test_cli_keystore_args(capsys, tmp_path, monkeypatch, keystore_dir):
         )
 
 
-def test_cli_enclave_args(keystore_dir):
+def test_cli_enclave_args(keystore_dir: Path) -> None:
     # no enclaves
     assert cli.main(argv=['security', 'generate_artifacts', '-k', str(keystore_dir)]) == 0
 
@@ -94,7 +99,11 @@ def test_cli_enclave_args(keystore_dir):
             assert (enclave_keys_dir / expected_file).is_file()
 
 
-def test_cli_policies_args(capsys, keystore_dir, test_policy_dir):
+def test_cli_policies_args(
+    capsys: pytest.CaptureFixture[str],
+    keystore_dir: Path,
+    test_policy_dir: Path,
+) -> None:
     enclave_list = ['/test_enclave', '/test_enclave2', '/minimal_action/minimal_action_server']
     command_args = ['security', 'generate_artifacts', '-k', str(keystore_dir)]
     for name in enclave_list:

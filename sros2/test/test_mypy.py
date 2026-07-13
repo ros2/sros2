@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from ament_mypy.main import main
 import pytest
 
 
 @pytest.mark.mypy
 @pytest.mark.linter
-def test_mypy():
-    assert main(argv=[]) == 0, 'Found errors'
+def test_mypy() -> None:
+    config_path = os.path.join(os.path.dirname(__file__), 'mypy.toml')
+    assert main(argv=['--config', config_path]) == 0, 'Found errors'

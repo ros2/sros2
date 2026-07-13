@@ -18,6 +18,7 @@ import os
 import pathlib
 import platform
 import shutil
+from typing import Any
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
@@ -81,14 +82,16 @@ def create_smime_signed_file(
 
 
 def build_key_and_cert(
-    subject_name: x509.Name, *, ca: bool = False, ca_key=None, issuer_name=''
+    subject_name: x509.Name, *, ca: bool = False,
+    ca_key: Any = None,
+    issuer_name: x509.Name | None = None,
 ) -> tuple[x509.Certificate, ec.EllipticCurvePrivateKey]:
-    if not issuer_name:
+    if issuer_name is None:
         issuer_name = subject_name
 
     # DDS-Security section 9.3.1 calls for prime256v1, for which SECP256R1 is an alias
     private_key = ec.generate_private_key(ec.SECP256R1())
-    if not ca_key:
+    if ca_key is None:
         ca_key = private_key
 
     if ca:
@@ -120,12 +123,12 @@ def build_key_and_cert(
 
 
 def write_key(
-    key,
+    key: ec.EllipticCurvePrivateKey,
     key_path: pathlib.Path,
     *,
-    encoding=serialization.Encoding.PEM,
-    serialization_format=serialization.PrivateFormat.PKCS8,
-    encryption_algorithm=serialization.NoEncryption()
+    encoding: serialization.Encoding = serialization.Encoding.PEM,
+    serialization_format: serialization.PrivateFormat = serialization.PrivateFormat.PKCS8,
+    encryption_algorithm: serialization.KeySerializationEncryption = serialization.NoEncryption()
 ) -> None:
     key_path.write_bytes(key.private_bytes(
         encoding=encoding,
@@ -133,7 +136,10 @@ def write_key(
         encryption_algorithm=encryption_algorithm))
 
 
-def write_cert(cert, cert_path: pathlib.Path, *, encoding=serialization.Encoding.PEM) -> None:
+def write_cert(
+    cert: x509.Certificate, cert_path: pathlib.Path, *,
+    encoding: serialization.Encoding = serialization.Encoding.PEM
+) -> None:
     cert_path.write_bytes(cert.public_bytes(encoding=encoding))
 
 
@@ -141,7 +147,7 @@ def load_cert(cert_path: pathlib.Path) -> x509.Certificate:
     return x509.load_pem_x509_certificate(cert_path.read_bytes())
 
 
-def _sign_bytes_pkcs7(cert, key, byte_string: bytes) -> bytes:
+def _sign_bytes_pkcs7(cert: x509.Certificate, key: Any, byte_string: bytes) -> bytes:
     from cryptography.hazmat.primitives.serialization import pkcs7
 
     builder = (
@@ -153,7 +159,7 @@ def _sign_bytes_pkcs7(cert, key, byte_string: bytes) -> bytes:
     return builder.sign(serialization.Encoding.SMIME, options)
 
 
-def _sign_bytes_ssl_binding(cert, key, byte_string: bytes) -> bytes:
+def _sign_bytes_ssl_binding(cert: Any, key: Any, byte_string: bytes) -> bytes:
     from cryptography.hazmat.bindings.openssl.binding import Binding as SSLBinding
 
     # Using two flags here to get the output required:
@@ -183,7 +189,7 @@ def _sign_bytes_ssl_binding(cert, key, byte_string: bytes) -> bytes:
             # Copy the output document back to python-managed memory
             result_buffer = SSLBinding.ffi.new('char**')
             buffer_length = SSLBinding.lib.BIO_get_mem_data(bio_out, result_buffer)
-            output = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
+            output: bytes = SSLBinding.ffi.buffer(result_buffer[0], buffer_length)[:]
         finally:
             # Free the memory required for the output buffer
             SSLBinding.lib.BIO_free(bio_out)
@@ -194,7 +200,7 @@ def _sign_bytes_ssl_binding(cert, key, byte_string: bytes) -> bytes:
     return output
 
 
-def _sign_bytes(cert, key, byte_string: bytes) -> bytes:
+def _sign_bytes(cert: x509.Certificate, key: Any, byte_string: bytes) -> bytes:
     try:
         return _sign_bytes_pkcs7(cert, key, byte_string)
     except ImportError:

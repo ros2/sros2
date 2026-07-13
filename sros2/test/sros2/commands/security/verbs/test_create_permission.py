@@ -30,7 +30,9 @@ _test_identity = '/talker_listener/talker'
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def enclave_dir(tmp_path_factory, test_policy_dir) -> pathlib.Path:
+def enclave_dir(
+    tmp_path_factory: pytest.TempPathFactory, test_policy_dir: pathlib.Path
+) -> pathlib.Path:
     keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # First, create the keystore as well as an enclave for the talker
@@ -52,7 +54,7 @@ def enclave_dir(tmp_path_factory, test_policy_dir) -> pathlib.Path:
     return security_files_dir
 
 
-def test_create_permission(enclave_dir):
+def test_create_permission(enclave_dir: pathlib.Path) -> None:
     assert enclave_dir.joinpath('permissions.xml').is_file()
     assert enclave_dir.joinpath('permissions.p7s').is_file()
 

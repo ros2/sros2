@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from ros2cli import cli
 
 
-def test_no_verb(capsys):
+def test_no_verb(capsys: pytest.CaptureFixture[str]) -> None:
     assert cli.main(argv=['security']) == 0
     output = capsys.readouterr().out.rstrip()
     assert 'Call `ros2 security <command> -h` for more detailed usage.' in output

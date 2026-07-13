@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import pathlib
 import sys
 
@@ -25,16 +26,16 @@ from sros2.verb import VerbExtension
 class CreatePermissionVerb(VerbExtension):
     """Create permission."""
 
-    def add_arguments(self, parser, cli_name) -> None:
+    def add_arguments(self, parser: argparse.ArgumentParser, cli_name: str) -> None:
         arg = parser.add_argument('ROOT', type=pathlib.Path, help='root path of keystore')
-        arg.completer = DirectoriesCompleter()
+        arg.completer = DirectoriesCompleter()  # type: ignore[attr-defined]
         parser.add_argument('NAME', help='key name, aka ROS enclave name')
         arg = parser.add_argument(
             'POLICY_FILE_PATH', type=pathlib.Path, help='path of the policy xml file')
-        arg.completer = FilesCompleter(
+        arg.completer = FilesCompleter(  # type: ignore[attr-defined]
             allowednames=('xml',), directories=False)
 
-    def main(self, *, args) -> int:
+    def main(self, *, args: argparse.Namespace) -> int:
         try:
             sros2.keystore.create_permission(args.ROOT, args.NAME, args.POLICY_FILE_PATH)
         except sros2.errors.SROS2Error as e:

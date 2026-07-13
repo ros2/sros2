@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Optional
+
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
@@ -21,7 +23,7 @@ import test_msgs.msg
 
 class PubSubNode(Node):
 
-    def __init__(self, name='pub_sub_node'):
+    def __init__(self, name: str = 'pub_sub_node') -> None:
         super().__init__(name)
 
         self.publisher = self.create_publisher(
@@ -31,13 +33,13 @@ class PubSubNode(Node):
             test_msgs.msg.Strings, '~/sub', lambda msg: None, 1
         )
 
-    def destroy_node(self):
+    def destroy_node(self) -> None:
         self.publisher.destroy()
         self.subscription.destroy()
         super().destroy_node()
 
 
-def main(args=None):
+def main(args: Optional[List[str]] = None) -> None:
     try:
         with rclpy.init(args=args):
             node = PubSubNode()

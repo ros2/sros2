@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+from typing import List, Optional
+
 from ros2cli.command import add_subparsers_on_demand
 from ros2cli.command import CommandExtension
 
@@ -19,13 +22,16 @@ from ros2cli.command import CommandExtension
 class SecurityCommand(CommandExtension):
     """Various security related sub-commands."""
 
-    def add_arguments(self, parser, cli_name, *, argv=None) -> None:
+    def add_arguments(
+        self, parser: argparse.ArgumentParser, cli_name: str, *,
+        argv: Optional[List[str]] = None
+    ) -> None:
         self._subparser = parser
         # get verb extensions and let them add their arguments
         add_subparsers_on_demand(
             parser, cli_name, '_verb', 'sros2.verb', required=False, argv=argv)
 
-    def main(self, *, parser, args) -> int:
+    def main(self, *, parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
         if not hasattr(args, '_verb'):
             # in case no verb was passed
             self._subparser.print_help()
@@ -33,4 +39,5 @@ class SecurityCommand(CommandExtension):
         extension = getattr(args, '_verb')
 
         # call the verb's main method
-        return extension.main(args=args)
+        result: int = extension.main(args=args)
+        return result

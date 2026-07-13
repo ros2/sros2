@@ -14,14 +14,17 @@
 
 from importlib import resources
 import pathlib
+from typing import cast, TextIO, Union
 
 from lxml import etree
 
 POLICY_VERSION = '0.2.0'
 
 
-def _get_path(template: str, name: str):
-    return resources.files(template).joinpath(name)
+def _get_path(template: str, name: str) -> pathlib.Path:
+    # The policy data files are shipped inside the installed package, so the
+    # resource is always backed by a real file on disk (a pathlib.Path).
+    return cast(pathlib.Path, resources.files(template).joinpath(name))
 
 
 def get_policy_default(name: str) -> pathlib.Path:
@@ -51,10 +54,10 @@ def get_transport_template(transport: str, name: str) -> pathlib.Path:
     return _get_path(module, name)
 
 
-def load_policy(policy_file_path: pathlib.Path) -> etree.ElementTree:
+def load_policy(policy_file_path: pathlib.Path) -> etree._ElementTree:
     if not policy_file_path.is_file():
         raise FileNotFoundError(f"policy file '{policy_file_path}' does not exist")
-    policy = etree.parse(str(policy_file_path))
+    policy: etree._ElementTree = etree.parse(str(policy_file_path))
     policy.xinclude()
     try:
         policy_xsd_path = get_policy_schema('policy.xsd')
@@ -65,7 +68,7 @@ def load_policy(policy_file_path: pathlib.Path) -> etree.ElementTree:
     return policy
 
 
-def dump_policy(policy, stream) -> None:
+def dump_policy(policy: Union[etree._Element, etree._ElementTree], stream: TextIO) -> None:
     policy_xsl_path = get_policy_template('policy.xsl')
     policy_xsl = etree.XSLT(etree.parse(str(policy_xsl_path)))
     policy = policy_xsl(policy)

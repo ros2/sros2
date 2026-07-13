@@ -17,6 +17,7 @@ from xml.etree import ElementTree
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend as cryptography_backend
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 import pytest
@@ -29,7 +30,7 @@ from sros2.keystore import _keystore
 
 # This fixture will run once for the entire module (as opposed to once per test)
 @pytest.fixture(scope='module')
-def keystore_dir(tmp_path_factory) -> Path:
+def keystore_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     keystore_dir = tmp_path_factory.mktemp('keystore')
 
     # Create the keystore
@@ -39,7 +40,7 @@ def keystore_dir(tmp_path_factory) -> Path:
     return keystore_dir
 
 
-def test_create_keystore(keystore_dir):
+def test_create_keystore(keystore_dir: Path) -> None:
     public = keystore_dir / 'public'
     private = keystore_dir / 'private'
     enclaves = keystore_dir / 'enclaves'
@@ -66,7 +67,7 @@ def test_create_keystore(keystore_dir):
     assert all(x.is_file() for x in expected_files)
 
 
-def test_ca_cert(keystore_dir):
+def test_ca_cert(keystore_dir: Path) -> None:
     cert = _utilities.load_cert(keystore_dir / 'public' / 'ca.cert.pem')
     names = cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
     assert len(names) == 1
@@ -75,14 +76,15 @@ def test_ca_cert(keystore_dir):
     assert len(names) == 0
 
 
-def test_ca_key(keystore_dir):
+def test_ca_key(keystore_dir: Path) -> None:
     with (keystore_dir / 'private' / 'ca.key.pem').open('rb') as f:
         key = load_pem_private_key(f.read(), password=None, backend=cryptography_backend())
         public = key.public_key()
+        assert isinstance(public, ec.EllipticCurvePublicKey)
         assert public.curve.name == 'secp256r1'
 
 
-def test_governance_p7s(keystore_dir):
+def test_governance_p7s(keystore_dir: Path) -> None:
     # Would really like to verify the signature, but ffi just can't use
     # that part of the OpenSSL API
     with (keystore_dir / 'enclaves' / 'governance.p7s').open('r') as f:
@@ -92,12 +94,12 @@ def test_governance_p7s(keystore_dir):
             'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256";')  # noqa
 
 
-def test_governance_xml(keystore_dir):
+def test_governance_xml(keystore_dir: Path) -> None:
     # Validates valid XML
     ElementTree.parse(str(keystore_dir / 'enclaves' / 'governance.xml'))
 
 
-def test_create_keystore_twice_fails(tmp_path):
+def test_create_keystore_twice_fails(tmp_path: Path) -> None:
     keystore_dir = tmp_path / 'keystore'
     keystore_dir.mkdir()
 

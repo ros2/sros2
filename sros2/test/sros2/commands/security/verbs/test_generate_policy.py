@@ -18,6 +18,7 @@ import os
 import pathlib
 import sys
 import tempfile
+from typing import Any
 import unittest
 
 from launch_ros.actions import Node
@@ -43,7 +44,7 @@ from utilities.sros2_cli_test_case import SROS2CLITestCase  # noqa: E402
 @launch_testing.parametrize('rmw_implementation,use_daemon', itertools.product(
     get_available_rmw_implementations(), (True, False)
 ))
-def generate_test_description(rmw_implementation: str, use_daemon: bool):
+def generate_test_description(rmw_implementation: str, use_daemon: bool) -> Any:
     if 'connext' in rmw_implementation and not use_daemon:
         raise unittest.SkipTest(
             f'Using {rmw_implementation} w/o a daemon makes tests flaky'
@@ -97,13 +98,17 @@ GENERATE_POLICY_TIMEOUT = 10 if os.name != 'nt' else 30  # seconds
 
 class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
 
+    # Attributes injected onto the class at runtime by SROS2CLITestCase.setUpClass.
+    launch_sros2_command: Any
+    wait_for: Any
+
     def test_generate_policy_topics(
         self,
-        pub_sub_node_name,
-        pub_sub_node_namespace,
-        pub_sub_node_enclave,
-        use_daemon
-    ):
+        pub_sub_node_name: Any,
+        pub_sub_node_namespace: Any,
+        pub_sub_node_enclave: Any,
+        use_daemon: Any
+    ) -> None:
         if use_daemon:
             assert self.wait_for(
                 expected_nodes=[pub_sub_node_namespace + '/' + pub_sub_node_name],
@@ -146,11 +151,11 @@ class TestSROS2GeneratePolicyVerb(SROS2CLITestCase):
 
     def test_generate_policy_services(
         self,
-        client_srv_node_name,
-        client_srv_node_namespace,
-        client_srv_node_enclave,
-        use_daemon
-    ):
+        client_srv_node_name: Any,
+        client_srv_node_namespace: Any,
+        client_srv_node_enclave: Any,
+        use_daemon: Any
+    ) -> None:
         if use_daemon:
             assert self.wait_for(
                 expected_nodes=[client_srv_node_namespace + '/' + client_srv_node_name],
