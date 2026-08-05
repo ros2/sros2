@@ -1,0 +1,15 @@
+# @{ROS_HOME} is the user location for the .ros directory.
+# @{ROS_INSTALL} is the installation location for the ros distro.
+#include <tunables/ros.d>
+
+# @{ROS_INSTALL_BIN} is the installation location for bin folder
+@{ROS_INSTALL_BIN}=@{ROS_INSTALL}/bin
+
+# @{ROS_INSTALL_LIB} is the installation location for lib folder
+@{ROS_INSTALL_LIB}=@{ROS_INSTALL}/lib
+
+# @{ROS_INSTALL_SHARE} is the installation location for share folder
+@{ROS_INSTALL_SHARE}=@{ROS_INSTALL}/share
+
+# @{ROS_INSTALL_PYTHON} is the installation location for ros python
+@{ROS_INSTALL_PYTHON}=@{ROS_INSTALL_LIB}/python3.[0-9]*

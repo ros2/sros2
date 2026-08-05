@@ -1,0 +1,21 @@
+#include <tunables/global>
+#include <tunables/ros>
+
+profile ros2.cli @{ROS_INSTALL_BIN}/ros2 {
+  # TODO: this profile is still a work in progress
+  # wide open profile with file rules such that exec() inherits our
+  # profile during development
+  / r,
+  /** rwlkm,
+  /** pix,
+  #capability,
+  #dbus,
+  network,
+  #mount,
+  #remount,
+  #umount,
+  #pivot_root,
+  ptrace,
+  signal,
+  unix,
+}

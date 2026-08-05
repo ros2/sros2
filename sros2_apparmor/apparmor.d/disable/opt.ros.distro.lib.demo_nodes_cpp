@@ -1,0 +1,12 @@
+#include <tunables/global>
+#include <tunables/ros>
+
+profile ros2.demo_nodes_cpp.talker @{ROS_INSTALL_LIB}/demo_nodes_cpp/talker {
+  #include <ros/node>
+  @{ROS_INSTALL_LIB}/demo_nodes_cpp/talker rm,
+}
+
+profile ros2.demo_nodes_cpp.listener @{ROS_INSTALL_LIB}/demo_nodes_cpp/listener {
+  #include <ros/node>
+  @{ROS_INSTALL_LIB}/demo_nodes_cpp/listener rm,
+}

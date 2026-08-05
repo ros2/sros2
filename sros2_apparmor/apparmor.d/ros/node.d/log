@@ -1,0 +1,2 @@
+# Include log abstractions needed for ros nodes
+owner @{ROS_HOME}/log/{,**} rwk,
