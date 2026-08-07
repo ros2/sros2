@@ -14,6 +14,7 @@
 
 import argparse
 import contextlib
+import os
 import time
 from typing import cast
 import unittest
@@ -39,6 +40,11 @@ from ros2cli.node.strategy import NodeStrategy
 
 
 MAX_DISCOVERY_DELAY = 4.0  # seconds
+# Total budget for the ROS graph to converge before running the CLI under
+# test. Discovery through a freshly spawned daemon can take much longer on
+# Windows, especially with rmw_zenoh_cpp where all traffic goes through the
+# isolated ad-hoc router. See https://github.com/ros2/sros2/issues/395.
+DISCOVERY_TIMEOUT = MAX_DISCOVERY_DELAY if os.name != 'nt' else 30.0  # seconds
 
 
 def generate_sros2_cli_test_description(
@@ -142,7 +148,7 @@ class SROS2CLITestCase(unittest.TestCase):
                 args.spin_time = MAX_DISCOVERY_DELAY
                 with NodeStrategy(args) as node:
                     start_time = time.time()
-                    while time.time() - start_time < MAX_DISCOVERY_DELAY:
+                    while time.time() - start_time < DISCOVERY_TIMEOUT:
                         if predicate(node, expected_nodes, expected_topics, expected_services):
                             return True
                         time.sleep(0.1)  # this sleep time is arbitrary
