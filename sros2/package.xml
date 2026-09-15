@@ -5,7 +5,7 @@
   <version>0.17.0</version>
   <description>Command line tools for managing SROS2 keys</description>
   <maintainer email="ros-security@googlegroups.com">ROS Security Working Group</maintainer>
-  <license>Apache License 2.0</license>
+  <license>Apache-2.0</license>
 
   <author email="morgan@osrfoundation.org">Morgan Quigley</author>
   <author>Mikael Arguedas</author>
