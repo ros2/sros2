@@ -37,9 +37,9 @@ class PubSubNode(Node):
         super().destroy_node()
 
 
-def main(args=None):
+def main():
     try:
-        with rclpy.init(args=args):
+        with rclpy.init():
             node = PubSubNode()
             rclpy.spin(node)
     except (KeyboardInterrupt, ExternalShutdownException):
