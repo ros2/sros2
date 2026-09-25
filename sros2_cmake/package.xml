@@ -6,7 +6,7 @@
     <version>0.17.0</version>
     <description>CMake macros to configure security</description>
     <maintainer email="ros-security@googlegroups.com">ROS Security Working Group</maintainer>
-    <license>Apache 2.0</license>
+    <license>Apache-2.0</license>
 
     <author>AWS RoboMaker</author>
 

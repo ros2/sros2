@@ -49,7 +49,7 @@ setup(
 SROS2 provides command-line tools to help generate keys and \
 certificates which are then used by supported middleware implementations to \
 enhance the security of ROS 2 deployments.""",
-    license='Apache License, Version 2.0',
+    license='Apache-2.0',
     extras_require={
         'test': [
             'pytest',
