@@ -2,6 +2,15 @@
 Changelog for package sros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.17.1 (2026-11-03)
+-------------------
+* Remove rmw_fastrtps_dynamic_cpp & rmw_fastrtps_shared_cpp (`#402 <https://github.com/ros2/sros2//issues/402>`_)
+* Remove unused main args from test nodes (`#399 <https://github.com/ros2/sros2//issues/399>`_)
+* Use the SPDX identifier Apache-2.0 in license declarations (`#397 <https://github.com/ros2/sros2//issues/397>`_)
+* Modernize Python3 (`#393 <https://github.com/ros2/sros2//issues/393>`_)
+* Fix `load_file_into_BIO: File could not be found, opened or is empty` error on Windows (`#386 <https://github.com/ros2/sros2//issues/386>`_)
+* Contributors: Alejandro Hernández Cordero, Christophe Bedard, Clara Berendsen, Danil Belov, Michael Carroll
+
 0.17.0 (2026-05-05)
 -------------------
 
